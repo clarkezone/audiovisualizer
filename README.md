@@ -1,2 +1,2 @@
 # audiovisualizer
-A UWP audiovisualization component
+A UWP audiovisualization component.
