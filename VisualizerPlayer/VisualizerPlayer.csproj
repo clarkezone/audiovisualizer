@@ -143,7 +143,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AudioAnalyzer">
-      <HintPath>..\Debug\AudioAnalyzer\AudioAnalyzer.winmd</HintPath>
+      <HintPath>..\x64\Release\AudioAnalyzer\AudioAnalyzer.winmd</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

@@ -206,7 +206,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AudioAnalyzer">
-      <HintPath>..\Debug\AudioAnalyzer\AudioAnalyzer.winmd</HintPath>
+      <HintPath>..\x64\Release\AudioAnalyzer\AudioAnalyzer.winmd</HintPath>
       <IsWinMDFile>true</IsWinMDFile>
     </Reference>
   </ItemGroup>

@@ -206,7 +206,7 @@ namespace AudioAnalyzer
 	{
 		if (pOutElements == nullptr)
 			return E_INVALIDARG;
-		*pOutElements = m_OutElementsCount;
+		*pOutElements = (unsigned long) m_OutElementsCount;
 		return S_OK;
 	}
 
@@ -1026,7 +1026,7 @@ namespace AudioAnalyzer
 			return S_FALSE;
 
 		*pPosition = samples_to_time(m_InputSampleIndex);
-		m_InputSampleIndex += m_StepFrameCount * m_nChannels;
+		m_InputSampleIndex += (long) (m_StepFrameCount * m_nChannels);
 
 		return S_OK;
 	}
@@ -1086,11 +1086,11 @@ namespace AudioAnalyzer
 		// In linear output length is going to be 1/2 of the FFT length
 		size_t vOutputLength = (m_OutElementsCount + 3) >> 2;		// To use vector math allocate buffer for each channel which is rounded up to the next 16 byte boundary
 
-		hr = MFCreateAlignedMemoryBuffer((sizeof(XMVECTOR)*vOutputLength*m_nChannels) + 2 * sizeof(XMVECTOR), 16, &spBuffer);
+		hr = MFCreateAlignedMemoryBuffer(DWORD((sizeof(XMVECTOR)*vOutputLength*m_nChannels) + 2 * sizeof(XMVECTOR)), 16, &spBuffer);
 		if (FAILED(hr))
 			return hr;
 
-		spBuffer->SetCurrentLength(sizeof(XMVECTOR)*(2 + m_nChannels * vOutputLength));
+		spBuffer->SetCurrentLength(DWORD(sizeof(XMVECTOR)*(2 + m_nChannels * vOutputLength)));
 
 		float *pBufferData;	// This is pointer to the media buffer data
 		hr = spBuffer->Lock((BYTE **)&pBufferData, nullptr, nullptr);
@@ -1143,10 +1143,10 @@ namespace AudioAnalyzer
 
 		(*ppSample)->AddBuffer(pBuffer);
 		(*ppSample)->SetSampleTime(time);
-		(*ppSample)->SetSampleDuration(frames_to_time(m_StepFrameCount));
+		(*ppSample)->SetSampleDuration(frames_to_time((long) m_StepFrameCount));
 
-		(*ppSample)->SetUINT32(g_PropKey_RMS_Data_Offset, m_nChannels * bufferStep);
-		(*ppSample)->SetUINT32(g_PropKey_Data_Step, bufferStep);
+		(*ppSample)->SetUINT32(g_PropKey_RMS_Data_Offset,UINT32(m_nChannels * bufferStep));
+		(*ppSample)->SetUINT32(g_PropKey_Data_Step, UINT32(bufferStep));
 		return S_OK;
 	}
 

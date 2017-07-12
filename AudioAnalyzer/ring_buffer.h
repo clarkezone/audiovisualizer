@@ -27,7 +27,7 @@ namespace buffers
 		}
 		void _Add_Ptr(int offset)
 		{
-			int current_offset = _ptr - _base_ptr;
+			int current_offset = (int)(_ptr - _base_ptr);
 			int new_offset = current_offset + offset;
 			if (new_offset < 0)
 			{
@@ -48,7 +48,9 @@ namespace buffers
 		}
 		difference_type _Diff(const _Iterator_Base_Fixed<T, _Capacity> &_Right) const
 		{
-			return _Right._ptr <= _ptr ? _ptr - _Right._ptr : _Capacity + _ptr - _Right._ptr;
+			return difference_type(_Right._ptr <= 
+				_ptr ? _ptr - _Right._ptr : 
+				difference_type(_Capacity) + _ptr - _Right._ptr);
 		}
 
 		_Iterator_Base_Fixed() : _ptr(nullptr), _base_ptr(nullptr)
@@ -260,7 +262,7 @@ namespace buffers
 			if ((source_count * channels) > size())	// Not enough items in the buffer
 				return false;
 
-			auto source = reader() - (overlap * channels);
+			auto source = reader() - (difference_type)(overlap * channels);
 
 			size_t frames_to_copy = source_count + overlap;
 
@@ -275,7 +277,7 @@ namespace buffers
 						pDest[channel_index * blockSize] = 0;	// Pad block with zeros
 				}
 			}
-			_reader = _reader + source_count * channels;
+			_reader = _reader + (difference_type) (source_count * channels);
 
 			return true;
 		}
