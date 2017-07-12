@@ -1,0 +1,35 @@
+import "Windows.Media.idl";
+import "inspectable.idl";
+import "AsyncInfo.idl";
+import "EventToken.idl";
+import "Windows.Foundation.idl";
+
+#include <sdkddkver.h>
+
+namespace AudioAnalyzer
+{
+	[uuid(B74989FE-1436-4179-92B6-E06B540E0C7E)]
+	[version(NTDDI_WIN10)]
+	interface IAudioAnalyzer : IInspectable {
+
+	HRESULT Configure([in] unsigned long fftLength,[in] float outSampleRate,[in] float overlapPercent);
+	HRESULT GetFrame([out][retval] Windows.Media.AudioFrame **result);
+	HRESULT SetLinearFScale([in] unsigned long outputElements);
+	HRESULT SetLogFScale([in] float lowFrequency, [in] float highFrequency, [in] unsigned long numberOfBins);
+	[propget] HRESULT FrequencyStep([out][retval] float *result);
+	[propget] HRESULT IsLogFrequencyScale([out][retval] boolean *result);
+	[propget] HRESULT LowFrequency([out][retval] float *result);
+	[propget] HRESULT HighFrequency([out][retval] float *result);
+	[propget] HRESULT OutputElementsCount([out][retval] unsigned long *result);
+	[propget] HRESULT IsLogAmplitudeScale([out][retval] boolean *result);
+	[propput] HRESULT IsLogAmplitudeScale(boolean value);
+	};
+
+	[version(NTDDI_WIN10)]
+	runtimeclass AnalyzerEffect
+	{
+		[default]interface Windows.Media.IMediaExtension;
+		interface IAudioAnalyzer;
+	}
+
+}
