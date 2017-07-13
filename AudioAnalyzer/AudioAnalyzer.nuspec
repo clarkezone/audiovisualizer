@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>UWPAudioAnalyzerPreview</id>
-    <version>1.0.1</version>
+    <version>1.0.0</version>
     <title>UWP Audio Spectrum Analyzer</title>
     <authors>Tonu Vanatalu and James Clarke</authors>
     <owners>Tonu Vanatalu and James Clarke</owners>
@@ -13,13 +13,13 @@
     <tags>Spectrum</tags>
   </metadata>
  <files>
-   <file src="..\Release\SampleGrabber\SampleGrabber.winmd" target="lib\uap10.0"/>
-   <file src="..\Release\SampleGrabber\SampleGrabber.xml" target="lib\uap10.0"/>
+   <file src="..\Release\AudioAnalyzer\AudioAnalyzer.winmd" target="lib\uap10.0"/>
+   <file src="..\Release\AudioAnalyzer\AudioAnalyzer.xml" target="lib\uap10.0"/>
 
-   <file src="..\x64\Release\SampleGrabber\SampleGrabber.dll"  target="runtimes\win10-x64\native"/>
-   <file src="..\x64\Release\SampleGrabber\SampleGrabber.pri" target="runtimes\win10-x64\native"/>
+   <file src="..\x64\Release\AudioAnalyzer\AudioAnalyzer.dll"  target="runtimes\win10-x64\native"/>
+   <file src="..\x64\Release\AudioAnalyzer\AudioAnalyzer.pri" target="runtimes\win10-x64\native"/>
 
-   <file src="..\Release\SampleGrabber\SampleGrabber.dll"  target="runtimes\win10-x86\native"/>
-   <file src="..\Release\SampleGrabber\SampleGrabber.pri" target="runtimes\win10-x86\native"/>
+   <file src="..\Release\AudioAnalyzer\AudioAnalyzer.dll"  target="runtimes\win10-x86\native"/>
+   <file src="..\Release\AudioAnalyzer\AudioAnalyzer.pri" target="runtimes\win10-x86\native"/>
  </files>
 </package>
