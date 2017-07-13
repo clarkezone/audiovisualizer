@@ -47,7 +47,8 @@ namespace AudioAnalyzer
 		m_bUseLogAmpScale(true),
 		m_bUseLogFScale(false),
 		m_vClampAmpLow(DirectX::XMVectorReplicate(-100.0f)),	// Clamp DB values between -100 and FLT_MAX
-		m_vClampAmpHigh(DirectX::XMVectorReplicate(FLT_MAX))
+		m_vClampAmpHigh(DirectX::XMVectorReplicate(FLT_MAX)),
+		m_bIsSuspended(false)
 	{
 
 	}
@@ -221,6 +222,26 @@ namespace AudioAnalyzer
 	STDMETHODIMP CAnalyzerEffect::put_IsLogAmplitudeScale(boolean bIsLogAmpScale)
 	{
 		m_bUseLogAmpScale = bIsLogAmpScale;
+		return S_OK;
+	}
+
+	STDMETHODIMP CAnalyzerEffect::get_IsSuspended(boolean * pbIsSuspended)
+	{
+		if (pbIsSuspended == nullptr)
+			return E_INVALIDARG;
+		*pbIsSuspended = m_bIsSuspended;
+		return S_OK;
+	}
+
+	STDMETHODIMP CAnalyzerEffect::put_IsSuspended(boolean bNewValue)
+	{
+		if (m_bIsSuspended != bNewValue)
+		{
+			if (bNewValue)
+				return Analyzer_Suspend();
+			else
+				return Analyzer_Resume();
+		}
 		return S_OK;
 	}
 
@@ -1227,6 +1248,16 @@ namespace AudioAnalyzer
 			m_AnalyzerOutput.front() = nullptr;
 			m_AnalyzerOutput.pop();
 		}
+		return S_OK;
+	}
+
+	HRESULT CAnalyzerEffect::Analyzer_Resume()
+	{
+		return S_OK;
+	}
+
+	HRESULT CAnalyzerEffect::Analyzer_Suspend()
+	{
 		return S_OK;
 	}
 

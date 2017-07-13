@@ -23,6 +23,8 @@ namespace AudioAnalyzer
 	[propget] HRESULT OutputElementsCount([out][retval] unsigned long *result);
 	[propget] HRESULT IsLogAmplitudeScale([out][retval] boolean *result);
 	[propput] HRESULT IsLogAmplitudeScale(boolean value);
+	[propget] HRESULT IsSuspended([out][retval] boolean *bIsSuspended);
+	[propput] HRESULT IsSuspended(boolean bIsSuspended);
 	};
 
 	[version(NTDDI_WIN10)]

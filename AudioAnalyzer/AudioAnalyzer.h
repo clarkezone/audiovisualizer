@@ -29,6 +29,8 @@ namespace AudioAnalyzer
 		UINT32 m_FramesPerSecond;
 		UINT32 m_nChannels;
 
+		bool m_bIsSuspended;	// Is analyzer in a suspended state
+
 		const size_t cMaxOutputQueueSize = 600;	// Keep 10sec worth of data for 60fps output
 
 		buffers::ring_buffer<float, 960000> m_InputBuffer;	// Allocate input buffer for 10sec stereo data at 48k
@@ -80,6 +82,8 @@ namespace AudioAnalyzer
 		HRESULT Analyzer_Flush(); 
 		HRESULT Analyzer_CompactOutputQueue();
 		HRESULT Analyzer_FlushOutputQueue();
+		HRESULT Analyzer_Resume();
+		HRESULT Analyzer_Suspend();
 		HRESULT Analyzer_FFwdQueueTo(REFERENCE_TIME time, IMFSample **ppSample);
 		void Analyzer_ConvertToDb(DirectX::XMVECTOR *pvData, size_t nElements);	// Converts input values to db range
 
@@ -187,6 +191,8 @@ namespace AudioAnalyzer
 		STDMETHODIMP get_OutputElementsCount(unsigned long *pOutElements);
 		STDMETHODIMP get_IsLogAmplitudeScale(boolean *pbIsLogAmpScale);
 		STDMETHODIMP put_IsLogAmplitudeScale(boolean bIsLogAmpScale);
+		STDMETHODIMP get_IsSuspended(boolean *pbIsSuspended);
+		STDMETHODIMP put_IsSuspended(boolean bIsSuspended);
 
 #pragma endregion
 	};

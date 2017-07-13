@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0622 */
 /* at Mon Jan 18 19:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioAnalyzer.idl-55a15377:
+/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioAnalyzer.idl-bb4fb473:
     Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -159,6 +159,12 @@ EXTERN_C const IID IID___x_ABI_CAudioAnalyzer_CIAudioAnalyzer;
                 virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_IsLogAmplitudeScale( 
                     boolean value) = 0;
                 
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_IsSuspended( 
+                    /* [out][retval] */ boolean *bIsSuspended) = 0;
+                
+                virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_IsSuspended( 
+                    boolean bIsSuspended) = 0;
+                
             };
 
             extern const __declspec(selectany) IID & IID_IAudioAnalyzer = __uuidof(IAudioAnalyzer);
@@ -247,6 +253,14 @@ EXTERN_C const IID IID___x_ABI_CAudioAnalyzer_CIAudioAnalyzer;
             __x_ABI_CAudioAnalyzer_CIAudioAnalyzer * This,
             boolean value);
         
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsSuspended )( 
+            __x_ABI_CAudioAnalyzer_CIAudioAnalyzer * This,
+            /* [out][retval] */ boolean *bIsSuspended);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_IsSuspended )( 
+            __x_ABI_CAudioAnalyzer_CIAudioAnalyzer * This,
+            boolean bIsSuspended);
+        
         END_INTERFACE
     } __x_ABI_CAudioAnalyzer_CIAudioAnalyzerVtbl;
 
@@ -312,6 +326,12 @@ EXTERN_C const IID IID___x_ABI_CAudioAnalyzer_CIAudioAnalyzer;
 
 #define __x_ABI_CAudioAnalyzer_CIAudioAnalyzer_put_IsLogAmplitudeScale(This,value)	\
     ( (This)->lpVtbl -> put_IsLogAmplitudeScale(This,value) ) 
+
+#define __x_ABI_CAudioAnalyzer_CIAudioAnalyzer_get_IsSuspended(This,bIsSuspended)	\
+    ( (This)->lpVtbl -> get_IsSuspended(This,bIsSuspended) ) 
+
+#define __x_ABI_CAudioAnalyzer_CIAudioAnalyzer_put_IsSuspended(This,bIsSuspended)	\
+    ( (This)->lpVtbl -> put_IsSuspended(This,bIsSuspended) ) 
 
 #endif /* COBJMACROS */
 
