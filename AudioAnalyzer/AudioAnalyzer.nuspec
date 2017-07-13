@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>UWPAudioAnalyzerPreview</id>
+    <version>1.0.1</version>
+    <title>UWP Audio Spectrum Analyzer</title>
+    <authors>Tonu Vanatalu and James Clarke</authors>
+    <owners>Tonu Vanatalu and James Clarke</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>UWP Audio Spectrum Analyzer Preview</description>
+    <releaseNotes>Alpha 1</releaseNotes>
+    <copyright>Copyright 2017 Tonu Vanataly and James Clarke</copyright>
+    <tags>Spectrum</tags>
+  </metadata>
+ <files>
+   <file src="..\Release\SampleGrabber\SampleGrabber.winmd" target="lib\uap10.0"/>
+   <file src="..\Release\SampleGrabber\SampleGrabber.xml" target="lib\uap10.0"/>
+
+   <file src="..\x64\Release\SampleGrabber\SampleGrabber.dll"  target="runtimes\win10-x64\native"/>
+   <file src="..\x64\Release\SampleGrabber\SampleGrabber.pri" target="runtimes\win10-x64\native"/>
+
+   <file src="..\Release\SampleGrabber\SampleGrabber.dll"  target="runtimes\win10-x86\native"/>
+   <file src="..\Release\SampleGrabber\SampleGrabber.pri" target="runtimes\win10-x86\native"/>
+ </files>
+</package>
