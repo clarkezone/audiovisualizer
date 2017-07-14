@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>UWPAudioAnalyzerPreview</id>
-    <version>1.0.0</version>
+    <id>UWPAudioAnalyzer</id>
+    <version>0.0.2</version>
     <title>UWP Audio Spectrum Analyzer</title>
     <authors>Tonu Vanatalu and James Clarke</authors>
     <owners>Tonu Vanatalu and James Clarke</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>UWP Audio Spectrum Analyzer Preview</description>
-    <releaseNotes>Alpha 1</releaseNotes>
-    <copyright>Copyright 2017 Tonu Vanataly and James Clarke</copyright>
-    <tags>Spectrum</tags>
+    <releaseNotes>First working version</releaseNotes>
+    <copyright>Copyright 2017 Tonu Vanatalu and James Clarke</copyright>
+    <tags>Audio Spectrum UWP</tags>
   </metadata>
  <files>
    <file src="..\Release\AudioAnalyzer\AudioAnalyzer.winmd" target="lib\uap10.0"/>
