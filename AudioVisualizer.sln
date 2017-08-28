@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AudioAnalyzer", "AudioAnalyzer\AudioAnalyzer.vcxproj", "{50542FF6-8C0A-48C9-937D-DF0EECB14474}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AnalyzerTest", "AnalyzerTest\AnalyzerTest.vcxproj", "{AD262DD7-6441-4A13-B1FA-8699D4F0239A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{50542FF6-8C0A-48C9-937D-DF0EECB14474} = {50542FF6-8C0A-48C9-937D-DF0EECB14474}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualizerPlayer", "VisualizerPlayer\VisualizerPlayer.csproj", "{56091C6B-C927-49C0-9528-099F65F134C3}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -16,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AudioMath", "AudioMath\AudioMath.vcxproj", "{3D52FAEE-14D1-47FA-B4B7-FECBCE32BD19}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,6 +80,18 @@ Global
 		{56091C6B-C927-49C0-9528-099F65F134C3}.Release|x86.ActiveCfg = Release|x86
 		{56091C6B-C927-49C0-9528-099F65F134C3}.Release|x86.Build.0 = Release|x86
 		{56091C6B-C927-49C0-9528-099F65F134C3}.Release|x86.Deploy.0 = Release|x86
+		{3D52FAEE-14D1-47FA-B4B7-FECBCE32BD19}.Debug|ARM.ActiveCfg = Debug|ARM
+		{3D52FAEE-14D1-47FA-B4B7-FECBCE32BD19}.Debug|ARM.Build.0 = Debug|ARM
+		{3D52FAEE-14D1-47FA-B4B7-FECBCE32BD19}.Debug|x64.ActiveCfg = Debug|x64
+		{3D52FAEE-14D1-47FA-B4B7-FECBCE32BD19}.Debug|x64.Build.0 = Debug|x64
+		{3D52FAEE-14D1-47FA-B4B7-FECBCE32BD19}.Debug|x86.ActiveCfg = Debug|Win32
+		{3D52FAEE-14D1-47FA-B4B7-FECBCE32BD19}.Debug|x86.Build.0 = Debug|Win32
+		{3D52FAEE-14D1-47FA-B4B7-FECBCE32BD19}.Release|ARM.ActiveCfg = Release|ARM
+		{3D52FAEE-14D1-47FA-B4B7-FECBCE32BD19}.Release|ARM.Build.0 = Release|ARM
+		{3D52FAEE-14D1-47FA-B4B7-FECBCE32BD19}.Release|x64.ActiveCfg = Release|x64
+		{3D52FAEE-14D1-47FA-B4B7-FECBCE32BD19}.Release|x64.Build.0 = Release|x64
+		{3D52FAEE-14D1-47FA-B4B7-FECBCE32BD19}.Release|x86.ActiveCfg = Release|Win32
+		{3D52FAEE-14D1-47FA-B4B7-FECBCE32BD19}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

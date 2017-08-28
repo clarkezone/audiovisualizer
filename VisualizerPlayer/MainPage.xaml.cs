@@ -16,6 +16,8 @@ using Windows.Storage.Pickers;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Windows.UI;
+using System.Threading;
+using System.Threading.Tasks;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -26,22 +28,31 @@ namespace VisualizerPlayer
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        PropertySet m_AnalyzerPropertySet;
-        AudioAnalyzer.IAudioAnalyzer m_Analyzer;
+        AudioAnalyzer.IVisualizationSource m_VisualizationSource;
+
+
+        public async Task<AudioAnalyzer.IVisualizationSource> CreateAnalyzerAsync(MediaElement element)
+        {
+            var propSet = new PropertySet();
+            ManualResetEventSlim opComplete = new ManualResetEventSlim();
+            AudioAnalyzer.IVisualizationSource source = null;
+            propSet.MapChanged += new MapChangedEventHandler<string,object>(
+                (IObservableMap<string, object> sender, IMapChangedEventArgs<string> @event) =>
+                {
+                    source = (AudioAnalyzer.IVisualizationSource)sender["Source"];
+                    opComplete.Set();
+                }
+                );
+            element.AddAudioEffect("AudioAnalyzer.AnalyzerEffect", false, propSet);
+
+            await Task.Run(() => { opComplete.Wait(); }); 
+            return source; 
+        }
+
 
         public MainPage()
         {
             this.InitializeComponent();
-            m_AnalyzerPropertySet = new PropertySet();
-            m_AnalyzerPropertySet.MapChanged += EffectProperties_Changed;
-            mePlayer.AddAudioEffect("AudioAnalyzer.AnalyzerEffect", false, m_AnalyzerPropertySet);
-        }
-
-        private void EffectProperties_Changed(IObservableMap<string, object> sender, IMapChangedEventArgs<string> @event)
-        {
-            m_Analyzer = (AudioAnalyzer.IAudioAnalyzer)sender["Analyzer"];
-            m_Analyzer.Configure(4096, 60, 0.5f);
-            m_Analyzer.SetLinearFScale(100);
         }
 
         private async void OpenFile_Click(object sender, RoutedEventArgs e)
@@ -68,9 +79,9 @@ namespace VisualizerPlayer
 
         private void CanvasAnimatedControl_Draw(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedDrawEventArgs args)
         {
-            if (m_Analyzer != null)
+            if (m_VisualizationSource != null)
             {
-                var frame = m_Analyzer.GetFrame();
+                var frame = m_VisualizationSource.GetFrame();
                 if (frame != null)
                 {
                     try
@@ -106,6 +117,25 @@ namespace VisualizerPlayer
         private void CanvasAnimatedControl_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             m_VisualizationSize = e.NewSize;
+        }
+
+        private async void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            m_VisualizationSource = await CreateAnalyzerAsync(mePlayer);
+            m_VisualizationSource.Configure(4096, 60, 0.5f);
+            m_VisualizationSource.SetLinearFScale(100);
+        }
+
+        private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            ToggleSwitch sw = (ToggleSwitch)sender;
+            if (m_VisualizationSource != null)
+                m_VisualizationSource.IsSuspended = !sw.IsOn;
+        }
+
+        private void ToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

@@ -3,6 +3,11 @@
 #include "xdsp.h"
 #include <cfloat>
 #include <windows.media.core.interop.h>
+#include <trace.h>
+
+#ifdef _DEBUG
+	#define _TRACE
+#endif
 
 
 #pragma comment(lib, "mf.lib")
@@ -10,7 +15,6 @@
 #pragma comment(lib, "mfplat.lib")
 
 using namespace Microsoft::WRL;
-
 
 namespace AudioAnalyzer
 {
@@ -24,11 +28,14 @@ namespace AudioAnalyzer
 	static const GUID g_PropKey_Data_Step =
 	{ 0xf4d65f78, 0xcf5a, 0x4949,{ 0x88, 0xc1, 0x76, 0xda, 0xd6, 0x5, 0xc3, 0x13 } };
 
+	const size_t CircleBufferSize = 960000;	// 10 sec worth of stereo audio at 48k
+
+	const wchar_t *SourcePropertyName = L"Source";
 
 	CAnalyzerEffect::CAnalyzerEffect() :
+		m_InputBuffer(CircleBufferSize),
 		m_FramesPerSecond(0),
 		m_nChannels(0),
-		m_InputSampleIndex(-1),
 		m_hWQAccess(NULL),
 		m_hResetWorkQueue(NULL),
 		m_StepFrameCount(0),
@@ -50,7 +57,9 @@ namespace AudioAnalyzer
 		m_vClampAmpHigh(DirectX::XMVectorReplicate(FLT_MAX)),
 		m_bIsSuspended(false)
 	{
-
+#ifdef _TRACE
+		AudioAnalyzer::Diagnostics::Trace::Initialize();
+#endif
 	}
 
 	CAnalyzerEffect::~CAnalyzerEffect()
@@ -58,6 +67,9 @@ namespace AudioAnalyzer
 		CloseHandle(m_hWQAccess);
 		CloseHandle(m_hResetWorkQueue);
 		Analyzer_FreeBuffers();
+#ifdef _TRACE
+		AudioAnalyzer::Diagnostics::Trace::Shutdown();
+#endif
 	}
 
 
@@ -229,13 +241,13 @@ namespace AudioAnalyzer
 	{
 		if (pbIsSuspended == nullptr)
 			return E_INVALIDARG;
-		*pbIsSuspended = m_bIsSuspended;
+		*pbIsSuspended = (boolean) m_bIsSuspended;
 		return S_OK;
 	}
 
 	STDMETHODIMP CAnalyzerEffect::put_IsSuspended(boolean bNewValue)
 	{
-		if (m_bIsSuspended != bNewValue)
+		if (m_bIsSuspended != (bool) bNewValue)
 		{
 			if (bNewValue)
 				return Analyzer_Suspend();
@@ -571,7 +583,11 @@ namespace AudioAnalyzer
 		if ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0)
 		{
 			m_spOutputType = pType;
-			return Analyzer_SetMediaType(pType);	// Using MFT output type to configure analyzer
+			HRESULT hr = Analyzer_SetMediaType(pType);	// Using MFT output type to configure analyzer
+#ifdef _TRACE
+			Diagnostics::Trace::Log_SetMediaType(pType, hr);
+#endif
+			return hr;
 		}
 		return S_OK;
 	}
@@ -906,6 +922,10 @@ namespace AudioAnalyzer
 
 		XDSP::FFTInitializeUnityTable(m_pFftUnityTable, m_FftLength);
 		m_fFftScale = 2.0f / m_FftLength;
+
+		// Configure the buffer
+		m_InputBuffer.SetFrameSize(m_nChannels);
+		m_InputBuffer.Configure(m_StepTotalFrames, m_StepFrameOverlap);
 		return S_OK;
 	}
 
@@ -955,13 +975,13 @@ namespace AudioAnalyzer
 		SetEvent(m_hResetWorkQueue);
 
 		HRESULT hr = S_OK;
-		if (m_InputSampleIndex == -1)	// Sample index not set, get time from sample
+		if (m_InputBuffer.GetPosition() == -1)	// Sample index not set, get time from sample
 		{
 			REFERENCE_TIME sampleTime = 0;
 			hr = pSample->GetSampleTime(&sampleTime);
 			if (FAILED(hr))
 				return hr;
-			m_InputSampleIndex = time_to_samples(sampleTime);
+			m_InputBuffer.SetPosition(time_to_samples(sampleTime));
 		}
 
 		ComPtr<IMFMediaBuffer> spBuffer;
@@ -975,7 +995,7 @@ namespace AudioAnalyzer
 		if (FAILED(hr))
 			return hr;
 
-		m_InputBuffer.insert(pBufferData, cbCurrentLength / sizeof(float));
+		m_InputBuffer.Add(pBufferData, cbCurrentLength / sizeof(float));
 
 		spBuffer->Unlock();
 
@@ -990,6 +1010,9 @@ namespace AudioAnalyzer
 	//-----------------------------------------------
 	HRESULT CAnalyzerEffect::Analyzer_ScheduleProcessing()
 	{
+		if (m_bIsSuspended)	// Do not schedule another work item when suspended
+			return S_OK;
+
 		// See if the access semaphore is signaled
 		DWORD dwWaitResult = WaitForSingleObject(m_hWQAccess, 0);
 		if (dwWaitResult == WAIT_OBJECT_0) // 
@@ -1026,7 +1049,8 @@ namespace AudioAnalyzer
 			Analyzer_CompactOutputQueue();
 			m_AnalyzerOutput.push(spSample);
 		}
-		else
+
+		if (hr != S_OK || dwWaitResult != WAIT_OBJECT_0 || m_bIsSuspended)
 		{
 			// Work is done, queue is empty, release the semaphore
 			ReleaseSemaphore(m_hWQAccess, 1, nullptr);
@@ -1041,13 +1065,12 @@ namespace AudioAnalyzer
 	{
 		auto readerLock = m_csInputIndexAccess.Lock();	// Get lock on modifying the reader pointer
 
-		bool bSuccess = m_InputBuffer.get(pData, m_StepFrameCount, m_nChannels, m_FftLength, m_StepFrameOverlap, m_pWindow);
-
-		if (!bSuccess)
+		long currentPosition = m_InputBuffer.GetPosition();
+		HRESULT hr = m_InputBuffer.Step(pData, m_FftLength, m_pWindow);
+		if (FAILED(hr))
 			return S_FALSE;
 
-		*pPosition = samples_to_time(m_InputSampleIndex);
-		m_InputSampleIndex += (long) (m_StepFrameCount * m_nChannels);
+		*pPosition = samples_to_time(currentPosition);
 
 		return S_OK;
 	}
@@ -1174,8 +1197,7 @@ namespace AudioAnalyzer
 	HRESULT CAnalyzerEffect::Analyzer_Reset()
 	{
 		auto inputLock = m_csInputIndexAccess.Lock();
-		m_InputBuffer.clear();
-		m_InputSampleIndex = -1;
+		m_InputBuffer.Flush();
 		return S_OK;
 	}
 
@@ -1253,11 +1275,13 @@ namespace AudioAnalyzer
 
 	HRESULT CAnalyzerEffect::Analyzer_Resume()
 	{
-		return S_OK;
+		m_bIsSuspended = false;
+		return Analyzer_ScheduleProcessing();
 	}
 
 	HRESULT CAnalyzerEffect::Analyzer_Suspend()
 	{
+		m_bIsSuspended = true;
 		return S_OK;
 	}
 
@@ -1330,7 +1354,7 @@ namespace AudioAnalyzer
 
 		boolean bIsReplaced;
 		IInspectable *pObj = reinterpret_cast<IInspectable *>(this);
-		hr = spMap->Insert(HStringReference(L"Analyzer").Get(), pObj, &bIsReplaced);
+		hr = spMap->Insert(HStringReference(SourcePropertyName).Get(), pObj, &bIsReplaced);
 		if (FAILED(hr))
 			return hr;
 

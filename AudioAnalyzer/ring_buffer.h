@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 
-namespace buffers
+namespace buffers1
 {
 	template<typename T, size_t _Capacity> class _Iterator_Base_Fixed
 	{

@@ -37,7 +37,7 @@ namespace AnalyzerTest
 			sample->SetSampleDuration((10000000L * (long long)samplesRequested) / m_SampleRate);
 
 			ComPtr<IMFMediaBuffer> buffer;
-			hr = MFCreateMemoryBuffer(samplesRequested * sizeof(float) * m_Channels, &buffer);
+			hr = MFCreateMemoryBuffer((DWORD) samplesRequested * sizeof(float) * m_Channels, &buffer);
 			if (FAILED(hr))
 				return hr;
 			float *pBuffer;

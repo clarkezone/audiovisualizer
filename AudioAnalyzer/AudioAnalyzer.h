@@ -2,7 +2,7 @@
 #include "AudioAnalyzer_h.h"
 #include <DirectXMath.h>
 #include <queue>
-#include "ring_buffer.h"
+#include <AudioBuffer.h>
 
 namespace AudioAnalyzer
 {
@@ -12,7 +12,7 @@ namespace AudioAnalyzer
 		ABI::Windows::Media::IMediaExtension,
 		IMFTransform,
 		IMFClockConsumer,
-		ABI::AudioAnalyzer::IAudioAnalyzer,
+		ABI::AudioAnalyzer::IVisualizationSource,
 		IMFAsyncCallback>
 	{
 		InspectableClass(RuntimeClass_AudioAnalyzer_AnalyzerEffect, BaseTrust)
@@ -33,9 +33,9 @@ namespace AudioAnalyzer
 
 		const size_t cMaxOutputQueueSize = 600;	// Keep 10sec worth of data for 60fps output
 
-		buffers::ring_buffer<float, 960000> m_InputBuffer;	// Allocate input buffer for 10sec stereo data at 48k
+		AudioMath::CAudioBuffer m_InputBuffer;
 
-		long m_InputSampleIndex;	// Current read position sample index in stream
+		//long m_InputSampleIndex;	// Current read position sample index in stream
 		Microsoft::WRL::Wrappers::CriticalSection m_csInputIndexAccess;
 
 		HANDLE m_hWQAccess;	// Semaphore that is used to detect is work queue processing is running

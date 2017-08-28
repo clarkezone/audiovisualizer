@@ -7,23 +7,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="AudioMath.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="AudioAnalyzer.cpp" />
-    <ClCompile Include="Trace.cpp" />
+    <ClCompile Include="AudioBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AudioMath.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="ring_buffer.h" />
-    <ClInclude Include="AudioAnalyzer.h" />
-    <ClInclude Include="trace.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="AudioAnalyzer.def" />
-    <None Include="AudioVizualisation.wprp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="AudioAnalyzer.idl" />
+    <ClInclude Include="AudioBuffer.h" />
   </ItemGroup>
 </Project>

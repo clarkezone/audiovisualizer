@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WindowsPerformanceRecorder Version="1.0">
+  <Profiles>
+    <EventCollector Id="EventCollector_AudioVisualizer" Name="MyEventSourceCollector">
+      <BufferSize Value="1024" />
+      <Buffers Value="200" />
+    </EventCollector>
+    <EventProvider Id="UIEventSource" Name="*AudioVisualization-AudioAnalyzer" />
+    <EventProvider Id="MFReadWrite" Name="Microsoft-Windows-MediaFoundation-MFReadWrite"/> <!--4b7eac67-fc53-448c-a49d-7cc6db524da7-->
+    <EventProvider Id="MicrosoftAudio" Name="Microsoft-Windows-Audio"/>
+    <EventProvider Id="AudioGraph" Name="0D641FB9-A0E3-42E3-9E9D-501D33A6FA79"/>
+    <EventProvider Id="Audio" Name="e27950eb-1768-451f-96ac-cc4e14f6d3d0" Level="32">
+      <Keywords>
+        <Keyword Value="0x7FFFFFFF"/>
+      </Keywords>
+    </EventProvider>
+    <EventProvider Id="AudioEvents" Name="A6A00EFD-21F2-4A99-807E-9B3BF1D90285" Level="5">
+      <Keywords>
+        <Keyword Value="0xFFFF"/>
+      </Keywords>
+    </EventProvider>
+    <EventProvider Id="MMCSS" Name="f8f10121-b617-4a56-868b-9df1b27fe32c"/>
+    <EventProvider Id="MF" Name="F404B94E-27E0-4384-BFE8-1D8D390B0AA3"/>
+    <EventProvider Id="MediaEngine" Name="Microsoft-Windows-MediaEngine"/>
+    <EventProvider Id="MediaCore" Name="B20E65AC-C905-4014-8F78-1B6A508142EB"/>
+    <EventProvider Id="AudioCoreCrimson" Name="AE4BD3BE-F36F-45b6-8D21-BDD6FB832853"/>
+    <EventProvider Id="AudioUI" Name="07de7879-1c96-41ce-afbd-c659a0e8e643"/>
+    <EventProvider Id="EditingAPI" Name=" 1123dc81-0423-4f27-bf57-6619e6bf85cc"/>
+
+
+    <Profile Id="MF.Verbose.File" Name="MF" Description="Media Foundation" LoggingMode="File" DetailLevel="Verbose">
+      <Collectors>
+        <EventCollectorId Value="EventCollector_AudioVisualizer">
+          <EventProviders>
+            <EventProviderId Value="MF" />
+            <EventProviderId Value="MediaEngine"/>
+            <EventProviderId Value="MediaCore"/>
+            <EventProviderId Value="MFReadWrite"/>
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+    <Profile Id="MF.Verbose.Memory" Name="MF" Description="Media Foundation" Base="MF.Verbose.File" LoggingMode="Memory" DetailLevel="Verbose" />
+
+
+    <Profile Id="MicrosoftAudio.Verbose.File" Name="MicrosoftAudio" Description="Audio events" LoggingMode="File" DetailLevel="Verbose">
+      <Collectors>
+        <EventCollectorId Value="EventCollector_AudioVisualizer">
+          <EventProviders>
+            <EventProviderId Value="MicrosoftAudio" />
+            <EventProviderId Value="AudioGraph"/>
+            <EventProviderId Value="Audio"/>
+            <EventProviderId Value="AudioEvents"/>
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+    <Profile Id="MicrosoftAudio.Verbose.Memory" Name="MicrosoftAudio" Description="Audio events" Base="MicrosoftAudio.Verbose.File" LoggingMode="Memory" DetailLevel="Verbose" />
+
+
+    <Profile Id="AudioVisualizerMFT.Verbose.File" Name="AudioVisualizerMFT" Description="MFT Filter trace" LoggingMode="File" DetailLevel="Verbose">
+      <Collectors>
+        <EventCollectorId Value="EventCollector_AudioVisualizer">
+          <EventProviders>
+            <EventProviderId Value="UIEventSource" />
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+    <Profile Id="AudioVisualizerMFT.Verbose.Memory" Name="AudioVisualizerMFT" Description="MFT Filter trace" Base="AudioVisualizerMFT.Verbose.File" LoggingMode="Memory" DetailLevel="Verbose" />
+   
+  </Profiles>
+</WindowsPerformanceRecorder>

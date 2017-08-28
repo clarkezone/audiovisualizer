@@ -263,35 +263,35 @@ namespace AnalyzerTest
 			HRESULT hr = pMft->ProcessMessage(MFT_MESSAGE_NOTIFY_END_STREAMING, 0);
 			IsSucceeded(hr, L"StartOfStream", LINE_INFO());
 		}
-		void Test_ConfigureAnalyzer(ABI::AudioAnalyzer::IAudioAnalyzer *pAnalyzer,unsigned sampleRate)
+		void Test_ConfigureAnalyzer(ABI::AudioAnalyzer::IVisualizationSource *pSource,unsigned sampleRate)
 		{
 			// Test first argument validation
-			HRESULT hr = pAnalyzer->Configure(4000, 60.0f, 0.5f);	// FFT length not 2^n
+			HRESULT hr = pSource->Configure(4000, 60.0f, 0.5f);	// FFT length not 2^n
 			Assert::AreEqual(E_INVALIDARG, hr, L"2^n FFT length argument test failed", LINE_INFO());
 
-			hr = pAnalyzer->Configure(4096, 0.9f, 0.5f);
+			hr = pSource->Configure(4096, 0.9f, 0.5f);
 			Assert::AreEqual(E_INVALIDARG, hr, L"min fps test failed", LINE_INFO());
-			hr = pAnalyzer->Configure(4096, 120.1f, 0.5f);
+			hr = pSource->Configure(4096, 120.1f, 0.5f);
 			Assert::AreEqual(E_INVALIDARG, hr, L"max fps test failed", LINE_INFO());
-			hr = pAnalyzer->Configure(4096, 60.0f, -1.0f);
+			hr = pSource->Configure(4096, 60.0f, -1.0f);
 			Assert::AreEqual(E_INVALIDARG, hr, L"min overlap test failed", LINE_INFO());
-			hr = pAnalyzer->Configure(4096, 60.0f, 1.1f);
+			hr = pSource->Configure(4096, 60.0f, 1.1f);
 			Assert::AreEqual(E_INVALIDARG, hr, L"max overlap test failed", LINE_INFO());
-			hr = pAnalyzer->Configure(256, 60.0f, 1.1f);
+			hr = pSource->Configure(256, 60.0f, 1.1f);
 			Assert::AreEqual(E_INVALIDARG, hr, L"fft to fps validation failed", LINE_INFO());
-			hr = pAnalyzer->Configure(2048, 60.0f, 0.5f);
+			hr = pSource->Configure(2048, 60.0f, 0.5f);
 			IsSucceeded(hr, L"Configuring analyzer", LINE_INFO());
 
-			hr = pAnalyzer->SetLinearFScale(2049);
+			hr = pSource->SetLinearFScale(2049);
 			Assert::AreEqual(E_INVALIDARG, hr, L"max output elements test failed", LINE_INFO());
-			hr = pAnalyzer->SetLinearFScale(0);
+			hr = pSource->SetLinearFScale(0);
 			Assert::AreEqual(E_INVALIDARG, hr, L"min output elements test failed", LINE_INFO());
 
-			hr = pAnalyzer->SetLinearFScale(100);
+			hr = pSource->SetLinearFScale(100);
 			IsSucceeded(hr, L"SetLinearFScale", LINE_INFO());
 
 			float fStep = 0.0f;
-			hr = pAnalyzer->get_FrequencyStep(&fStep);
+			hr = pSource->get_FrequencyStep(&fStep);
 			IsSucceeded(hr, L"FStep", LINE_INFO());
 			Assert::AreEqual(float(sampleRate)/200.0f, fStep, L"FStep value", LINE_INFO());
 		}
@@ -301,7 +301,7 @@ namespace AnalyzerTest
 			return S_OK;
 		}
 
-		void Get_Analyzer(IMFTransform *pMft,ABI::AudioAnalyzer::IAudioAnalyzer **ppAnalyzer)
+		void Get_Analyzer(IMFTransform *pMft,ABI::AudioAnalyzer::IVisualizationSource **ppSource)
 		{
 			using namespace ABI::Windows::Foundation::Collections;
 			ComPtr<ABI::Windows::Media::IMediaExtension> spExtension;
@@ -323,14 +323,14 @@ namespace AnalyzerTest
 			IsSucceeded(hr, L"QI Map", LINE_INFO());
 
 			ComPtr<IInspectable> spValue;
-			hr = spMap->Lookup(HStringReference(L"Analyzer").Get(), &spValue);
+			hr = spMap->Lookup(HStringReference(L"Source").Get(), &spValue);
 			IsSucceeded(hr, L"Get analyzer from property set", LINE_INFO());
 
-			ComPtr<ABI::AudioAnalyzer::IAudioAnalyzer> spAnalyzer;
-			hr = spValue.As(&spAnalyzer);
+			ComPtr<ABI::AudioAnalyzer::IVisualizationSource> spSource;
+			hr = spValue.As(&spSource);
 			IsSucceeded(hr, L"Get analyzer from property set", LINE_INFO());
 
-			spAnalyzer.CopyTo(ppAnalyzer);
+			spSource.CopyTo(ppSource);
 		}
 
 		void Create_And_Set_Clock(IMFTransform *pMft, CFakeClock **ppClock)
@@ -364,9 +364,9 @@ namespace AnalyzerTest
 			Test_AnalyzerTimings(spTransform.Get(),spClock.Get());
 		}
 
-		void Test_Processing(IMFTransform *pMft,CFakeClock *pClock,ABI::AudioAnalyzer::IAudioAnalyzer *pAnalyzer,unsigned sampleRate)
+		void Test_Processing(IMFTransform *pMft,CFakeClock *pClock,ABI::AudioAnalyzer::IVisualizationSource *pSource,unsigned sampleRate)
 		{
-			pAnalyzer->SetLinearFScale(100);
+			pSource->SetLinearFScale(100);
 
 			using namespace ABI::Windows::Media;
 			using namespace ABI::Windows::Foundation;
@@ -408,7 +408,7 @@ namespace AnalyzerTest
 						// Test frame properties
 			pClock->SetTime(0);
 			ComPtr<IAudioFrame> spFrame;
-			HRESULT hr = pAnalyzer->GetFrame(&spFrame);
+			HRESULT hr = pSource->GetFrame(&spFrame);
 			IsSucceeded(hr, L"GetFrame", LINE_INFO());
 			ComPtr<IMediaFrame> spMediaFrame;
 			hr = spFrame.As(&spMediaFrame);
@@ -449,7 +449,7 @@ namespace AnalyzerTest
 			for (size_t testIndex = 0; testIndex < testCount; testIndex++)
 			{
 				pClock->SetTime(setTime[testIndex]);
-				HRESULT hr = pAnalyzer->GetFrame(&spFrame);
+				HRESULT hr = pSource->GetFrame(&spFrame);
 				IsSucceeded(hr, L"GetFrame", LINE_INFO());
 				Assert::IsNotNull(spFrame.Get(), L"GetFrame", LINE_INFO());
 				
@@ -480,7 +480,7 @@ namespace AnalyzerTest
 				for (size_t valueIndex = 0; valueIndex < 100; valueIndex++)
 				{
 					wchar_t msg[1000];
-					swprintf_s(msg, L"Pass %d Value[%d] = (%f,%f)", testIndex,valueIndex, pBuffer[valueIndex],pBuffer[valueIndex+100]);
+					swprintf_s(msg, L"Pass %d Value[%d] = (%f,%f)", (int) testIndex, (int) valueIndex, pBuffer[valueIndex],pBuffer[valueIndex+100]);
 					// Channel 1 has to be silence and 0 not a silence
 					Assert::AreNotEqual(-100.0f, pBuffer[valueIndex], msg, LINE_INFO());
 					Assert::AreEqual(-100.0f, pBuffer[valueIndex + 100], msg, LINE_INFO());
@@ -491,7 +491,7 @@ namespace AnalyzerTest
 			}
 			pClock->SetTime(0);
 			// This should fail now as sample for 0 would be removed from queue by this time
-			hr = pAnalyzer->GetFrame(&spFrame);
+			hr = pSource->GetFrame(&spFrame);
 			IsSucceeded(hr, L"GetFrame", LINE_INFO());
 			Assert::IsNull(spFrame.Get(), L"GetFrame", LINE_INFO());
 		}
@@ -509,18 +509,18 @@ namespace AnalyzerTest
 			Test_BufferRequirements(spTransform.Get());
 			ComPtr<CFakeClock> spClock;
 			Create_And_Set_Clock(spTransform.Get(), &spClock);
-			ComPtr<ABI::AudioAnalyzer::IAudioAnalyzer> spAnalyzer;
-			Get_Analyzer(spTransform.Get(), &spAnalyzer);
+			ComPtr<ABI::AudioAnalyzer::IVisualizationSource> spSource;
+			Get_Analyzer(spTransform.Get(), &spSource);
 			
-			Test_ConfigureAnalyzer(spAnalyzer.Get(), sampleRate);
+			Test_ConfigureAnalyzer(spSource.Get(), sampleRate);
 
 			ComPtr<ABI::Windows::Media::IAudioFrame> spFrame;
-			hr = spAnalyzer->GetFrame(&spFrame);
+			hr = spSource->GetFrame(&spFrame);
 			IsSucceeded(hr, L"GetFrame", LINE_INFO());	// This should succeed
 			Assert::IsNull(spFrame.Get(), L"GetFrame before", LINE_INFO());
 
 			Start_Streaming(spTransform.Get());
-			Test_Processing(spTransform.Get(), spClock.Get(), spAnalyzer.Get(), sampleRate);
+			Test_Processing(spTransform.Get(), spClock.Get(), spSource.Get(), sampleRate);
 			Stop_Streaming(spTransform.Get());
 
 		}

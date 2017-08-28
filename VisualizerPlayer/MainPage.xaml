@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:win2d="using:Microsoft.Graphics.Canvas.UI.Xaml"
-    mc:Ignorable="d">
+    mc:Ignorable="d" Loaded="Page_Loaded">
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -19,10 +19,12 @@
         <win2d:CanvasAnimatedControl Grid.Row="1" HorizontalAlignment="Stretch"  VerticalAlignment="Bottom" Height="100" CreateResources="CanvasAnimatedControl_CreateResources" Draw="CanvasAnimatedControl_Draw" SizeChanged="CanvasAnimatedControl_SizeChanged">
 
         </win2d:CanvasAnimatedControl>
+
         <MediaElement x:Name="mePlayer" Grid.Row="2" AudioCategory="Media"
                       AreTransportControlsEnabled="True">
             
         </MediaElement>
-
+        <ToggleSwitch IsOn="True" Grid.Row="2" Margin ="20,0"
+                      VerticalAlignment="Center" Toggled="ToggleSwitch_Toggled">Visualization</ToggleSwitch>
     </Grid>
 </Page>

@@ -10,7 +10,7 @@ namespace AudioAnalyzer
 {
 	[uuid(B74989FE-1436-4179-92B6-E06B540E0C7E)]
 	[version(NTDDI_WIN10)]
-	interface IAudioAnalyzer : IInspectable {
+	interface IVisualizationSource : IInspectable {
 
 	HRESULT Configure([in] unsigned long fftLength,[in] float outSampleRate,[in] float overlapPercent);
 	HRESULT GetFrame([out][retval] Windows.Media.AudioFrame **result);
@@ -31,7 +31,7 @@ namespace AudioAnalyzer
 	runtimeclass AnalyzerEffect
 	{
 		[default]interface Windows.Media.IMediaExtension;
-		interface IAudioAnalyzer;
+		interface IVisualizationSource;
 	}
 
 }
