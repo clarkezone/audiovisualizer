@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "AudioAnalyzer.h"
+#include "MftAnalyzer.h"
 #include "xdsp.h"
 #include <cfloat>
 #include <windows.media.core.interop.h>
@@ -29,8 +29,6 @@ namespace AudioAnalyzer
 	{ 0xf4d65f78, 0xcf5a, 0x4949,{ 0x88, 0xc1, 0x76, 0xda, 0xd6, 0x5, 0xc3, 0x13 } };
 
 	const size_t CircleBufferSize = 960000;	// 10 sec worth of stereo audio at 48k
-
-	const wchar_t *SourcePropertyName = L"Source";
 
 	CAnalyzerEffect::CAnalyzerEffect() :
 		m_InputBuffer(CircleBufferSize),
@@ -117,25 +115,15 @@ namespace AudioAnalyzer
 		return S_OK;
 	}
 
-	STDMETHODIMP CAnalyzerEffect::SetLinearFScale(unsigned long outputElements)
+	STDMETHODIMP CAnalyzerEffect::GetData(ABI::AudioAnalyzer::IVisualizationData **ppData)
 	{
-		if (m_FftLength == 0)
-			return E_NOT_VALID_STATE;
-
-		if (outputElements > m_FftLength >> 1 || outputElements < 1)	// Output cannot be more elements than half fft (spectre length) and cannot be zero
-			return E_INVALIDARG;
-
-		auto lock = m_csOutputQueueAccess.Lock();
-
-		while (!m_AnalyzerOutput.empty())
-			m_AnalyzerOutput.pop();
-
-		m_bUseLogFScale = false;
-		m_OutElementsCount = outputElements;
-
+		ComPtr<CVisualizationData> spData;
+		HRESULT hr = MakeAndInitialize<CVisualizationData>(&spData);
+		spData.CopyTo(ppData);
 		return S_OK;
 	}
 
+	/*
 	STDMETHODIMP CAnalyzerEffect::GetFrame(ABI::Windows::Media::IAudioFrame ** ppAudioFrame)
 	{
 		using namespace Microsoft::WRL;
@@ -160,6 +148,12 @@ namespace AudioAnalyzer
 
 		ComPtr<IMFSample> spSample;
 
+#ifdef _TRACE
+		size_t queueSize = m_AnalyzerOutput.size();
+		ComPtr<IMFSample> spFront;
+		if (queueSize != 0)
+			spFront = m_AnalyzerOutput.front();
+#endif
 		hr = Analyzer_FFwdQueueTo(currentPosition, &spSample);
 
 		lock.Unlock();
@@ -167,6 +161,9 @@ namespace AudioAnalyzer
 		if (FAILED(hr))
 			return hr;
 
+#ifdef _TRACE
+		Diagnostics::Trace::Log_GetData(currentPosition, spSample.Get(), spFront.Get(), queueSize, hr);
+#endif
 		// Position not found in the queue
 		if (hr != S_OK || spSample == nullptr)
 		{
@@ -190,52 +187,7 @@ namespace AudioAnalyzer
 		return hr;
 
 	}
-
-	STDMETHODIMP CAnalyzerEffect::get_IsLogFrequencyScale(boolean * pbIsLogFScale)
-	{
-		if (pbIsLogFScale == nullptr)
-			return E_INVALIDARG;
-		*pbIsLogFScale = false;
-		return S_OK;
-	}
-
-	STDMETHODIMP CAnalyzerEffect::get_LowFrequency(float * pfLow)
-	{
-		if (pfLow == nullptr)
-			return E_INVALIDARG;
-		*pfLow = 0.0f;
-		return S_OK;
-	}
-
-	STDMETHODIMP CAnalyzerEffect::get_HighFrequency(float * pfHigh)
-	{
-		if (pfHigh == nullptr)
-			return E_INVALIDARG;
-		*pfHigh = float(m_FramesPerSecond) / 2;
-		return S_OK;
-	}
-
-	STDMETHODIMP CAnalyzerEffect::get_OutputElementsCount(unsigned long * pOutElements)
-	{
-		if (pOutElements == nullptr)
-			return E_INVALIDARG;
-		*pOutElements = (unsigned long) m_OutElementsCount;
-		return S_OK;
-	}
-
-	STDMETHODIMP CAnalyzerEffect::get_IsLogAmplitudeScale(boolean * pbIsLogAmpScale)
-	{
-		if (pbIsLogAmpScale == nullptr)
-			return E_INVALIDARG;
-		*pbIsLogAmpScale = m_bUseLogAmpScale;
-		return S_OK;
-	}
-
-	STDMETHODIMP CAnalyzerEffect::put_IsLogAmplitudeScale(boolean bIsLogAmpScale)
-	{
-		m_bUseLogAmpScale = bIsLogAmpScale;
-		return S_OK;
-	}
+	*/
 
 	STDMETHODIMP CAnalyzerEffect::get_IsSuspended(boolean * pbIsSuspended)
 	{
@@ -583,11 +535,7 @@ namespace AudioAnalyzer
 		if ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0)
 		{
 			m_spOutputType = pType;
-			HRESULT hr = Analyzer_SetMediaType(pType);	// Using MFT output type to configure analyzer
-#ifdef _TRACE
-			Diagnostics::Trace::Log_SetMediaType(pType, hr);
-#endif
-			return hr;
+			return Analyzer_SetMediaType(pType);	// Using MFT output type to configure analyzer
 		}
 		return S_OK;
 	}
@@ -884,15 +832,18 @@ namespace AudioAnalyzer
 		m_FramesPerSecond = 0;
 		HRESULT hr = pType->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, &m_FramesPerSecond);
 		if (FAILED(hr))
-			return hr;
+			goto exit;
 		m_nChannels = 0;
 		hr = pType->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &m_nChannels);
 		if (FAILED(hr))
-			return hr;
+			goto exit;
 
 		if (m_FftLength != 0)	// If FFT has been configured, then reconfigure analyzer as input type has changed
 			hr = Analyzer_Initialize();
-
+	exit:
+#ifdef _TRACE
+		Diagnostics::Trace::Log_SetMediaType(pType, hr);
+#endif
 		return hr;
 	}
 
@@ -926,6 +877,10 @@ namespace AudioAnalyzer
 		// Configure the buffer
 		m_InputBuffer.SetFrameSize(m_nChannels);
 		m_InputBuffer.Configure(m_StepTotalFrames, m_StepFrameOverlap);
+
+#ifdef _TRACE
+		Diagnostics::Trace::Log_Initialize(m_FftLength,m_StepTotalFrames,m_StepFrameOverlap);
+#endif
 		return S_OK;
 	}
 
@@ -971,6 +926,10 @@ namespace AudioAnalyzer
 		if (m_FftLength == 0)
 			return E_NOT_VALID_STATE;
 
+#ifdef _TRACE
+		Diagnostics::Trace::Log_ProcessSample(pSample);
+#endif
+
 		// Allow processing after a reset event. No effect is processing is in an allowed state
 		SetEvent(m_hResetWorkQueue);
 
@@ -981,7 +940,11 @@ namespace AudioAnalyzer
 			hr = pSample->GetSampleTime(&sampleTime);
 			if (FAILED(hr))
 				return hr;
-			m_InputBuffer.SetPosition(time_to_samples(sampleTime));
+			long position = time_to_frames(sampleTime);
+			m_InputBuffer.SetPosition(position);
+#ifdef _TRACE
+			Diagnostics::Trace::Log_SetInputPosition(position);
+#endif
 		}
 
 		ComPtr<IMFMediaBuffer> spBuffer;
@@ -1047,7 +1010,11 @@ namespace AudioAnalyzer
 		{
 			// Manage queue size
 			Analyzer_CompactOutputQueue();
-			m_AnalyzerOutput.push(spSample);
+			// TODO: Push sample
+			// m_AnalyzerOutput.push(spSample);
+#ifdef _TRACE
+			Diagnostics::Trace::Log_OutputQueuePush(m_AnalyzerOutput.size());
+#endif
 		}
 
 		if (hr != S_OK || dwWaitResult != WAIT_OBJECT_0 || m_bIsSuspended)
@@ -1070,7 +1037,7 @@ namespace AudioAnalyzer
 		if (FAILED(hr))
 			return S_FALSE;
 
-		*pPosition = samples_to_time(currentPosition);
+		*pPosition = frames_to_time(currentPosition);
 
 		return S_OK;
 	}
@@ -1079,6 +1046,7 @@ namespace AudioAnalyzer
 	// The results are placed back into pData
 	void CAnalyzerEffect::Analyzer_CalculateFft(DirectX::XMVECTOR * pData, DirectX::XMVECTOR * pBuffers)
 	{
+		Diagnostics::Trace::Log_LineNumber(__LINE__);
 		using namespace DirectX;
 		using namespace XDSP;
 		size_t fftVectorLength = m_FftLength >> 2;
@@ -1087,7 +1055,9 @@ namespace AudioAnalyzer
 
 		memset(pImag, 0, sizeof(float)*m_FftLength);	// Imaginary values are 0 for input
 
+		Diagnostics::Trace::Log_LineNumber(__LINE__);
 		FFT(pData, pImag, m_pFftUnityTable, m_FftLength);
+		Diagnostics::Trace::Log_LineNumber(__LINE__);
 		FFTUnswizzle(pRealUnswizzled, pData, m_FftLengthLog2);
 		FFTUnswizzle(pData, pImag, m_FftLengthLog2); // Use input data for temporary buffer for reordered imaginary data
 
@@ -1118,14 +1088,21 @@ namespace AudioAnalyzer
 
 		auto lock = m_csAnalyzerConfig.Lock();	// Lock object for config changes
 
+#ifdef _TRACE
+		ComPtr<ABI::Windows::Foundation::Diagnostics::ILoggingActivity> spActivity;
+		Diagnostics::Trace::Log_StartCalculate(&spActivity,m_InputBuffer.GetPosition(),m_InputBuffer.GetLength());
+		Diagnostics::CLogActivityHelper activity(spActivity.Get());
+#endif
+
 		REFERENCE_TIME hnsDataTime = 0;
 		HRESULT hr = Analyzer_GetFromBuffer((float *)m_pFftReal, &hnsDataTime);
 		if (hr != S_OK)
 			return hr;
-
-		// Create output media sample
+#ifdef _TRACE
+		Diagnostics::Trace::Log_GetFromBuffer(hnsDataTime);
+#endif
+			// Create output media sample
 		ComPtr<IMFMediaBuffer> spBuffer;
-
 		// Create aligned buffer for vector math + 16 bytes for 8 floats for RMS values
 		// In linear output length is going to be 1/2 of the FFT length
 		size_t vOutputLength = (m_OutElementsCount + 3) >> 2;		// To use vector math allocate buffer for each channel which is rounded up to the next 16 byte boundary
@@ -1210,6 +1187,10 @@ namespace AudioAnalyzer
 		Analyzer_Reset();
 		Analyzer_FlushOutputQueue();
 		m_spSample.Reset();
+
+#ifdef _TRACE
+		Diagnostics::Trace::Log_Flush();
+#endif
 		return S_OK;
 	}
 
@@ -1251,13 +1232,13 @@ namespace AudioAnalyzer
 	HRESULT CAnalyzerEffect::Analyzer_CompactOutputQueue()
 	{
 		Analyzer_FFwdQueueTo(GetPresentationTime(), nullptr);
-
+		/* TODO 
 		// Now manage queue size - remove items until the size is below limit
 		while (m_AnalyzerOutput.size() > cMaxOutputQueueSize)
 		{
 			m_AnalyzerOutput.front() = nullptr;
 			m_AnalyzerOutput.pop();
-		}
+		}*/
 		return S_OK;
 	}
 
@@ -1265,11 +1246,12 @@ namespace AudioAnalyzer
 	{
 		auto lock = m_csOutputQueueAccess.Lock();
 
+		/* TODO
 		while (!m_AnalyzerOutput.empty())
 		{
 			m_AnalyzerOutput.front() = nullptr;
 			m_AnalyzerOutput.pop();
-		}
+		}*/
 		return S_OK;
 	}
 
@@ -1293,11 +1275,11 @@ namespace AudioAnalyzer
 		while (!m_AnalyzerOutput.empty())
 		{
 			REFERENCE_TIME sampleTime = 0, sampleDuration = 0;
-			HRESULT hr = m_AnalyzerOutput.front()->GetSampleTime(&sampleTime);
+			HRESULT hr = S_OK; // TODO: m_AnalyzerOutput.front()->GetSampleTime(&sampleTime);
 			if (FAILED(hr))
 				return hr;
 
-			hr = m_AnalyzerOutput.front()->GetSampleDuration(&sampleDuration);
+			hr = S_OK; // TODO: m_AnalyzerOutput.front()->GetSampleDuration(&sampleDuration);
 			if (FAILED(hr))
 				return hr;
 
@@ -1309,8 +1291,9 @@ namespace AudioAnalyzer
 			// Add 5uS (about half sample time @96k) to avoid int time math rounding errors
 			if (position <= sampleDuration + sampleTime + 50L)
 			{
-				if (ppSample != nullptr)	// If sample is requested, return the sample found
-					m_AnalyzerOutput.front().CopyTo(ppSample);
+				// TODO:
+				/* if (ppSample != nullptr)	// If sample is requested, return the sample found
+					m_AnalyzerOutput.front().CopyTo(ppSample);*/
 				return S_OK;
 			}
 			else
@@ -1320,8 +1303,9 @@ namespace AudioAnalyzer
 					return S_FALSE;
 				}
 				// Current position is after the item in the queue - remove and continue searching
-				m_AnalyzerOutput.front() = nullptr; // Dereference the pointer
-				m_AnalyzerOutput.pop();
+				// TODO:
+				//m_AnalyzerOutput.front() = nullptr; // Dereference the pointer
+				//m_AnalyzerOutput.pop();
 			}
 		}
 		return S_FALSE;
@@ -1354,7 +1338,7 @@ namespace AudioAnalyzer
 
 		boolean bIsReplaced;
 		IInspectable *pObj = reinterpret_cast<IInspectable *>(this);
-		hr = spMap->Insert(HStringReference(SourcePropertyName).Get(), pObj, &bIsReplaced);
+		hr = spMap->Insert(HStringReference(MFT_ANALYZER_PROPERTYSET_NAME).Get(), pObj, &bIsReplaced);
 		if (FAILED(hr))
 			return hr;
 

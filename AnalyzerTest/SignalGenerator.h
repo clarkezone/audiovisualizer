@@ -52,7 +52,7 @@ namespace AnalyzerTest
 			}
 
 			hr = buffer->Unlock();
-			hr = buffer->SetCurrentLength(samplesRequested * sizeof(float) * m_Channels);
+			hr = buffer->SetCurrentLength((DWORD)(samplesRequested * sizeof(float) * m_Channels));
 			hr = sample->AddBuffer(buffer.Get());
 			
 			sample.CopyTo(ppSample);

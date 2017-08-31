@@ -201,15 +201,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="AudioAnalyzer.h" />
+    <ClInclude Include="AsyncOperation.h" />
+    <ClInclude Include="MftAnalyzer.h" />
+    <ClInclude Include="ErrorHandling.h" />
+    <ClInclude Include="LifespanTracker.h" />
+    <ClInclude Include="Nullable.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ring_buffer.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="trace.h" />
+    <ClInclude Include="BaseVisualizer.h" />
+    <ClInclude Include="Utilities.h" />
+    <ClInclude Include="VisualizationData.h" />
+    <ClInclude Include="VisualizationDataStatics.h" />
+    <ClInclude Include="WinStringBuilder.h" />
+    <ClInclude Include="WinStringWrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="AudioAnalyzer.cpp" />
+    <ClCompile Include="MftAnalyzer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -219,6 +229,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Trace.cpp" />
+    <ClCompile Include="BaseVisualizer.cpp" />
+    <ClCompile Include="VisualizationData.cpp" />
+    <ClCompile Include="VisualizationDataStatics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="AudioAnalyzer.idl" />

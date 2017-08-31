@@ -74,13 +74,13 @@ namespace VisualizerPlayer
 
         private void CanvasAnimatedControl_CreateResources(Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.CanvasCreateResourcesEventArgs args)
         {
-
         }
 
         private void CanvasAnimatedControl_Draw(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedDrawEventArgs args)
         {
             if (m_VisualizationSource != null)
             {
+                /*
                 var frame = m_VisualizationSource.GetFrame();
                 if (frame != null)
                 {
@@ -109,7 +109,7 @@ namespace VisualizerPlayer
                     }
                     );
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                }
+                }*/
             }
         }
 
@@ -121,9 +121,9 @@ namespace VisualizerPlayer
 
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            m_VisualizationSource = await CreateAnalyzerAsync(mePlayer);
+            m_VisualizationSource = await AudioAnalyzer.VisualizationData.CreateVisualizationSourceAsync(mePlayer);
             m_VisualizationSource.Configure(4096, 60, 0.5f);
-            m_VisualizationSource.SetLinearFScale(100);
+            visualizer.Source = m_VisualizationSource;
         }
 
         private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
@@ -134,6 +134,10 @@ namespace VisualizerPlayer
         }
 
         private void ToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void visualizer_Draw(AudioAnalyzer.IVisualizer sender, AudioAnalyzer.VisualizerDrawEventArgs args)
         {
 
         }

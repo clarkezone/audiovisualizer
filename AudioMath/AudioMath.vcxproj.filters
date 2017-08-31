@@ -10,11 +10,14 @@
     <ClCompile Include="AudioMath.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="AudioBuffer.cpp" />
+    <ClCompile Include="AudioAnalyzer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioMath.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="AudioBuffer.h" />
+    <ClInclude Include="AudioAnalyzer.h" />
+    <ClInclude Include="XDSP.h" />
   </ItemGroup>
 </Project>

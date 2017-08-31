@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <WindowsPerformanceRecorder Version="1.0">
   <Profiles>
-    <EventCollector Id="EventCollector_AudioVisualizer" Name="MyEventSourceCollector">
+    <EventCollector Id="EventCollector_AudioAnalyzer" Name="MyEventSourceCollector">
       <BufferSize Value="1024" />
       <Buffers Value="200" />
     </EventCollector>
@@ -30,7 +30,7 @@
 
     <Profile Id="MF.Verbose.File" Name="MF" Description="Media Foundation" LoggingMode="File" DetailLevel="Verbose">
       <Collectors>
-        <EventCollectorId Value="EventCollector_AudioVisualizer">
+        <EventCollectorId Value="EventCollector_AudioAnalyzer">
           <EventProviders>
             <EventProviderId Value="MF" />
             <EventProviderId Value="MediaEngine"/>
@@ -45,7 +45,7 @@
 
     <Profile Id="MicrosoftAudio.Verbose.File" Name="MicrosoftAudio" Description="Audio events" LoggingMode="File" DetailLevel="Verbose">
       <Collectors>
-        <EventCollectorId Value="EventCollector_AudioVisualizer">
+        <EventCollectorId Value="EventCollector_AudioAnalyzer">
           <EventProviders>
             <EventProviderId Value="MicrosoftAudio" />
             <EventProviderId Value="AudioGraph"/>
@@ -58,16 +58,16 @@
     <Profile Id="MicrosoftAudio.Verbose.Memory" Name="MicrosoftAudio" Description="Audio events" Base="MicrosoftAudio.Verbose.File" LoggingMode="Memory" DetailLevel="Verbose" />
 
 
-    <Profile Id="AudioVisualizerMFT.Verbose.File" Name="AudioVisualizerMFT" Description="MFT Filter trace" LoggingMode="File" DetailLevel="Verbose">
+    <Profile Id="AudioAnalyzerMFT.Verbose.File" Name="AudioAnalyzerMFT" Description="AudioAnalyzer Trace" LoggingMode="File" DetailLevel="Verbose">
       <Collectors>
-        <EventCollectorId Value="EventCollector_AudioVisualizer">
+        <EventCollectorId Value="EventCollector_AudioAnalyzer">
           <EventProviders>
             <EventProviderId Value="UIEventSource" />
           </EventProviders>
         </EventCollectorId>
       </Collectors>
     </Profile>
-    <Profile Id="AudioVisualizerMFT.Verbose.Memory" Name="AudioVisualizerMFT" Description="MFT Filter trace" Base="AudioVisualizerMFT.Verbose.File" LoggingMode="Memory" DetailLevel="Verbose" />
+    <Profile Id="AudioAnalyzerMFT.Verbose.Memory" Name="AudioAnalyzerMFT" Description="AudioAnalyzer Trace" Base="AudioAnalyzerMFT.Verbose.File" LoggingMode="Memory" DetailLevel="Verbose" />
    
   </Profiles>
 </WindowsPerformanceRecorder>

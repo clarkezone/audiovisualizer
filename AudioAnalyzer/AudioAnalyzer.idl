@@ -1,37 +1,92 @@
-import "Windows.Media.idl";
 import "inspectable.idl";
-import "AsyncInfo.idl";
 import "EventToken.idl";
-import "Windows.Foundation.idl";
+import "AsyncInfo.idl";
+import "Windows.Foundation.idl"; 
+import "Windows.Media.idl";
+import "Windows.UI.Xaml.Controls.idl";
 
 #include <sdkddkver.h>
 
 namespace AudioAnalyzer
 {
-	[uuid(B74989FE-1436-4179-92B6-E06B540E0C7E)]
-	[version(NTDDI_WIN10)]
-	interface IVisualizationSource : IInspectable {
+	#define COMPONENT_VERSION 1.0
 
-	HRESULT Configure([in] unsigned long fftLength,[in] float outSampleRate,[in] float overlapPercent);
-	HRESULT GetFrame([out][retval] Windows.Media.AudioFrame **result);
-	HRESULT SetLinearFScale([in] unsigned long outputElements);
-	HRESULT SetLogFScale([in] float lowFrequency, [in] float highFrequency, [in] unsigned long numberOfBins);
-	[propget] HRESULT FrequencyStep([out][retval] float *result);
-	[propget] HRESULT IsLogFrequencyScale([out][retval] boolean *result);
-	[propget] HRESULT LowFrequency([out][retval] float *result);
-	[propget] HRESULT HighFrequency([out][retval] float *result);
-	[propget] HRESULT OutputElementsCount([out][retval] unsigned long *result);
-	[propget] HRESULT IsLogAmplitudeScale([out][retval] boolean *result);
-	[propput] HRESULT IsLogAmplitudeScale(boolean value);
-	[propget] HRESULT IsSuspended([out][retval] boolean *bIsSuspended);
-	[propput] HRESULT IsSuspended(boolean bIsSuspended);
+	interface IVisualizationData;
+	interface IVisualizationSource;
+	runtimeclass VisualizationData;
+
+	declare{
+		interface Windows.Foundation.IAsyncOperation<IVisualizationSource *>;
+	}
+
+	[uuid(B7589126-33C4-43E8-9D8E-BCF3F3DCE802)]
+	[exclusiveto(AudioAnalyzer.VisualizationData)]
+	[version(COMPONENT_VERSION)]
+	interface IVisualizationDataStatics : IInspectable
+	{
+		HRESULT CreateVisualizationSourceAsync([in] IInspectable *pElement, [out, retval] Windows.Foundation.IAsyncOperation<IVisualizationSource *> **value);
+	}
+
+	[uuid(E4C11BE5-112E-49AD-A565-EE713089C447)]
+	[version(COMPONENT_VERSION)]
+	interface IVisualizationData : IInspectable {
+		[propget] HRESULT AudioChannels([out, retval] unsigned *result);
+		[propget] HRESULT RMS([out] unsigned* rmsDataSize, [out][retval][size_is(, *rmsDataSize)] float** pixelData);
+		[propget] HRESULT Time([out, retval] Windows.Foundation.IReference<Windows.Foundation.TimeSpan> **pTime);
 	};
 
-	[version(NTDDI_WIN10)]
+	[static(AudioAnalyzer.IVisualizationDataStatics, COMPONENT_VERSION)]
+	[version(COMPONENT_VERSION)]
+	runtimeclass VisualizationData
+	{
+		[default] interface IVisualizationData;
+	}
+
+	[uuid(B74989FE-1436-4179-92B6-E06B540E0C7E)]
+	[version(COMPONENT_VERSION)]
+	interface IVisualizationSource : IInspectable {
+		HRESULT Configure([in] unsigned long fftLength,[in] float outSampleRate,[in] float overlapPercent);
+		HRESULT GetData([out][retval] IVisualizationData **result);
+		[propget] HRESULT IsSuspended([out][retval] boolean *bIsSuspended);
+		[propput] HRESULT IsSuspended(boolean bIsSuspended);
+	};
+
+	[version(COMPONENT_VERSION)]
 	runtimeclass AnalyzerEffect
 	{
 		[default]interface Windows.Media.IMediaExtension;
 		interface IVisualizationSource;
 	}
 
+		[uuid(62C7FB4D-4712-4A49-BF0F-597AC7079F3A)]
+	[version(COMPONENT_VERSION)]
+	interface IVisualizerDrawEventArgs : IInspectable
+	{
+		[propget] HRESULT Data([out][retval] IVisualizationData **pData);
+	}
+
+	[version(COMPONENT_VERSION)]
+	runtimeclass VisualizerDrawEventArgs
+	{
+		[default] interface IVisualizerDrawEventArgs;
+	}
+
+	[uuid(D3C979CE-1D6D-4507-B7CE-5A2E97F672FC)]
+	[version(COMPONENT_VERSION)]
+	interface IVisualizer : IInspectable
+	{
+		[eventadd] HRESULT Draw(
+			[in] Windows.Foundation.TypedEventHandler<IVisualizer*, VisualizerDrawEventArgs*>* value,
+			[out, retval] EventRegistrationToken* token);
+		[eventremove] HRESULT Draw([in] EventRegistrationToken token);
+
+		[propget] HRESULT Source([out][retval] IVisualizationSource **pData);
+		[propput] HRESULT Source([in] IVisualizationSource *pData);
+	};
+
+	[version(COMPONENT_VERSION), activatable(COMPONENT_VERSION), marshaling_behavior(agile), threading(both)]
+	runtimeclass BaseVisualizer : Windows.UI.Xaml.Controls.Control
+	{
+		[default] interface IVisualizer;
+	}
 }

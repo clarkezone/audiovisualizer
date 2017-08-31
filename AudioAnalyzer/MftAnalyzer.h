@@ -3,9 +3,12 @@
 #include <DirectXMath.h>
 #include <queue>
 #include <AudioBuffer.h>
+#include "VisualizationData.h"
 
 namespace AudioAnalyzer
 {
+#define MFT_ANALYZER_PROPERTYSET_NAME L"Source"
+
 	class CAnalyzerEffect
 		: public Microsoft::WRL::RuntimeClass<
 		Microsoft::WRL::RuntimeClassFlags< Microsoft::WRL::RuntimeClassType::WinRtClassicComMix >,
@@ -43,7 +46,7 @@ namespace AudioAnalyzer
 
 		Microsoft::WRL::Wrappers::CriticalSection m_csAnalyzerConfig;	// Critical section to lock analyzer configuration changing
 		Microsoft::WRL::Wrappers::CriticalSection m_csOutputQueueAccess;
-		std::queue<Microsoft::WRL::ComPtr<IMFSample>> m_AnalyzerOutput;
+		std::queue<CVisualizationData> m_AnalyzerOutput;
 
 		size_t m_StepFrameCount;	// How many samples does calculate consume each step
 		size_t m_StepFrameOverlap;
@@ -88,6 +91,7 @@ namespace AudioAnalyzer
 		void Analyzer_ConvertToDb(DirectX::XMVECTOR *pvData, size_t nElements);	// Converts input values to db range
 
 		inline long time_to_samples(REFERENCE_TIME time) const { return m_nChannels * (long)((time * m_FramesPerSecond + 5000000L) / 10000000L); }
+		inline long time_to_frames(REFERENCE_TIME time) const { return (long)((time * m_FramesPerSecond + 5000000L) / 10000000L); }
 		inline long time_to_frames(float time) const { return (long)((((REFERENCE_TIME)(1e7 * time))  * m_FramesPerSecond + 5000000L) / 10000000L); }
 		inline REFERENCE_TIME frames_to_time(long frames) { return 10000000L * (long long)frames / m_FramesPerSecond; }
 		inline REFERENCE_TIME samples_to_time(long samples) { return 10000000L * (long long)(samples / m_nChannels) / m_FramesPerSecond; }
@@ -163,34 +167,7 @@ namespace AudioAnalyzer
 		HRESULT RuntimeClassInitialize();
 #pragma region IAudioAnalyzer
 		STDMETHODIMP Configure(unsigned long fftLength, float outputFps, float inputOverlap);
-		STDMETHODIMP SetLogFScale(float fLow, float fHigh, unsigned long outputElements)	// TODO
-		{
-			return E_NOTIMPL;
-		}
-		STDMETHODIMP SetLinearFScale(unsigned long outputElements);
-		STDMETHODIMP GetFrame(ABI::Windows::Media::IAudioFrame **ppAudioFrame);
-		STDMETHODIMP get_FrequencyStep(float *pResult)
-		{
-			if (pResult == nullptr)
-				return E_FAIL;
-
-			if (m_FramesPerSecond == 0 || m_FftLength == 0 || m_OutElementsCount == 0)
-			{
-				*pResult = 0.0f;
-			}
-			else
-			{
-				*pResult = 0.5f * (float) m_FramesPerSecond / (float) m_OutElementsCount;
-
-			}
-			return S_OK;
-		}
-		STDMETHODIMP get_IsLogFrequencyScale(boolean *pbIsLogFScale);
-		STDMETHODIMP get_LowFrequency(float *pfLow);
-		STDMETHODIMP get_HighFrequency(float *pfHigh);
-		STDMETHODIMP get_OutputElementsCount(unsigned long *pOutElements);
-		STDMETHODIMP get_IsLogAmplitudeScale(boolean *pbIsLogAmpScale);
-		STDMETHODIMP put_IsLogAmplitudeScale(boolean bIsLogAmpScale);
+		STDMETHODIMP GetData(ABI::AudioAnalyzer::IVisualizationData **pData);
 		STDMETHODIMP get_IsSuspended(boolean *pbIsSuspended);
 		STDMETHODIMP put_IsSuspended(boolean bIsSuspended);
 

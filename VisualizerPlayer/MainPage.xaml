@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:win2d="using:Microsoft.Graphics.Canvas.UI.Xaml"
+    xmlns:a="using:AudioAnalyzer"
     mc:Ignorable="d" Loaded="Page_Loaded">
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
@@ -16,10 +17,10 @@
         <CommandBar Grid.Row="0">
             <AppBarButton Icon="OpenFile" Click="OpenFile_Click"></AppBarButton>
         </CommandBar>
+        <a:BaseVisualizer x:Name="visualizer" Draw="visualizer_Draw"></a:BaseVisualizer>
         <win2d:CanvasAnimatedControl Grid.Row="1" HorizontalAlignment="Stretch"  VerticalAlignment="Bottom" Height="100" CreateResources="CanvasAnimatedControl_CreateResources" Draw="CanvasAnimatedControl_Draw" SizeChanged="CanvasAnimatedControl_SizeChanged">
 
         </win2d:CanvasAnimatedControl>
-
         <MediaElement x:Name="mePlayer" Grid.Row="2" AudioCategory="Media"
                       AreTransportControlsEnabled="True">
             
