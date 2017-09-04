@@ -13,4 +13,8 @@
 #include <mftransform.h>
 #include <mfidl.h>
 #include <mferror.h>
-
+#include <windows.foundation.h>
+#include <windows.ui.xaml.h>
+#include <windows.ui.xaml.controls.h>
+#include <windows.ui.composition.h>
+#include <windows.ui.xaml.hosting.h>

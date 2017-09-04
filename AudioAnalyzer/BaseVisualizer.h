@@ -5,16 +5,17 @@
 
 namespace AudioAnalyzer
 {
-	class CVisualizerDrawEventArgs : public Microsoft::WRL::RuntimeClass<	
+	class CVisualizerDrawEventArgs : public Microsoft::WRL::RuntimeClass<
 		ABI::AudioAnalyzer::IVisualizerDrawEventArgs, 
-		Microsoft::WRL::ComposableBase<>>
+		Microsoft::WRL::ComposableBase<>>, public Microsoft::WRL::Implements<ABI::Windows::UI::Xaml::IFrameworkElement>
 	{
 
 	};
 
 	class CBaseVisualizer : public Microsoft::WRL::RuntimeClass<
-		Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::RuntimeClassType::WinRt>,
-		ABI::AudioAnalyzer::IVisualizer>	
+		Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::RuntimeClassType::WinRt>,		
+		ABI::AudioAnalyzer::IVisualizer,
+		Microsoft::WRL::ComposableBase<>>	
 	{
 		InspectableClass(RuntimeClass_AudioAnalyzer_BaseVisualizer, BaseTrust)
 
@@ -28,6 +29,12 @@ namespace AudioAnalyzer
 		Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::IContainerVisual> _rootVisual;
 
 		Microsoft::WRL::ComPtr<ABI::AudioAnalyzer::IVisualizationSource> _source;
+
+		Microsoft::WRL::ComPtr<IInspectable> _control;
+		Microsoft::WRL::ComPtr<ABI::Windows::UI::Xaml::IWindow> _window;
+		EventRegistrationToken _sizeChangedToken;
+
+		HRESULT OnSizeChanged(const ABI::Windows::Foundation::Size &size);
 
 	public:
 		CBaseVisualizer();

@@ -17,7 +17,9 @@
         <CommandBar Grid.Row="0">
             <AppBarButton Icon="OpenFile" Click="OpenFile_Click"></AppBarButton>
         </CommandBar>
-        <a:BaseVisualizer x:Name="visualizer" Draw="visualizer_Draw"></a:BaseVisualizer>
+        <Grid x:Name="container">
+            
+        </Grid>
         <win2d:CanvasAnimatedControl Grid.Row="1" HorizontalAlignment="Stretch"  VerticalAlignment="Bottom" Height="100" CreateResources="CanvasAnimatedControl_CreateResources" Draw="CanvasAnimatedControl_Draw" SizeChanged="CanvasAnimatedControl_SizeChanged">
 
         </win2d:CanvasAnimatedControl>

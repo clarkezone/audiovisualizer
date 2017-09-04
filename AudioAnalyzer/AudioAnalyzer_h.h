@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0622 */
 /* at Tue Jan 19 05:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioAnalyzer.idl-c448ea38:
+/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioAnalyzer.idl-1e11c99a:
     Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -281,63 +281,6 @@ extern "C" {
 
 #ifdef __cplusplus
 namespace ABI {
-namespace Windows {
-namespace Foundation {
-struct TimeSpan;
-} /*Foundation*/
-} /*Windows*/
-}
-#endif
-
-
-/* interface __MIDL_itf_AudioAnalyzer_0000_0002 */
-/* [local] */ 
-
-
-
-
-
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0002_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0002_v0_0_s_ifspec;
-
-/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5376 */
-
-
-
-
-/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5376 */
-
-
-
-
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5376_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5376_v0_0_s_ifspec;
-
-/* interface __MIDL_itf_AudioAnalyzer_0000_0003 */
-/* [local] */ 
-
-#ifndef DEF___FIReference_1_Windows__CFoundation__CTimeSpan_USE
-#define DEF___FIReference_1_Windows__CFoundation__CTimeSpan_USE
-#if defined(__cplusplus) && !defined(RO_NO_TEMPLATE_NAME)
-} /*extern "C"*/ 
-namespace ABI { namespace Windows { namespace Foundation {
-template <>
-struct __declspec(uuid("604d0c4c-91de-5c2a-935f-362f13eaf800"))
-IReference<struct ABI::Windows::Foundation::TimeSpan> : IReference_impl<struct ABI::Windows::Foundation::TimeSpan> {
-static const wchar_t* z_get_rc_name_impl() {
-return L"Windows.Foundation.IReference`1<Windows.Foundation.TimeSpan>"; }
-};
-typedef IReference<struct ABI::Windows::Foundation::TimeSpan> __FIReference_1_Windows__CFoundation__CTimeSpan_t;
-#define ____FIReference_1_Windows__CFoundation__CTimeSpan_FWD_DEFINED__
-#define __FIReference_1_Windows__CFoundation__CTimeSpan ABI::Windows::Foundation::__FIReference_1_Windows__CFoundation__CTimeSpan_t
-
-/* ABI */ } /* Windows */ } /* Foundation */ }
-extern "C" {
-#endif //__cplusplus
-#endif /* DEF___FIReference_1_Windows__CFoundation__CTimeSpan_USE */
-
-#ifdef __cplusplus
-namespace ABI {
 namespace AudioAnalyzer {
 interface IVisualizer;
 } /*AudioAnalyzer*/
@@ -360,7 +303,7 @@ interface IVisualizerDrawEventArgs;
 #endif
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0003 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0002 */
 /* [local] */ 
 
 
@@ -368,23 +311,23 @@ interface IVisualizerDrawEventArgs;
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0003_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0003_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0002_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0002_v0_0_s_ifspec;
 
-/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5377 */
-
-
-
-
-/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5377 */
+/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5376 */
 
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5377_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5377_v0_0_s_ifspec;
+/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5376 */
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0004 */
+
+
+
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5376_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5376_v0_0_s_ifspec;
+
+/* interface __MIDL_itf_AudioAnalyzer_0000_0003 */
 /* [local] */ 
 
 #ifndef DEF___FITypedEventHandler_2_AudioAnalyzer__CIVisualizer_AudioAnalyzer__CVisualizerDrawEventArgs_USE
@@ -421,30 +364,30 @@ class VisualizationData;
 #endif
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0004 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0003 */
 /* [local] */ 
 
 
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0004_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0004_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0003_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0003_v0_0_s_ifspec;
 
-/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5378 */
-
-
-
-
-/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5378 */
+/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5377 */
 
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5378_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5378_v0_0_s_ifspec;
+/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5377 */
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0005 */
+
+
+
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5377_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5377_v0_0_s_ifspec;
+
+/* interface __MIDL_itf_AudioAnalyzer_0000_0004 */
 /* [local] */ 
 
 #ifndef DEF___FIAsyncOperationCompletedHandler_1_AudioAnalyzer__CIVisualizationSource
@@ -453,14 +396,14 @@ extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5378_v0_0_s_ifspec;
 
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0005 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0004 */
 /* [local] */ 
 
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0005_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0005_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0004_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0004_v0_0_s_ifspec;
 
 #ifndef ____FIAsyncOperationCompletedHandler_1_AudioAnalyzer__CIVisualizationSource_INTERFACE_DEFINED__
 #define ____FIAsyncOperationCompletedHandler_1_AudioAnalyzer__CIVisualizationSource_INTERFACE_DEFINED__
@@ -549,11 +492,40 @@ EXTERN_C const IID IID___FIAsyncOperationCompletedHandler_1_AudioAnalyzer__CIVis
 #endif 	/* ____FIAsyncOperationCompletedHandler_1_AudioAnalyzer__CIVisualizationSource_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0006 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0005 */
 /* [local] */ 
 
 #endif /* pinterface */
 #endif /* DEF___FIAsyncOperationCompletedHandler_1_AudioAnalyzer__CIVisualizationSource */
+
+
+/* interface __MIDL_itf_AudioAnalyzer_0000_0005 */
+/* [local] */ 
+
+
+
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0005_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0005_v0_0_s_ifspec;
+
+/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5378 */
+
+
+
+
+/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5378 */
+
+
+
+
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5378_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5378_v0_0_s_ifspec;
+
+/* interface __MIDL_itf_AudioAnalyzer_0000_0006 */
+/* [local] */ 
+
+#ifndef DEF___FIAsyncOperation_1_AudioAnalyzer__CIVisualizationSource
+#define DEF___FIAsyncOperation_1_AudioAnalyzer__CIVisualizationSource
+#if !defined(__cplusplus) || defined(RO_NO_TEMPLATE_NAME)
 
 
 /* interface __MIDL_itf_AudioAnalyzer_0000_0006 */
@@ -563,35 +535,6 @@ EXTERN_C const IID IID___FIAsyncOperationCompletedHandler_1_AudioAnalyzer__CIVis
 
 extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0006_v0_0_c_ifspec;
 extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0006_v0_0_s_ifspec;
-
-/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5379 */
-
-
-
-
-/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5379 */
-
-
-
-
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5379_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5379_v0_0_s_ifspec;
-
-/* interface __MIDL_itf_AudioAnalyzer_0000_0007 */
-/* [local] */ 
-
-#ifndef DEF___FIAsyncOperation_1_AudioAnalyzer__CIVisualizationSource
-#define DEF___FIAsyncOperation_1_AudioAnalyzer__CIVisualizationSource
-#if !defined(__cplusplus) || defined(RO_NO_TEMPLATE_NAME)
-
-
-/* interface __MIDL_itf_AudioAnalyzer_0000_0007 */
-/* [local] */ 
-
-
-
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0007_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0007_v0_0_s_ifspec;
 
 #ifndef ____FIAsyncOperation_1_AudioAnalyzer__CIVisualizationSource_INTERFACE_DEFINED__
 #define ____FIAsyncOperation_1_AudioAnalyzer__CIVisualizationSource_INTERFACE_DEFINED__
@@ -721,7 +664,7 @@ EXTERN_C const IID IID___FIAsyncOperation_1_AudioAnalyzer__CIVisualizationSource
 #endif 	/* ____FIAsyncOperation_1_AudioAnalyzer__CIVisualizationSource_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0008 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0007 */
 /* [local] */ 
 
 #endif /* pinterface */
@@ -731,13 +674,13 @@ extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioAn
 #endif /* !defined(____x_ABI_CAudioAnalyzer_CIVisualizationDataStatics_INTERFACE_DEFINED__) */
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0008 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0007 */
 /* [local] */ 
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0008_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0008_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0007_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0007_v0_0_s_ifspec;
 
 #ifndef ____x_ABI_CAudioAnalyzer_CIVisualizationDataStatics_INTERFACE_DEFINED__
 #define ____x_ABI_CAudioAnalyzer_CIVisualizationDataStatics_INTERFACE_DEFINED__
@@ -858,7 +801,7 @@ EXTERN_C const IID IID___x_ABI_CAudioAnalyzer_CIVisualizationDataStatics;
 #endif 	/* ____x_ABI_CAudioAnalyzer_CIVisualizationDataStatics_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0009 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0008 */
 /* [local] */ 
 
 #if !defined(____x_ABI_CAudioAnalyzer_CIVisualizationData_INTERFACE_DEFINED__)
@@ -866,13 +809,13 @@ extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioAn
 #endif /* !defined(____x_ABI_CAudioAnalyzer_CIVisualizationData_INTERFACE_DEFINED__) */
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0009 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0008 */
 /* [local] */ 
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0009_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0009_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0008_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0008_v0_0_s_ifspec;
 
 #ifndef ____x_ABI_CAudioAnalyzer_CIVisualizationData_INTERFACE_DEFINED__
 #define ____x_ABI_CAudioAnalyzer_CIVisualizationData_INTERFACE_DEFINED__
@@ -899,13 +842,6 @@ EXTERN_C const IID IID___x_ABI_CAudioAnalyzer_CIVisualizationData;
             public:
                 virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_AudioChannels( 
                     /* [out][retval] */ unsigned int *result) = 0;
-                
-                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_RMS( 
-                    /* [out] */ unsigned int *rmsDataSize,
-                    /* [out][retval][size_is][size_is] */ float **pixelData) = 0;
-                
-                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Time( 
-                    /* [out][retval] */ __FIReference_1_Windows__CFoundation__CTimeSpan **pTime) = 0;
                 
             };
 
@@ -951,15 +887,6 @@ EXTERN_C const IID IID___x_ABI_CAudioAnalyzer_CIVisualizationData;
             __x_ABI_CAudioAnalyzer_CIVisualizationData * This,
             /* [out][retval] */ unsigned int *result);
         
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_RMS )( 
-            __x_ABI_CAudioAnalyzer_CIVisualizationData * This,
-            /* [out] */ unsigned int *rmsDataSize,
-            /* [out][retval][size_is][size_is] */ float **pixelData);
-        
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Time )( 
-            __x_ABI_CAudioAnalyzer_CIVisualizationData * This,
-            /* [out][retval] */ __FIReference_1_Windows__CFoundation__CTimeSpan **pTime);
-        
         END_INTERFACE
     } __x_ABI_CAudioAnalyzer_CIVisualizationDataVtbl;
 
@@ -996,12 +923,6 @@ EXTERN_C const IID IID___x_ABI_CAudioAnalyzer_CIVisualizationData;
 #define __x_ABI_CAudioAnalyzer_CIVisualizationData_get_AudioChannels(This,result)	\
     ( (This)->lpVtbl -> get_AudioChannels(This,result) ) 
 
-#define __x_ABI_CAudioAnalyzer_CIVisualizationData_get_RMS(This,rmsDataSize,pixelData)	\
-    ( (This)->lpVtbl -> get_RMS(This,rmsDataSize,pixelData) ) 
-
-#define __x_ABI_CAudioAnalyzer_CIVisualizationData_get_Time(This,pTime)	\
-    ( (This)->lpVtbl -> get_Time(This,pTime) ) 
-
 #endif /* COBJMACROS */
 
 
@@ -1013,7 +934,7 @@ EXTERN_C const IID IID___x_ABI_CAudioAnalyzer_CIVisualizationData;
 #endif 	/* ____x_ABI_CAudioAnalyzer_CIVisualizationData_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0010 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0009 */
 /* [local] */ 
 
 #ifndef RUNTIMECLASS_AudioAnalyzer_VisualizationData_DEFINED
@@ -1025,13 +946,13 @@ extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioAn
 #endif /* !defined(____x_ABI_CAudioAnalyzer_CIVisualizationSource_INTERFACE_DEFINED__) */
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0010 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0009 */
 /* [local] */ 
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0010_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0010_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0009_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0009_v0_0_s_ifspec;
 
 #ifndef ____x_ABI_CAudioAnalyzer_CIVisualizationSource_INTERFACE_DEFINED__
 #define ____x_ABI_CAudioAnalyzer_CIVisualizationSource_INTERFACE_DEFINED__
@@ -1184,7 +1105,7 @@ EXTERN_C const IID IID___x_ABI_CAudioAnalyzer_CIVisualizationSource;
 #endif 	/* ____x_ABI_CAudioAnalyzer_CIVisualizationSource_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0011 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0010 */
 /* [local] */ 
 
 #ifdef __cplusplus
@@ -1204,14 +1125,14 @@ extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioAn
 #endif /* !defined(____x_ABI_CAudioAnalyzer_CIVisualizerDrawEventArgs_INTERFACE_DEFINED__) */
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0011 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0010 */
 /* [local] */ 
 
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0011_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0011_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0010_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0010_v0_0_s_ifspec;
 
 #ifndef ____x_ABI_CAudioAnalyzer_CIVisualizerDrawEventArgs_INTERFACE_DEFINED__
 #define ____x_ABI_CAudioAnalyzer_CIVisualizerDrawEventArgs_INTERFACE_DEFINED__
@@ -1330,13 +1251,42 @@ EXTERN_C const IID IID___x_ABI_CAudioAnalyzer_CIVisualizerDrawEventArgs;
 #endif 	/* ____x_ABI_CAudioAnalyzer_CIVisualizerDrawEventArgs_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0012 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0011 */
 /* [local] */ 
 
 #ifndef RUNTIMECLASS_AudioAnalyzer_VisualizerDrawEventArgs_DEFINED
 #define RUNTIMECLASS_AudioAnalyzer_VisualizerDrawEventArgs_DEFINED
 extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_AudioAnalyzer_VisualizerDrawEventArgs[] = L"AudioAnalyzer.VisualizerDrawEventArgs";
 #endif
+
+
+/* interface __MIDL_itf_AudioAnalyzer_0000_0011 */
+/* [local] */ 
+
+
+
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0011_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0011_v0_0_s_ifspec;
+
+/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5379 */
+
+
+
+
+/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5379 */
+
+
+
+
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5379_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5379_v0_0_s_ifspec;
+
+/* interface __MIDL_itf_AudioAnalyzer_0000_0012 */
+/* [local] */ 
+
+#ifndef DEF___FITypedEventHandler_2_AudioAnalyzer__CIVisualizer_AudioAnalyzer__CVisualizerDrawEventArgs
+#define DEF___FITypedEventHandler_2_AudioAnalyzer__CIVisualizer_AudioAnalyzer__CVisualizerDrawEventArgs
+#if !defined(__cplusplus) || defined(RO_NO_TEMPLATE_NAME)
 
 
 /* interface __MIDL_itf_AudioAnalyzer_0000_0012 */
@@ -1346,35 +1296,6 @@ extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_AudioAna
 
 extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0012_v0_0_c_ifspec;
 extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0012_v0_0_s_ifspec;
-
-/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5380 */
-
-
-
-
-/* interface __MIDL_itf_AudioAnalyzer2Eidl_0000_5380 */
-
-
-
-
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5380_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer2Eidl_0000_5380_v0_0_s_ifspec;
-
-/* interface __MIDL_itf_AudioAnalyzer_0000_0013 */
-/* [local] */ 
-
-#ifndef DEF___FITypedEventHandler_2_AudioAnalyzer__CIVisualizer_AudioAnalyzer__CVisualizerDrawEventArgs
-#define DEF___FITypedEventHandler_2_AudioAnalyzer__CIVisualizer_AudioAnalyzer__CVisualizerDrawEventArgs
-#if !defined(__cplusplus) || defined(RO_NO_TEMPLATE_NAME)
-
-
-/* interface __MIDL_itf_AudioAnalyzer_0000_0013 */
-/* [local] */ 
-
-
-
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0013_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0013_v0_0_s_ifspec;
 
 #ifndef ____FITypedEventHandler_2_AudioAnalyzer__CIVisualizer_AudioAnalyzer__CVisualizerDrawEventArgs_INTERFACE_DEFINED__
 #define ____FITypedEventHandler_2_AudioAnalyzer__CIVisualizer_AudioAnalyzer__CVisualizerDrawEventArgs_INTERFACE_DEFINED__
@@ -1463,7 +1384,7 @@ EXTERN_C const IID IID___FITypedEventHandler_2_AudioAnalyzer__CIVisualizer_Audio
 #endif 	/* ____FITypedEventHandler_2_AudioAnalyzer__CIVisualizer_AudioAnalyzer__CVisualizerDrawEventArgs_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0014 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0013 */
 /* [local] */ 
 
 #endif /* pinterface */
@@ -1473,13 +1394,13 @@ extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioAn
 #endif /* !defined(____x_ABI_CAudioAnalyzer_CIVisualizer_INTERFACE_DEFINED__) */
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0014 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0013 */
 /* [local] */ 
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0014_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0014_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0013_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0013_v0_0_s_ifspec;
 
 #ifndef ____x_ABI_CAudioAnalyzer_CIVisualizer_INTERFACE_DEFINED__
 #define ____x_ABI_CAudioAnalyzer_CIVisualizer_INTERFACE_DEFINED__
@@ -1630,7 +1551,7 @@ EXTERN_C const IID IID___x_ABI_CAudioAnalyzer_CIVisualizer;
 #endif 	/* ____x_ABI_CAudioAnalyzer_CIVisualizer_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0015 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0014 */
 /* [local] */ 
 
 #ifdef __cplusplus
@@ -1646,13 +1567,13 @@ extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_AudioAna
 #endif
 
 
-/* interface __MIDL_itf_AudioAnalyzer_0000_0015 */
+/* interface __MIDL_itf_AudioAnalyzer_0000_0014 */
 /* [local] */ 
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0015_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0015_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0014_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioAnalyzer_0000_0014_v0_0_s_ifspec;
 
 /* Additional Prototypes for ALL interfaces */
 

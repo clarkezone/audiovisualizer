@@ -7,6 +7,7 @@
 
 namespace AudioAnalyzer
 {
+	
 	class CVisualizationDataStatics : public Microsoft::WRL::ActivationFactory<ABI::AudioAnalyzer::IVisualizationDataStatics>
 	{
 		InspectableClassStatic(RuntimeClass_AudioAnalyzer_VisualizationData, BaseTrust);
@@ -73,6 +74,7 @@ namespace AudioAnalyzer
 		{
 			return GetOnComplete(handler);
 		}
+		
 	};
 }
 

@@ -19,8 +19,8 @@ namespace AudioAnalyzer
 		interface Windows.Foundation.IAsyncOperation<IVisualizationSource *>;
 	}
 
+	
 	[uuid(B7589126-33C4-43E8-9D8E-BCF3F3DCE802)]
-	[exclusiveto(AudioAnalyzer.VisualizationData)]
 	[version(COMPONENT_VERSION)]
 	interface IVisualizationDataStatics : IInspectable
 	{
@@ -31,8 +31,6 @@ namespace AudioAnalyzer
 	[version(COMPONENT_VERSION)]
 	interface IVisualizationData : IInspectable {
 		[propget] HRESULT AudioChannels([out, retval] unsigned *result);
-		[propget] HRESULT RMS([out] unsigned* rmsDataSize, [out][retval][size_is(, *rmsDataSize)] float** pixelData);
-		[propget] HRESULT Time([out, retval] Windows.Foundation.IReference<Windows.Foundation.TimeSpan> **pTime);
 	};
 
 	[static(AudioAnalyzer.IVisualizationDataStatics, COMPONENT_VERSION)]
@@ -82,7 +80,7 @@ namespace AudioAnalyzer
 
 		[propget] HRESULT Source([out][retval] IVisualizationSource **pData);
 		[propput] HRESULT Source([in] IVisualizationSource *pData);
-	};
+	}
 
 	[version(COMPONENT_VERSION), activatable(COMPONENT_VERSION), marshaling_behavior(agile), threading(both)]
 	runtimeclass BaseVisualizer : Windows.UI.Xaml.Controls.Control

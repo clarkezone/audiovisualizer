@@ -34,6 +34,7 @@
     <ClInclude Include="MftAnalyzer.h" />
     <ClInclude Include="BaseVisualizer.h" />
     <ClInclude Include="Utilities.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioAnalyzer.def" />
@@ -41,5 +42,10 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="AudioAnalyzer.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

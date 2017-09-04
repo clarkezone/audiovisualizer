@@ -123,7 +123,13 @@ namespace VisualizerPlayer
         {
             m_VisualizationSource = await AudioAnalyzer.VisualizationData.CreateVisualizationSourceAsync(mePlayer);
             m_VisualizationSource.Configure(4096, 60, 0.5f);
-            visualizer.Source = m_VisualizationSource;
+            // visualizer.Source = m_VisualizationSource;
+            AudioAnalyzer.BaseVisualizer v = new AudioAnalyzer.BaseVisualizer();
+            v.Source = m_VisualizationSource;
+            v.Width = 100;
+            container.Children.Add(v);
+            v.Width = 200;
+            v.Height = 100;
         }
 
         private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)

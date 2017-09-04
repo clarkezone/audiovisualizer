@@ -1,7 +1,6 @@
 #pragma once
-#include <wrl.h>
-#include "Nullable.h"
 #include "AudioAnalyzer_h.h"
+#include "Nullable.h"
 
 namespace AudioAnalyzer
 {
@@ -14,7 +13,7 @@ namespace AudioAnalyzer
 		REFERENCE_TIME _time;
 	public:
 		CVisualizationData();
-		HRESULT RuntimeClassInitialize();
+		//HRESULT RuntimeClassInitialize();
 
 
 		STDMETHODIMP get_AudioChannels(unsigned *pChannels)
