@@ -13,8 +13,8 @@ namespace AudioAnalyzer
 	};
 
 	class CBaseVisualizer : public Microsoft::WRL::RuntimeClass<
-		Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::RuntimeClassType::WinRt>,		
-		ABI::AudioAnalyzer::IVisualizer,
+		Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::RuntimeClassType::WinRt>,
+		Microsoft::WRL::Implements<ABI::AudioAnalyzer::IVisualizer>,
 		Microsoft::WRL::ComposableBase<>>	
 	{
 		InspectableClass(RuntimeClass_AudioAnalyzer_BaseVisualizer, BaseTrust)
@@ -61,6 +61,8 @@ namespace AudioAnalyzer
 			_source = pSource;
 			return S_OK;
 		}
+
+		Microsoft::WRL::ComPtr<IInspectable> GetComposableBase();
 	};
 }
 

@@ -66,6 +66,8 @@ namespace AudioAnalyzer
 		ComPtr<IControl> spInstance;
 		hr = spControlFactory->CreateInstance(this, &_control, &spInstance);
 
+		SetComposableBasePointers(_control.Get());
+
 		OutputDebugString(L"IIDs of this\n");
 		DumpInterfaces(this);
 		OutputDebugString(L"IIDs of control\n");

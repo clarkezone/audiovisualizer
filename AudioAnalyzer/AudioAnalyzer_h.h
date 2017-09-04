@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0622 */
 /* at Tue Jan 19 05:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioAnalyzer.idl-1e11c99a:
+/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioAnalyzer.idl-531a6a5d:
     Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
