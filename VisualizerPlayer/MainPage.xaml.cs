@@ -18,6 +18,7 @@ using System.Runtime.CompilerServices;
 using Windows.UI;
 using System.Threading;
 using System.Threading.Tasks;
+using AudioVisualizer;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -28,9 +29,8 @@ namespace VisualizerPlayer
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        AudioAnalyzer.IVisualizationSource m_VisualizationSource;
 
-
+        /*
         public async Task<AudioAnalyzer.IVisualizationSource> CreateAnalyzerAsync(MediaElement element)
         {
             var propSet = new PropertySet();
@@ -47,7 +47,7 @@ namespace VisualizerPlayer
 
             await Task.Run(() => { opComplete.Wait(); }); 
             return source; 
-        }
+        }*/
 
 
         public MainPage()
@@ -114,22 +114,23 @@ namespace VisualizerPlayer
         }
 
         Size m_VisualizationSize;
+        private IVisualizationSource m_VisualizationSource;
+
         private void CanvasAnimatedControl_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             m_VisualizationSize = e.NewSize;
         }
 
-        private async void Page_Loaded(object sender, RoutedEventArgs e)
+        private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            m_VisualizationSource = await AudioAnalyzer.VisualizationData.CreateVisualizationSourceAsync(mePlayer);
+            CreateVisualizer();
+        }
+
+        private async void CreateVisualizer()
+        {
+            m_VisualizationSource = await AudioVisualizer.VisualizationSource.CreateSourceFromMediaElementAsync(mePlayer);
             m_VisualizationSource.Configure(4096, 60, 0.5f);
-            // visualizer.Source = m_VisualizationSource;
-            AudioAnalyzer.BaseVisualizer v = new AudioAnalyzer.BaseVisualizer();
-            v.Source = m_VisualizationSource;
-            v.Width = 100;
-            container.Children.Add(v);
-            v.Width = 200;
-            v.Height = 100;
+            visualizer.Source = m_VisualizationSource;
         }
 
         private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
@@ -143,9 +144,9 @@ namespace VisualizerPlayer
         {
         }
 
-        private void visualizer_Draw(AudioAnalyzer.IVisualizer sender, AudioAnalyzer.VisualizerDrawEventArgs args)
+        private void visualizer_Draw(AudioVisualizer.IVisualizer sender, AudioVisualizer.VisualizerDrawEventArgs args)
         {
-
+            args.DrawingSession.DrawText("Hello", 10, 10, Colors.Gray);
         }
     }
 }

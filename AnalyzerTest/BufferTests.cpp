@@ -12,14 +12,16 @@ namespace AnalyzerTest
 	TEST_CLASS(Buffer)
 	{
 	private:
+		float _fNaN = std::numeric_limits<float>::quiet_NaN();
+
 		void ValidateOutputBuffer(const float *pExpected, const float *pActual)
 		{
 			for (size_t index = 0; index < 4; index++)
 			{
 				Assert::AreEqual(pExpected[index], pActual[index]);
 			}
-			Assert::IsTrue(_isnanf(pActual[4]));	// Detect buffer overruns
-			Assert::IsTrue(_isnanf(pActual[5]));	
+			Assert::AreEqual(_fNaN,pActual[4]);	// Detect buffer overruns
+			Assert::AreEqual(_fNaN, pActual[5]);	// Detect buffer overruns
 		}
 	public:
 		TEST_METHOD(AudioBuffer_ctor)
@@ -53,7 +55,7 @@ namespace AnalyzerTest
 			float output1[6];
 			for (size_t index = 0; index < sizeof(output1) / sizeof(float); index++)
 			{
-				output1[index] = nanf(nullptr);
+				output1[index] = _fNaN;
 			}
 
 			Assert::IsFalse(buffer.IsDataAvailable(),L"IsDataAvailable",LINE_INFO());
@@ -70,8 +72,8 @@ namespace AnalyzerTest
 			{
 				Assert::AreEqual(_ref1[index], output1[index]);
 			}
-			Assert::IsTrue(_isnanf(output1[4]));	// Detect buffer overruns
-			Assert::IsTrue(_isnanf(output1[5]));
+			Assert::AreEqual(_fNaN, output1[4]);	// Detect buffer overruns
+			Assert::AreEqual(_fNaN, output1[5]);	// Detect buffer overruns
 
 			hr = buffer.Add(testData + 2, 4);
 			Assert::IsTrue(SUCCEEDED(hr));
@@ -97,8 +99,8 @@ namespace AnalyzerTest
 			{
 				Assert::AreEqual(_ref2[index], output2[index]);
 			}
-			Assert::IsTrue(_isnanf(output2[6]));	// Detect buffer overruns
-			Assert::IsTrue(_isnanf(output2[7]));
+			Assert::AreEqual(_fNaN, output2[6]);	// Detect buffer overruns
+			Assert::AreEqual(_fNaN, output2[7]);	// Detect buffer overruns
 		}
 	};
 }

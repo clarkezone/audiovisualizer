@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|ARM">
@@ -27,7 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{bdb456d5-4baa-4ae9-9577-06ae5435b612}</ProjectGuid>
+    <ProjectGuid>{50542ff6-8c0a-48c9-937d-df0eecb14474}</ProjectGuid>
     <Keyword>DynamicLibrary</Keyword>
     <RootNamespace>AudioVisualizer</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
@@ -100,119 +100,239 @@
   <PropertyGroup />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <GenerateManifest>false</GenerateManifest>
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <GenerateManifest>false</GenerateManifest>
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <GenerateManifest>false</GenerateManifest>
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <GenerateManifest>false</GenerateManifest>
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(WindowsSdkDir)..\cppwinrt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)AudioMath;C:\Program Files %28x86%29\Windows Kits\cppwinrt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/await /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AudioVisualizer.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <HeaderFileName>%(Filename)_h.h</HeaderFileName>
+      <MetadataFileName>$(OutDir)/UnmergedWinmd/%(Filename).winmd</MetadataFileName>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <AdditionalMetadataDirectories>"$(WindowsSDK_UnionMetadataPath)"</AdditionalMetadataDirectories>
+      <AdditionalIncludeDirectories>C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </Midl>
+    <CustomBuildStep>
+      <Command>MDMERGE -i:"$(OutDir)UnmergedWinmd" -metadata_dir:"$(SolutionDir)Win2D -metadata_dir:"$(WindowsSDK_UnionMetadataPath)" -partial -o:"$(OutDir)."</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Running MDMERGE</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(OutDir)AudioVisualizer.winmd;%(Outputs)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(WindowsSdkDir)..\cppwinrt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <AdditionalIncludeDirectories>$(SolutionDir)AudioMath;C:\Program Files %28x86%29\Windows Kits\cppwinrt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/await /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AudioVisualizer.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <HeaderFileName>%(Filename)_h.h</HeaderFileName>
+      <MetadataFileName>$(OutDir)/UnmergedWinmd/%(Filename).winmd</MetadataFileName>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <AdditionalMetadataDirectories>"$(WindowsSDK_UnionMetadataPath)"</AdditionalMetadataDirectories>
+      <AdditionalIncludeDirectories>C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </Midl>
+    <CustomBuildStep>
+      <Command>MDMERGE -i:"$(OutDir)UnmergedWinmd" -metadata_dir:"$(SolutionDir)Win2D -metadata_dir:"$(WindowsSDK_UnionMetadataPath)" -partial -o:"$(OutDir)."</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Running MDMERGE</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(OutDir)AudioVisualizer.winmd;%(Outputs)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(WindowsSdkDir)..\cppwinrt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)AudioMath;C:\Program Files %28x86%29\Windows Kits\cppwinrt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/await /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AudioVisualizer.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <HeaderFileName>%(Filename)_h.h</HeaderFileName>
+      <MetadataFileName>$(OutDir)/UnmergedWinmd/%(Filename).winmd</MetadataFileName>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <AdditionalMetadataDirectories>"$(WindowsSDK_UnionMetadataPath)"</AdditionalMetadataDirectories>
+      <AdditionalIncludeDirectories>C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </Midl>
+    <CustomBuildStep>
+      <Command>MDMERGE -i:"$(OutDir)UnmergedWinmd" -metadata_dir:"$(SolutionDir)Win2D -metadata_dir:"$(WindowsSDK_UnionMetadataPath)" -partial -o:"$(OutDir)."</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Running MDMERGE</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(OutDir)AudioVisualizer.winmd;%(Outputs)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(WindowsSdkDir)..\cppwinrt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)AudioMath;C:\Program Files %28x86%29\Windows Kits\cppwinrt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/await /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AudioVisualizer.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <HeaderFileName>%(Filename)_h.h</HeaderFileName>
+      <MetadataFileName>$(OutDir)/UnmergedWinmd/%(Filename).winmd</MetadataFileName>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <AdditionalMetadataDirectories>"$(WindowsSDK_UnionMetadataPath)"</AdditionalMetadataDirectories>
+      <AdditionalIncludeDirectories>C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </Midl>
+    <CustomBuildStep>
+      <Command>MDMERGE -i:"$(OutDir)UnmergedWinmd" -metadata_dir:"$(SolutionDir)Win2D -metadata_dir:"$(WindowsSDK_UnionMetadataPath)" -partial -o:"$(OutDir)."</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Running MDMERGE</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(OutDir)AudioVisualizer.winmd;%(Outputs)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(WindowsSdkDir)..\cppwinrt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)AudioMath;C:\Program Files %28x86%29\Windows Kits\cppwinrt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/await /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AudioVisualizer.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <HeaderFileName>%(Filename)_h.h</HeaderFileName>
+      <MetadataFileName>$(OutDir)/UnmergedWinmd/%(Filename).winmd</MetadataFileName>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <AdditionalMetadataDirectories>"$(WindowsSDK_UnionMetadataPath)"</AdditionalMetadataDirectories>
+      <AdditionalIncludeDirectories>C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </Midl>
+    <CustomBuildStep>
+      <Command>MDMERGE -i:"$(OutDir)UnmergedWinmd" -metadata_dir:"$(SolutionDir)Win2D -metadata_dir:"$(WindowsSDK_UnionMetadataPath)" -partial -o:"$(OutDir)."</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Running MDMERGE</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(OutDir)AudioVisualizer.winmd;%(Outputs)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(WindowsSdkDir)..\cppwinrt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)AudioMath;C:\Program Files %28x86%29\Windows Kits\cppwinrt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/await /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AudioVisualizer.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <HeaderFileName>%(Filename)_h.h</HeaderFileName>
+      <MetadataFileName>$(OutDir)/UnmergedWinmd/%(Filename).winmd</MetadataFileName>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <AdditionalMetadataDirectories>"$(WindowsSDK_UnionMetadataPath)"</AdditionalMetadataDirectories>
+      <AdditionalIncludeDirectories>C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </Midl>
+    <CustomBuildStep>
+      <Command>MDMERGE -i:"$(OutDir)UnmergedWinmd" -metadata_dir:"$(SolutionDir)Win2D -metadata_dir:"$(WindowsSDK_UnionMetadataPath)" -partial -o:"$(OutDir)."</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Running MDMERGE</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(OutDir)AudioVisualizer.winmd;%(Outputs)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Module.h" />
+    <ClInclude Include="AsyncOperation.h" />
+    <ClInclude Include="Canvas.abi.h" />
+    <ClInclude Include="MftAnalyzer.h" />
+    <ClInclude Include="ErrorHandling.h" />
+    <ClInclude Include="LifespanTracker.h" />
+    <ClInclude Include="Nullable.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="ring_buffer.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="trace.h" />
+    <ClInclude Include="BaseVisualizer.h" />
+    <ClInclude Include="Utilities.h" />
+    <ClInclude Include="VisualizationDataFrame.h" />
+    <ClInclude Include="VisualizationSource.h" />
+    <ClInclude Include="VisualizerDrawEventArgs.h" />
     <ClInclude Include="VisualizationData.h" />
+    <ClInclude Include="WinStringBuilder.h" />
+    <ClInclude Include="WinStringWrapper.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="MftAnalyzer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -221,7 +341,20 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Trace.cpp" />
+    <ClCompile Include="BaseVisualizer.cpp" />
+    <ClCompile Include="VisualizationDataFrame.cpp" />
+    <ClCompile Include="VisualizationSource.cpp" />
+    <ClCompile Include="VisualizerDrawEventArgs.cpp" />
     <ClCompile Include="VisualizationData.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="AudioVisualizer.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AudioVisualizer.def" />
+    <None Include="AudioVizualiser.wprp" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AudioMath\AudioMath.vcxproj">
@@ -229,9 +362,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="VisualizationData.idl" />
+    <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\Win2D.uwp.1.21.0\build\native\Win2D.uwp.targets" Condition="Exists('..\packages\Win2D.uwp.1.21.0\build\native\Win2D.uwp.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Win2D.uwp.1.21.0\build\native\Win2D.uwp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Win2D.uwp.1.21.0\build\native\Win2D.uwp.targets'))" />
+  </Target>
 </Project>

@@ -2,7 +2,7 @@
 #include <mfapi.h>
 #include <windows.foundation.diagnostics.h>
 
-namespace AudioAnalyzer
+namespace AudioVisualizer
 {
 	namespace Diagnostics
 	{

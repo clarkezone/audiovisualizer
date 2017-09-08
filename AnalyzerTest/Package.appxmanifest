@@ -45,8 +45,8 @@
   <Extensions>
     <Extension Category="windows.activatableClass.inProcessServer">
       <InProcessServer>
-        <Path>AudioAnalyzer.dll</Path>
-        <ActivatableClass ActivatableClassId="AudioAnalyzer.AnalyzerEffect" ThreadingModel="both" />
+        <Path>AudioVisualizer.dll</Path>
+        <ActivatableClass ActivatableClassId="AudioAnalyzer.MftAnalyzer" ThreadingModel="both" />
       </InProcessServer>
     </Extension>
   </Extensions>

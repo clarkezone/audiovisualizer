@@ -3,6 +3,7 @@
 #include <DirectXMath.h>
 #include "XDSP.h"
 #include <exception>
+#include <algorithm>
 
 using namespace DirectX;
 using namespace XDSP;
@@ -142,7 +143,7 @@ namespace AudioMath
 				}
 				if (pPeak != nullptr)
 				{
-					float peakValue = max(max(max(vPeak.m128_f32[0], vPeak.m128_f32[1]), vPeak.m128_f32[2]), vPeak.m128_f32[3]);
+					float peakValue = std::max(std::max(std::max(vPeak.m128_f32[0], vPeak.m128_f32[1]), vPeak.m128_f32[2]), vPeak.m128_f32[3]);
 					pPeak[channelIndex] = peakValue;
 				}
 			}

@@ -1,0 +1,193 @@
+import "inspectable.idl";
+import "EventToken.idl";
+import "AsyncInfo.idl";
+import "Windows.Foundation.idl"; 
+import "Windows.Media.idl";
+import "Windows.UI.Xaml.Controls.idl";
+import "Windows.Media.Audio.idl";
+import "Canvas.abi.idl";
+
+
+//#include <sdkddkver.h>
+
+
+namespace AudioVisualizer
+{
+	[version(1.0)]
+	typedef enum ScaleType
+	{
+		Linear = (int)0,
+		Logarithmic = (int)1
+	} ScaleType;
+
+	[version(1.0)]
+	typedef enum InterpolationType
+	{
+		Linear = (int)0,
+		CubicSpline = (int)1
+	} InterpolationType;
+
+	[version(1.0),flags]
+	typedef enum AnalyzisType
+	{
+		RMS = (int)1,
+		Peak = (int)2,
+		Spectrum = (int)4,
+		All = (int)7
+	} AnalyzisType;
+
+	interface IVisualizationSource;
+	interface IVisualizationDataFrame;
+	interface IVisualizer;
+
+	runtimeclass VisualizerDrawEventArgs;
+	runtimeclass VectorData;
+	runtimeclass ScalarData;
+
+	declare{
+		interface Windows.Foundation.IAsyncOperation<IVisualizationSource *>;
+		interface Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float> *>;
+	}
+
+	[uuid(62C7FB4D-4712-4A49-BF0F-597AC7079F3A)]
+	[version(1.0)]
+	[exclusiveto(VisualizerDrawEventArgs)]
+	interface IVisualizerDrawEventArgs : IInspectable
+	{
+		[propget] HRESULT Data([out][retval] IVisualizationDataFrame **pData);
+		[propget] HRESULT DrawingSession([out][retval] Microsoft.Graphics.Canvas.CanvasDrawingSession **pSession);
+	}
+
+	[version(1.0), uuid(7F644CA7-6BD9-455D-A330-BD5F4E9A6DA5), exclusiveto(VisualizerDrawEventArgs)]
+	interface IVisualizerDrawEventArgsFactory : IInspectable
+	{
+		HRESULT Create(
+			[in] Microsoft.Graphics.Canvas.CanvasDrawingSession* canvasDrawingSession,
+			[in] IVisualizationDataFrame *data,
+			[out, retval] VisualizerDrawEventArgs** drawEventArgs
+		);
+	};
+
+	[version(1.0),activatable(IVisualizerDrawEventArgsFactory,1.0), marshaling_behavior(agile), threading(both)]
+	runtimeclass VisualizerDrawEventArgs
+	{
+		[default] interface IVisualizerDrawEventArgs;
+	}
+
+	[uuid(D3C979CE-1D6D-4507-B7CE-5A2E97F672FC)]
+	[version(1.0)]
+	interface IVisualizer : IInspectable
+	{
+		[eventadd] HRESULT Draw(
+			[in] Windows.Foundation.TypedEventHandler<IVisualizer*, VisualizerDrawEventArgs*>* value,
+			[out, retval] EventRegistrationToken* token);
+		[eventremove] HRESULT Draw([in] EventRegistrationToken token);
+
+		[propget] HRESULT Source([out][retval] IVisualizationSource **pData);
+		[propput] HRESULT Source([in] IVisualizationSource *pData);
+		[propget] HRESULT BackgroundColor([out, retval] Windows.UI.Color *color);
+		[propput] HRESULT BackgroundColor([in] Windows.UI.Color color);
+	}
+
+	[uuid(015D3F12-E2EA-441E-BB3C-24DFED1946EF)]
+	[version(1.0)]
+	interface IBaseVisualizerFactory : IInspectable
+	{
+	}
+
+	[version(1.0), activatable(1.0), marshaling_behavior(agile), threading(both)]
+	runtimeclass BaseVisualizer : Windows.UI.Xaml.Controls.Control
+	{
+		[default] interface IVisualizer;
+	}
+
+	[uuid(8D7C253F-BCE1-47E8-9F79-838F329FD0A9)]
+	[version(1.0)]
+	interface IVisualizationData : IInspectable
+	{
+		/*[propget] HRESULT Dimensions([out] UINT32* lsize, [out, retval, size_is(, *lsize)] UINT32**value);*/
+		[propget] HRESULT AmplitudeScale([out,retval] AudioVisualizer.ScaleType *scale);
+	}
+
+	[uuid(199F41A4-8EF0-4E0B-AAD3-9E0666511F6A),version(1.0)]
+	interface IVectorData : IInspectable
+	{
+		[propget] HRESULT FrequencyScale([out, retval] AudioVisualizer.ScaleType *scale);
+		[propget] HRESULT MinFrequency([out, retval] float *value);
+		[propget] HRESULT MaxFrequency([out, retval] float *value);
+		[propget] HRESULT FrequencyStep([out, retval] float *value);
+		HRESULT CreateLinearDistribution(UINT32 elementCount, [out, retval] VectorData **result);
+		HRESULT CreateLogDistribution([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [in] InterpolationType type, [out, retval] VectorData **result);
+		HRESULT ApplyRiseAndFall([in] VectorData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] VectorData **result);
+		HRESULT ConvertToLogAmplitude([in] float minValue,[in] float maxValue, [out, retval] VectorData **result );
+	};
+
+	[uuid(FA6EDA25-96DC-473E-AA4C-5F67C2307134),version(1.0)]
+	interface IScalarData : IInspectable
+	{
+		HRESULT ConvertToLogAmplitude([in] float minValue, [in] float maxValue, [out, retval] VectorData **result);
+		HRESULT ApplyRiseAndFall([in] VectorData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] VectorData **result);
+	};
+
+	[version(1.0)]
+	runtimeclass ScalarData
+	{
+		[default] interface IVisualizationData;
+		interface IScalarData;
+		interface Windows.Foundation.Collections.IVectorView<float>;
+	}
+	[version(1.0)]
+	runtimeclass VectorData
+	{
+		[default] interface IVisualizationData;
+		interface IVectorData;
+		interface Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float> *>;
+	}
+
+	[uuid(E4C11BE5-112E-49AD-A565-EE713089C447)]
+	[version(1.0)]
+	interface IVisualizationDataFrame : IInspectable {
+		[propget] HRESULT Time([out, retval] Windows.Foundation.IReference<Windows.Foundation.TimeSpan> **time);
+		[propget] HRESULT Duration([out, retval] Windows.Foundation.IReference<Windows.Foundation.TimeSpan> **time);
+		[propget] HRESULT RMS([out, retval] ScalarData **data);
+		[propget] HRESULT Peak([out, retval] ScalarData **data);
+		[propget] HRESULT Spectrum([out, retval] VectorData **data);
+	};
+
+	[version(1.0)]
+	runtimeclass VisualizationDataFrame
+	{
+		[default] interface IVisualizationDataFrame; 
+	}
+
+	[uuid(B7589126-33C4-43E8-9D8E-BCF3F3DCE802)]
+	[version(1.0)]
+	interface IVisualizationSourceStatics : IInspectable
+	{
+		HRESULT CreateSourceFromMediaElementAsync([in] Windows.UI.Xaml.Controls.MediaElement *pElement, [out, retval] Windows.Foundation.IAsyncOperation<IVisualizationSource *> **source);
+		HRESULT CreateSourceFromAudioNode([in] Windows.Media.Audio.IAudioNode *pNode, [out, retval] IVisualizationSource **source);
+	}
+
+	[uuid(B74989FE-1436-4179-92B6-E06B540E0C7E)]
+	[version(1.0)]
+	interface IVisualizationSource : IInspectable {
+		HRESULT Configure([in] AnalyzisType analyzesToRun, [in] float outSampleRate, [in] UINT32 fftLength, [in] float overlapPercent);
+		HRESULT GetData([out][retval] IVisualizationDataFrame **result);
+		[propget] HRESULT IsSuspended([out][retval] boolean *bIsSuspended);
+		[propput] HRESULT IsSuspended(boolean bIsSuspended);
+	};
+
+	[version(1.0)]
+	[static(AudioVisualizer.IVisualizationSourceStatics, 1.0)]
+	runtimeclass VisualizationSource 
+	{
+		//[default] interface IVisualizationSource;
+	};
+
+	[version(1.0)]
+	runtimeclass MftAnalyzer
+	{
+		[default]interface Windows.Media.IMediaExtension;
+		interface IVisualizationSource;
+	}
+}

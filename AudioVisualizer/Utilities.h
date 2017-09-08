@@ -22,15 +22,12 @@ inline Microsoft::WRL::ComPtr<T> As(U* u)
 	return t;
 }
 
-// Get statics
+
+// Helper for marking our callback delegates as agile, by mixing in FtmBase.
+// Without this WinRT would marshal everything back to the UI thread.
 template<typename T>
-inline Microsoft::WRL::ComPtr<T> GetStatics(HSTRING runtimeClassName)
+struct AddFtmBase
 {
-	ComPtr<IActivationFactory> spFactory;
-	ThrowIfFailed(GetActivationFactory(runtimeClassName, &spFactory));
+	typedef Microsoft::WRL::Implements<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, T, Microsoft::WRL::FtmBase> Type;
+};
 
-	ComPtr<T> spStatics;
-	ThrowIfFailed(spFactory.As(&spStatics));
-
-	return spStatics;
-}

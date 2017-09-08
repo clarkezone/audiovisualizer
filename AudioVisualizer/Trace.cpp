@@ -9,7 +9,7 @@ using namespace ABI::Windows::Foundation::Diagnostics;
 using namespace Microsoft::WRL::Wrappers;
 using namespace Microsoft::WRL;
 
-#define LOG_CHANNEL_NAME L"AudioVisualization-AudioAnalyzer"
+#define LOG_CHANNEL_NAME L"AudioVisualizer"
 
 #define EVT_SET_MEDIA_TYPE L"SetMediaType"
 #define EVT_INITIALIZE L"Initialize"
@@ -22,7 +22,7 @@ using namespace Microsoft::WRL;
 #define EVT_GET_FROM_BUFFER L"GetFromBuffer"
 #define EVT_START_CALCULATE_FFT L"Fft"
 
-namespace AudioAnalyzer
+namespace AudioVisualizer
 {
 	namespace Diagnostics
 	{

@@ -193,10 +193,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BufferTests.cpp" />
+    <ClCompile Include="MathTests.cpp" />
     <ClCompile Include="UnitTestApp.xaml.cpp">
       <DependentUpon>UnitTestApp.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="AnalyzerTests.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -214,12 +214,12 @@
     <Xml Include="UnitTestApp.rd.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AudioAnalyzer\AudioAnalyzer.vcxproj">
-      <Project>{50542ff6-8c0a-48c9-937d-df0eecb14474}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\AudioMath\AudioMath.vcxproj">
       <Project>{3d52faee-14d1-47fa-b4b7-fecbce32bd19}</Project>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="..\AudioVisualizer\AudioVisualizer.vcxproj">
+      <Project>{50542ff6-8c0a-48c9-937d-df0eecb14474}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

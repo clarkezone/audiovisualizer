@@ -41,7 +41,7 @@ namespace AudioMath
 		for (size_t index = 0; index < sampleCount; index++)
 		{
 			_pData[_writeIndex++] = pFrames[index];
-			if (_writeIndex >= _size)	// Wrap pointer over end
+			if (_writeIndex >= (int) _size)	// Wrap pointer over end
 				_writeIndex = 0;
 		}
 		// Are we going to overflow?If overflow happened, 
@@ -49,7 +49,7 @@ namespace AudioMath
 		if (currentLength + sampleCount  >= _size)
 		{
 			_readIndex = _writeIndex + (int) _frameSize;
-			if (_readIndex >= _size)
+			if (_readIndex >= (int) _size)
 			{
 				_readIndex -= (int) _size;
 			}
@@ -89,7 +89,7 @@ namespace AudioMath
 						pDest[outIndex] = _pData[srcIndex++] * pWindow[frameIndex];
 					else
 						pDest[outIndex] = _pData[srcIndex++];
-					if (srcIndex >= _size)
+					if (srcIndex >= (int) _size)
 						srcIndex = 0;
 				}
 				else

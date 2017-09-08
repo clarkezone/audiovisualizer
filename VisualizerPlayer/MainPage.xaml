@@ -6,23 +6,18 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:win2d="using:Microsoft.Graphics.Canvas.UI.Xaml"
-    xmlns:a="using:AudioAnalyzer"
+    xmlns:a="using:AudioVisualizer"
     mc:Ignorable="d" Loaded="Page_Loaded">
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="100"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="1*"></RowDefinition>
         </Grid.RowDefinitions>
         <CommandBar Grid.Row="0">
             <AppBarButton Icon="OpenFile" Click="OpenFile_Click"></AppBarButton>
         </CommandBar>
-        <Grid x:Name="container">
-            
-        </Grid>
-        <win2d:CanvasAnimatedControl Grid.Row="1" HorizontalAlignment="Stretch"  VerticalAlignment="Bottom" Height="100" CreateResources="CanvasAnimatedControl_CreateResources" Draw="CanvasAnimatedControl_Draw" SizeChanged="CanvasAnimatedControl_SizeChanged">
-
-        </win2d:CanvasAnimatedControl>
+        <a:BaseVisualizer Grid.Row="1" x:Name="visualizer" Draw="visualizer_Draw" BackgroundColor="Blue" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></a:BaseVisualizer>
         <MediaElement x:Name="mePlayer" Grid.Row="2" AudioCategory="Media"
                       AreTransportControlsEnabled="True">
             

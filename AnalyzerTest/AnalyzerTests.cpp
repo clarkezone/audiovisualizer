@@ -2,7 +2,7 @@
 #include "CppUnitTest.h"
 #include "FakeClock.h"
 #include "SignalGenerator.h"
-#include <..\AudioAnalyzer\AudioAnalyzer_h.h>
+#include <..\AudioVisualizer\AudioVisualizer_h.h>
 #include <windows.foundation.collections.h>
 
 
@@ -28,6 +28,7 @@ namespace Microsoft {
 		}
 	}
 }
+
 
 namespace AnalyzerTest
 {
@@ -142,7 +143,7 @@ namespace AnalyzerTest
 		{
 			using namespace ABI::Windows::Foundation;
 			ComPtr<IActivationFactory> spFactory;
-			HRESULT hr = GetActivationFactory(HStringReference(L"AudioAnalyzer.AnalyzerEffect").Get(), &spFactory);
+			HRESULT hr = GetActivationFactory(HStringReference(L"AudioVisualizer.AnalyzerEffect").Get(), &spFactory);
 			if (FAILED(hr))
 				return hr;
 			ComPtr<IInspectable> spObject;
@@ -263,7 +264,7 @@ namespace AnalyzerTest
 			HRESULT hr = pMft->ProcessMessage(MFT_MESSAGE_NOTIFY_END_STREAMING, 0);
 			IsSucceeded(hr, L"StartOfStream", LINE_INFO());
 		}
-		void Test_ConfigureAnalyzer(ABI::AudioAnalyzer::IVisualizationSource *pSource,unsigned sampleRate)
+		void Test_ConfigureAnalyzer(ABI::AudioVisualizer::IVisualizationSource *pSource,unsigned sampleRate)
 		{
 			// Test first argument validation
 			HRESULT hr = pSource->Configure(4000, 60.0f, 0.5f);	// FFT length not 2^n
@@ -302,7 +303,7 @@ namespace AnalyzerTest
 			return S_OK;
 		}
 
-		void Get_Analyzer(IMFTransform *pMft,ABI::AudioAnalyzer::IVisualizationSource **ppSource)
+		void Get_Analyzer(IMFTransform *pMft,ABI::AudioVisualizer::IVisualizationSource **ppSource)
 		{
 			using namespace ABI::Windows::Foundation::Collections;
 			ComPtr<ABI::Windows::Media::IMediaExtension> spExtension;
@@ -327,7 +328,7 @@ namespace AnalyzerTest
 			hr = spMap->Lookup(HStringReference(L"Source").Get(), &spValue);
 			IsSucceeded(hr, L"Get analyzer from property set", LINE_INFO());
 
-			ComPtr<ABI::AudioAnalyzer::IVisualizationSource> spSource;
+			ComPtr<ABI::AudioVisualizer::IVisualizationSource> spSource;
 			hr = spValue.As(&spSource);
 			IsSucceeded(hr, L"Get analyzer from property set", LINE_INFO());
 
@@ -365,7 +366,7 @@ namespace AnalyzerTest
 			Test_AnalyzerTimings(spTransform.Get(),spClock.Get());
 		}
 
-		void Test_Processing(IMFTransform *pMft,CFakeClock *pClock,ABI::AudioAnalyzer::IVisualizationSource *pSource,unsigned sampleRate)
+		void Test_Processing(IMFTransform *pMft,CFakeClock *pClock,ABI::AudioVisualizer::IVisualizationSource *pSource,unsigned sampleRate)
 		{
 			// pSource->SetLinearFScale(100);
 
@@ -510,7 +511,7 @@ namespace AnalyzerTest
 			Test_BufferRequirements(spTransform.Get());
 			ComPtr<CFakeClock> spClock;
 			Create_And_Set_Clock(spTransform.Get(), &spClock);
-			ComPtr<ABI::AudioAnalyzer::IVisualizationSource> spSource;
+			ComPtr<ABI::AudioVisualizer::IVisualizationSource> spSource;
 			Get_Analyzer(spTransform.Get(), &spSource);
 			
 			Test_ConfigureAnalyzer(spSource.Get(), sampleRate);
@@ -546,4 +547,4 @@ namespace AnalyzerTest
 			Test_Pipeline(48000);
 		}
 	};
-}
+} 

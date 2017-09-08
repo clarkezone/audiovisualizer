@@ -16,7 +16,7 @@
 
 using namespace Microsoft::WRL;
 
-namespace AudioAnalyzer
+namespace AudioVisualizer
 {
 	ActivatableClass(CAnalyzerEffect);
 
@@ -56,7 +56,7 @@ namespace AudioAnalyzer
 		m_bIsSuspended(false)
 	{
 #ifdef _TRACE
-		AudioAnalyzer::Diagnostics::Trace::Initialize();
+		AudioVisualizer::Diagnostics::Trace::Initialize();
 #endif
 	}
 
@@ -66,7 +66,7 @@ namespace AudioAnalyzer
 		CloseHandle(m_hResetWorkQueue);
 		Analyzer_FreeBuffers();
 #ifdef _TRACE
-		AudioAnalyzer::Diagnostics::Trace::Shutdown();
+		AudioVisualizer::Diagnostics::Trace::Shutdown();
 #endif
 	}
 
@@ -88,7 +88,7 @@ namespace AudioAnalyzer
 		return S_OK;
 	}
 
-	STDMETHODIMP CAnalyzerEffect::Configure(unsigned long fftLength, float outputFps, float inputOverlap)
+	STDMETHODIMP CAnalyzerEffect::Configure(ABI::AudioVisualizer::AnalyzisType types, float outputFps, unsigned fftLength,  float inputOverlap)
 	{
 		if ((fftLength & fftLength - 1) != 0)	// FFT length needs to be power of 2
 			return E_INVALIDARG;
@@ -103,6 +103,7 @@ namespace AudioAnalyzer
 		if (inputOverlap < 0.0f || inputOverlap > 1.0f)	// Set some sensible overlap limits
 			return E_INVALIDARG;
 
+		_analyzisTypes = types;
 		m_FftLength = fftLength;
 		m_fOutputFps = outputFps;
 		m_fInputOverlap = inputOverlap;
@@ -115,11 +116,12 @@ namespace AudioAnalyzer
 		return S_OK;
 	}
 
-	STDMETHODIMP CAnalyzerEffect::GetData(ABI::AudioAnalyzer::IVisualizationData **ppData)
+	STDMETHODIMP CAnalyzerEffect::GetData(ABI::AudioVisualizer::IVisualizationDataFrame **ppData)
 	{
-		ComPtr<CVisualizationData> spData;
-		HRESULT hr = MakeAndInitialize<CVisualizationData>(&spData);
-		spData.CopyTo(ppData);
+		/*ComPtr<VisualizationDataFrame> spData;
+		HRESULT hr = MakeAndInitialize<VisualizationDataFrame>(&spData);
+		spData.CopyTo(ppData);*/
+		*ppData = nullptr;
 		return S_OK;
 	}
 

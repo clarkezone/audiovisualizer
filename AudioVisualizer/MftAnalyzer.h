@@ -1,11 +1,11 @@
 #pragma once
-#include "AudioAnalyzer_h.h"
+#include "AudioVisualizer_h.h"
 #include <DirectXMath.h>
 #include <queue>
 #include <AudioBuffer.h>
-#include "VisualizationData.h"
+#include "VisualizationDataFrame.h"
 
-namespace AudioAnalyzer
+namespace AudioVisualizer
 {
 #define MFT_ANALYZER_PROPERTYSET_NAME L"Source"
 
@@ -15,10 +15,10 @@ namespace AudioAnalyzer
 		ABI::Windows::Media::IMediaExtension,
 		IMFTransform,
 		IMFClockConsumer,
-		ABI::AudioAnalyzer::IVisualizationSource,
+		ABI::AudioVisualizer::IVisualizationSource,
 		IMFAsyncCallback>
 	{
-		InspectableClass(RuntimeClass_AudioAnalyzer_AnalyzerEffect, BaseTrust)
+		InspectableClass(RuntimeClass_AudioVisualizer_MftAnalyzer, BaseTrust)
 		
 #pragma region IMFTransform variables
 		Microsoft::WRL::ComPtr<IMFMediaType> m_spOutputType;
@@ -46,7 +46,7 @@ namespace AudioAnalyzer
 
 		Microsoft::WRL::Wrappers::CriticalSection m_csAnalyzerConfig;	// Critical section to lock analyzer configuration changing
 		Microsoft::WRL::Wrappers::CriticalSection m_csOutputQueueAccess;
-		std::queue<CVisualizationData> m_AnalyzerOutput;
+		std::queue<ComPtr<IVisualizationDataFrame>> m_AnalyzerOutput;
 
 		size_t m_StepFrameCount;	// How many samples does calculate consume each step
 		size_t m_StepFrameOverlap;
@@ -67,6 +67,8 @@ namespace AudioAnalyzer
 		float m_fFftScale;	// 2/N scale factor for fft output
 		DirectX::XMVECTOR m_vClampAmpLow;
 		DirectX::XMVECTOR m_vClampAmpHigh;
+
+		ABI::AudioVisualizer::AnalyzisType  _analyzisTypes;
 
 		HRESULT Analyzer_TestInputType(IMFMediaType *pType);
 		HRESULT Analyzer_SetMediaType(IMFMediaType *pType);
@@ -165,9 +167,9 @@ namespace AudioAnalyzer
 		CAnalyzerEffect();
 		~CAnalyzerEffect();
 		HRESULT RuntimeClassInitialize();
-#pragma region IAudioAnalyzer
-		STDMETHODIMP Configure(unsigned long fftLength, float outputFps, float inputOverlap);
-		STDMETHODIMP GetData(ABI::AudioAnalyzer::IVisualizationData **pData);
+#pragma region IAudioVisualizer
+		STDMETHODIMP Configure(ABI::AudioVisualizer::AnalyzisType types, float outputFps,unsigned fftLength,  float inputOverlap);
+		STDMETHODIMP GetData(ABI::AudioVisualizer::IVisualizationDataFrame **pData);
 		STDMETHODIMP get_IsSuspended(boolean *pbIsSuspended);
 		STDMETHODIMP put_IsSuspended(boolean bIsSuspended);
 

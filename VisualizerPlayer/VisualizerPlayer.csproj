@@ -142,9 +142,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="AudioAnalyzer, Version=255.255.255.255, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\x64\Debug\AudioAnalyzer\AudioAnalyzer.winmd</HintPath>
+    <Reference Include="AudioVisualizer">
+      <HintPath>..\Debug\AudioVisualizer\AudioVisualizer.winmd</HintPath>
     </Reference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

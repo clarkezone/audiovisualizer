@@ -7,17 +7,17 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AudioMath.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="AudioBuffer.cpp" />
     <ClCompile Include="AudioAnalyzer.cpp" />
+    <ClCompile Include="AudioMath.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AudioMath.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="AudioBuffer.h" />
     <ClInclude Include="AudioAnalyzer.h" />
     <ClInclude Include="XDSP.h" />
+    <ClInclude Include="AudioMath.h" />
   </ItemGroup>
 </Project>

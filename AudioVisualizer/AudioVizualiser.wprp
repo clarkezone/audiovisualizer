@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <WindowsPerformanceRecorder Version="1.0">
   <Profiles>
-    <EventCollector Id="EventCollector_AudioAnalyzer" Name="MyEventSourceCollector">
+    <EventCollector Id="EventCollector_AudioVisualizer" Name="MyEventSourceCollector">
       <BufferSize Value="1024" />
       <Buffers Value="200" />
     </EventCollector>
-    <EventProvider Id="UIEventSource" Name="*AudioVisualization-AudioAnalyzer" />
+    <EventProvider Id="VisualizerEventSource" Name="*AudioVisualizer" />
     <EventProvider Id="MFReadWrite" Name="Microsoft-Windows-MediaFoundation-MFReadWrite"/> <!--4b7eac67-fc53-448c-a49d-7cc6db524da7-->
     <EventProvider Id="MicrosoftAudio" Name="Microsoft-Windows-Audio"/>
     <EventProvider Id="AudioGraph" Name="0D641FB9-A0E3-42E3-9E9D-501D33A6FA79"/>
@@ -58,16 +58,16 @@
     <Profile Id="MicrosoftAudio.Verbose.Memory" Name="MicrosoftAudio" Description="Audio events" Base="MicrosoftAudio.Verbose.File" LoggingMode="Memory" DetailLevel="Verbose" />
 
 
-    <Profile Id="AudioAnalyzerMFT.Verbose.File" Name="AudioAnalyzerMFT" Description="AudioAnalyzer Trace" LoggingMode="File" DetailLevel="Verbose">
+    <Profile Id="AudioVisualizer.Verbose.File" Name="AudioVisualizer" Description="AudioVisualizer Trace" LoggingMode="File" DetailLevel="Verbose">
       <Collectors>
         <EventCollectorId Value="EventCollector_AudioAnalyzer">
           <EventProviders>
-            <EventProviderId Value="UIEventSource" />
+            <EventProviderId Value="VisualizerEventSource" />
           </EventProviders>
         </EventCollectorId>
       </Collectors>
     </Profile>
-    <Profile Id="AudioAnalyzerMFT.Verbose.Memory" Name="AudioAnalyzerMFT" Description="AudioAnalyzer Trace" Base="AudioAnalyzerMFT.Verbose.File" LoggingMode="Memory" DetailLevel="Verbose" />
+    <Profile Id="AudioVisualizer.Verbose.Memory" Name="AudioVisualizer" Description="AudioVisualizer Trace" Base="AudioVisualizer.Verbose.File" LoggingMode="Memory" DetailLevel="Verbose" />
    
   </Profiles>
 </WindowsPerformanceRecorder>

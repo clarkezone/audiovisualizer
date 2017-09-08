@@ -1,4 +1,4 @@
-LIBRARY AudioAnalyzer.dll
+LIBRARY AudioVisualizer.dll
 EXPORTS
 DllGetActivationFactory PRIVATE
 DllCanUnloadNow PRIVATE
