@@ -9,6 +9,7 @@ using namespace Microsoft::WRL;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::UI::Xaml::Controls;
 using namespace ABI::Windows::Media::Audio;
+using namespace ABI::Windows::Media::Playback;
 
 namespace AudioVisualizer
 {
@@ -17,11 +18,9 @@ namespace AudioVisualizer
 		InspectableClassStatic(RuntimeClass_AudioVisualizer_VisualizationSource, BaseTrust);
 	public:
 		STDMETHODIMP ActivateInstance(_Outptr_result_nullonfailure_ IInspectable** ppvObject);
-		STDMETHODIMP CreateSourceFromMediaElementAsync(IMediaElement *pElement, IAsyncOperation<IVisualizationSource *> **pSource);
-		STDMETHODIMP CreateSourceFromAudioNode(IAudioNode *pNode, IVisualizationSource **pSource)
-		{
-			return E_NOTIMPL;
-		}
+		STDMETHODIMP CreateFromMediaElementAsync(IMediaElement *pElement, IAsyncOperation<IVisualizationSource *> **pSource);
+		STDMETHODIMP CreateFromMediaPlayerAsync(IMediaPlayer *pElement, IAsyncOperation<IVisualizationSource *> **pSource);
+		STDMETHODIMP CreateFromAudioNode(IAudioNode *pNode, IVisualizationSource **pSource);
 	};
 }
 

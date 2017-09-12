@@ -39,15 +39,15 @@ namespace AudioMath
 							size_t count, float riseByT, float fallByT)
 	{
 		using namespace DirectX;
-		XMVECTOR vRiseExp = XMVectorExpE(XMVectorReplicate(-riseByT));
-		XMVECTOR vFallExp = XMVectorExpE(XMVectorReplicate(-fallByT));
+		XMVECTOR vRiseExp = g_XMOne - XMVectorExpE(XMVectorReplicate(-riseByT));
+		XMVECTOR vFallExp = g_XMOne - XMVectorExpE(XMVectorReplicate(-fallByT));
 
 		for (size_t vIndex = 0; vIndex < count; vIndex++)
 		{
 			XMVECTOR vDelta = pCurrent[vIndex] - pPrevious[vIndex];
-			XMVECTOR vSelector = XMVectorLess(DirectX::g_XMZero,vDelta);
+			XMVECTOR vSelector = XMVectorGreaterOrEqual(DirectX::g_XMZero,vDelta);
 			XMVECTOR vFactors = XMVectorSelect(vRiseExp, vFallExp, vSelector);
-			pResult[vIndex] = pCurrent[vIndex] + vFactors * vDelta;
+			pResult[vIndex] = pPrevious[vIndex] + vFactors * vDelta;
 		}
 	}
 

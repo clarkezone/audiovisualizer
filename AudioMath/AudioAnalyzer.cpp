@@ -11,7 +11,6 @@ using namespace XDSP;
 namespace AudioMath
 {
 	CAudioAnalyzer::CAudioAnalyzer(size_t inputBufferSize) :
-		_inputSampleRate(48000),
 		_inputChannels(2),
 		_fftLength(0),
 		_stepFrames(0),
@@ -22,6 +21,7 @@ namespace AudioMath
 		_pFftBuffers(nullptr)
 	{
 		_spInputBuffer = std::make_shared<CAudioBuffer>(inputBufferSize);
+		_spInputBuffer->SetFrameSize(_inputChannels);
 	}
 
 
@@ -34,10 +34,10 @@ namespace AudioMath
 	{
 		FreeBuffers();	// First free any existing memory allocations
 
-		_pWindow = static_cast<XMVECTOR *>(_aligned_malloc(_stepFrames+1 * sizeof(float),16));
-		_pFftReal = static_cast<XMVECTOR *>(_aligned_malloc(_fftLength * sizeof(XMVECTOR) * _inputChannels, 16));	// For real data allocate space for all channels
-		_pFftUnityTable = static_cast<XMVECTOR *> (_aligned_malloc(2 * _fftLength * sizeof(XMVECTOR), 16));	// Complex values 
-		_pFftBuffers = static_cast<XMVECTOR *>(_aligned_malloc(2 * _fftLength * sizeof(XMVECTOR), 16));	// Preallocate buffers for FFT calculation 2*length of Fft
+		_pWindow = static_cast<XMVECTOR *>(_aligned_malloc_dbg(((_stepFrames+3)>>2) * sizeof(XMVECTOR),16, __FILE__, __LINE__));
+		_pFftReal = static_cast<XMVECTOR *>(_aligned_malloc_dbg(_fftLength * sizeof(XMVECTOR) * _inputChannels, 16,__FILE__, __LINE__));	// For real data allocate space for all channels
+		_pFftUnityTable = static_cast<XMVECTOR *> (_aligned_malloc_dbg(2 * _fftLength * sizeof(XMVECTOR), 16, __FILE__, __LINE__));	// Complex values 
+		_pFftBuffers = static_cast<XMVECTOR *>(_aligned_malloc_dbg(2 * _fftLength * sizeof(XMVECTOR), 16, __FILE__, __LINE__));	// Preallocate buffers for FFT calculation 2*length of Fft
 
 		if (_pFftReal == nullptr || _pWindow == nullptr || _pFftUnityTable == nullptr || _pFftBuffers == nullptr)
 			throw std::exception("Out of memory", E_OUTOFMEMORY);
@@ -71,20 +71,12 @@ namespace AudioMath
 		while (1U << _fftLengthLog2 != _fftLength)
 			_fftLengthLog2++;
 
-		/*
-		float pi = 3.14159f;
-		for (size_t index = 0; index < _stepFrames; index++)
-		{
-			_pWindow[index] = a0 - a1 * cosf(2 * pi * index / (_stepFrames - 1)) +
-				a2 * cosf(4 * pi * index / (_stepFrames - 1)) -
-				a3 * cosf(6 * pi * index / (_stepFrames - 1));
-		}*/
-
 		// Initialize window, use Blackman-Nuttall window for low sidelobes
 		float a0 = 0.3635819f, a1 = 0.4891775f, a2 = 0.1365995f, a3 = 0.0106411f;
 		XMVECTOR vElementIndex = XMVectorSet(0, 1, 2, 3),vElementStep = XMVectorReplicate(4.0f);
 		float fIndexScaler = 1.0f /(_stepFrames - 1.0f);
-		for (size_t vIndex = 0; vIndex < _stepFrames >> 2; vIndex++,vElementIndex+=vElementStep)
+		size_t vWindowElements = _stepFrames >> 2;
+		for (size_t vIndex = 0; vIndex < vWindowElements; vIndex++,vElementIndex+=vElementStep)
 		{
 			XMVECTOR vCosArg = XMVectorScale(DirectX::g_XMTwoPi * vElementIndex, fIndexScaler);
 			_pWindow[vIndex] = 
@@ -104,20 +96,22 @@ namespace AudioMath
 
 	void CAudioAnalyzer::AddInput(float * pData, size_t frameCount, long frameIndex)
 	{
+		std::lock_guard<std::mutex> inputLock(_inputBufferAccess);
 		if (frameIndex != -1 && _spInputBuffer->GetPosition() == -1)
 			_spInputBuffer->SetPosition(frameIndex);
 		_spInputBuffer->Add(pData, frameCount);
 	}
 
-	bool CAudioAnalyzer::Step(long *pPosition, float *pRMS, float *pPeak, DirectX::XMVECTOR *pSpectrum)
+	bool CAudioAnalyzer::Step(long *pPosition, DirectX::XMVECTOR *pRMS, DirectX::XMVECTOR *pPeak, DirectX::XMVECTOR *pSpectrum)
 	{
-		if (!IsOutputAvailable())
-			return false;
-
-		if (pPosition != nullptr)
-			*pPosition = _spInputBuffer->GetPosition();
-
-		_spInputBuffer->Step((float*)_pFftReal, _fftLength);
+		{	/* Code block for scoped lock during copying the data from the input buffer */	
+			std::lock_guard<std::mutex> inputLock(_inputBufferAccess);
+			if (!IsOutputAvailable())
+				return false;
+			if (pPosition != nullptr)
+				*pPosition = _spInputBuffer->GetPosition();
+			_spInputBuffer->Step((float*)_pFftReal, _fftLength);
+		}
 
 		size_t vStep = _fftLength >> 2;
 
@@ -139,19 +133,19 @@ namespace AudioMath
 				if (pRMS != nullptr)
 				{
 					XMVECTOR vRMS = XMVectorSqrt(XMVectorScale(XMVectorSum(vRMSSum), rmsScaler));
-					pRMS[channelIndex] = vRMS.m128_f32[0];
+					((float *)pRMS)[channelIndex] = vRMS.m128_f32[0];
 				}
 				if (pPeak != nullptr)
 				{
 					float peakValue = std::max(std::max(std::max(vPeak.m128_f32[0], vPeak.m128_f32[1]), vPeak.m128_f32[2]), vPeak.m128_f32[3]);
-					pPeak[channelIndex] = peakValue;
+					((float*)pPeak)[channelIndex] = peakValue;
 				}
 			}
 		}
 		if (pSpectrum != nullptr)
 		{
 			// First window the data
-			for (size_t vIndex = 0; vIndex < _stepFrames << 2; vIndex++)
+			for (size_t vIndex = 0; vIndex < (_stepFrames >> 2); vIndex++)
 			{
 				for (size_t channelIndex = 0,vElementIndex = vIndex; channelIndex < _inputChannels; channelIndex++, vElementIndex+=vStep)
 				{
@@ -162,10 +156,11 @@ namespace AudioMath
 			{
 				XMVECTOR *pData = _pFftReal + channelIndex * vStep;
 				XMVECTOR *pOutput = pSpectrum + channelIndex * (vStep >> 1);
+				/*
 				for (size_t vIndex = 0; vIndex < _stepFrames << 2; vIndex++)
 				{
 					pData[vIndex] *= _pWindow[vIndex];
-				}
+				}*/
 
 				XMVECTOR *pImag = _pFftBuffers;
 				XMVECTOR *pRealUnswizzled = _pFftBuffers + vStep;

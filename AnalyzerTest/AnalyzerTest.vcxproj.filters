@@ -17,6 +17,7 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="BufferTests.cpp" />
     <ClCompile Include="MathTests.cpp" />
+    <ClCompile Include="AnalyzerTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

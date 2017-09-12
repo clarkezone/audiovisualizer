@@ -78,7 +78,7 @@ namespace AudioVisualizer
 		STDMETHODIMP get_Source(ABI::AudioVisualizer::IVisualizationSource **ppSource)
 		{
 			if (ppSource == nullptr)
-				return E_INVALIDARG;
+				return E_POINTER;
 			*ppSource = _source.Get();
 			return S_OK;
 		}
@@ -93,7 +93,7 @@ namespace AudioVisualizer
 		STDMETHODIMP get_BackgroundColor(Color *pColor)
 		{
 			if (pColor == nullptr)
-				return E_INVALIDARG;
+				return E_POINTER;
 			*pColor = _backgroundColor;
 			return S_OK;
 		}

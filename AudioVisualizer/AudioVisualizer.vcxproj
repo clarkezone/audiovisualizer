@@ -357,12 +357,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\AudioMath\AudioMath.vcxproj">
       <Project>{3d52faee-14d1-47fa-b4b7-fecbce32bd19}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

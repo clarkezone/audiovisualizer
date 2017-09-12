@@ -1,9 +1,18 @@
 #pragma once
+
+#define _CRTDBG_MAP_ALLOC 
+
 #include "AudioVisualizer_h.h"
 #include <DirectXMath.h>
 #include <queue>
-#include <AudioBuffer.h>
+#include <memory>
+#include <mutex>
+#include <windows.system.threading.h>
+#include <AudioAnalyzer.h>
 #include "VisualizationDataFrame.h"
+
+using namespace Microsoft::WRL;
+using namespace ABI::Windows::System::Threading;
 
 namespace AudioVisualizer
 {
@@ -15,8 +24,8 @@ namespace AudioVisualizer
 		ABI::Windows::Media::IMediaExtension,
 		IMFTransform,
 		IMFClockConsumer,
-		ABI::AudioVisualizer::IVisualizationSource,
-		IMFAsyncCallback>
+		ABI::AudioVisualizer::IVisualizationSource
+		/*IMFAsyncCallback*/>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_MftAnalyzer, BaseTrust)
 		
@@ -33,16 +42,21 @@ namespace AudioVisualizer
 		UINT32 m_nChannels;
 
 		bool m_bIsSuspended;	// Is analyzer in a suspended state
+		ComPtr<IThreadPoolStatics> _threadPoolStatics;
+		HANDLE _threadPoolSemaphore;	// Controls threadpool execution - schedule only one instance of execution
+		bool _bResetAnalyzer;
 
 		const size_t cMaxOutputQueueSize = 600;	// Keep 10sec worth of data for 60fps output
 
-		AudioMath::CAudioBuffer m_InputBuffer;
+		std::shared_ptr<AudioMath::CAudioAnalyzer> _analyzer;
+		//AudioMath::CAudioBuffer m_InputBuffer;
 
 		//long m_InputSampleIndex;	// Current read position sample index in stream
-		Microsoft::WRL::Wrappers::CriticalSection m_csInputIndexAccess;
+		//Microsoft::WRL::Wrappers::CriticalSection m_csInputIndexAccess;
 
-		HANDLE m_hWQAccess;	// Semaphore that is used to detect is work queue processing is running
-		HANDLE m_hResetWorkQueue;	// Event that is used to cancel and reset work queue processing
+		//HANDLE m_hWQAccess;	// Semaphore that is used to detect is work queue processing is running
+		//HANDLE m_hResetWorkQueue;	// Event that is used to cancel and reset work queue processing
+		
 
 		Microsoft::WRL::Wrappers::CriticalSection m_csAnalyzerConfig;	// Critical section to lock analyzer configuration changing
 		Microsoft::WRL::Wrappers::CriticalSection m_csOutputQueueAccess;
@@ -56,41 +70,42 @@ namespace AudioVisualizer
 
 		float m_fOutputFps;
 		float m_fInputOverlap;
-		size_t m_OutElementsCount;
-		bool m_bUseLogAmpScale;
-		bool m_bUseLogFScale;
+	//	size_t m_OutElementsCount;
+	//	bool m_bUseLogAmpScale;
+	//	bool m_bUseLogFScale;
 
-		float *m_pWindow;
-		DirectX::XMVECTOR *m_pFftReal;
-		DirectX::XMVECTOR *m_pFftUnityTable;
-		DirectX::XMVECTOR *m_pFftBuffers;
-		float m_fFftScale;	// 2/N scale factor for fft output
-		DirectX::XMVECTOR m_vClampAmpLow;
-		DirectX::XMVECTOR m_vClampAmpHigh;
+		//float *m_pWindow;
+		//DirectX::XMVECTOR *m_pFftReal;
+		//DirectX::XMVECTOR *m_pFftUnityTable;
+		//DirectX::XMVECTOR *m_pFftBuffers;
+		//float m_fFftScale;	// 2/N scale factor for fft output
+		//DirectX::XMVECTOR m_vClampAmpLow;
+		//DirectX::XMVECTOR m_vClampAmpHigh;
 
 		ABI::AudioVisualizer::AnalyzisType  _analyzisTypes;
 
 		HRESULT Analyzer_TestInputType(IMFMediaType *pType);
 		HRESULT Analyzer_SetMediaType(IMFMediaType *pType);
 		HRESULT Analyzer_Initialize();
-		HRESULT Analyzer_AllocateBuffers();
-		HRESULT Analyzer_FreeBuffers();
+		//HRESULT Analyzer_AllocateBuffers();
+		//HRESULT Analyzer_FreeBuffers();
 		HRESULT Analyzer_ProcessSample(IMFSample *pSample);
 		HRESULT Analyzer_ScheduleProcessing();
-		HRESULT Analyzer_Step(IMFAsyncResult *pResult);
-		HRESULT Analyzer_Calculate(IMFSample **ppSample);
-		HRESULT Analyzer_GetFromBuffer(float *pData, REFERENCE_TIME *pPosition);
-		void	Analyzer_CalculateFft(DirectX::XMVECTOR *pData, DirectX::XMVECTOR *pBuffers);
-		HRESULT	Analyzer_LinearInterpolate(const float *pInput, size_t inputSize, float *pOutput, size_t outputSize);
-		HRESULT Analyzer_CreateOutputSample(IMFSample **ppSample, IMFMediaBuffer *pBuffer, REFERENCE_TIME time,size_t bufferStep);
+		void Analyzer_ProcessData();
+		//HRESULT Analyzer_Step(IMFAsyncResult *pResult);
+		//HRESULT Analyzer_Calculate(IMFSample **ppSample);
+		//HRESULT Analyzer_GetFromBuffer(float *pData, REFERENCE_TIME *pPosition);
+		//void	Analyzer_CalculateFft(DirectX::XMVECTOR *pData, DirectX::XMVECTOR *pBuffers);
+		//HRESULT	Analyzer_LinearInterpolate(const float *pInput, size_t inputSize, float *pOutput, size_t outputSize);
+		//HRESULT Analyzer_CreateOutputSample(IMFSample **ppSample, IMFMediaBuffer *pBuffer, REFERENCE_TIME time,size_t bufferStep);
 		HRESULT Analyzer_Reset();
 		HRESULT Analyzer_Flush(); 
 		HRESULT Analyzer_CompactOutputQueue();
 		HRESULT Analyzer_FlushOutputQueue();
 		HRESULT Analyzer_Resume();
 		HRESULT Analyzer_Suspend();
-		HRESULT Analyzer_FFwdQueueTo(REFERENCE_TIME time, IMFSample **ppSample);
-		void Analyzer_ConvertToDb(DirectX::XMVECTOR *pvData, size_t nElements);	// Converts input values to db range
+		HRESULT Analyzer_FFwdQueueTo(REFERENCE_TIME time, IVisualizationDataFrame **ppFrame);
+		//void Analyzer_ConvertToDb(DirectX::XMVECTOR *pvData, size_t nElements);	// Converts input values to db range
 
 		inline long time_to_samples(REFERENCE_TIME time) const { return m_nChannels * (long)((time * m_FramesPerSecond + 5000000L) / 10000000L); }
 		inline long time_to_frames(REFERENCE_TIME time) const { return (long)((time * m_FramesPerSecond + 5000000L) / 10000000L); }
@@ -151,7 +166,7 @@ namespace AudioVisualizer
 #pragma endregion
 
 #pragma region IMFAsyncCallback implementation
-		STDMETHODIMP GetParameters(DWORD*, DWORD*)
+		/*STDMETHODIMP GetParameters(DWORD*, DWORD*)
 		{
 			// Implementation of this method is optional.
 			return E_NOTIMPL;
@@ -160,7 +175,7 @@ namespace AudioVisualizer
 		STDMETHODIMP Invoke(IMFAsyncResult* pAsyncResult)
 		{
 			return Analyzer_Step(pAsyncResult);
-		}
+		}*/
 #pragma endregion
 
 	public:

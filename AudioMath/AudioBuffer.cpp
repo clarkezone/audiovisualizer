@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "AudioBuffer.h"
-
+#include <mutex>
 
 namespace AudioMath
 {

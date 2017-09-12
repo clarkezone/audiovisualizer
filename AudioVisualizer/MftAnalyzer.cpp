@@ -4,47 +4,50 @@
 #include <cfloat>
 #include <windows.media.core.interop.h>
 #include <trace.h>
+#include "Nullable.h"
+#include <VisualizationData.h>
+#include <VisualizationDataFrame.h>
 
 #ifdef _DEBUG
 	#define _TRACE
 #endif
-
 
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "mfuuid.lib")
 #pragma comment(lib, "mfplat.lib")
 
 using namespace Microsoft::WRL;
+using namespace Microsoft::WRL::Wrappers;
+using namespace ABI::Windows::Foundation;
 
 namespace AudioVisualizer
 {
 	ActivatableClass(CAnalyzerEffect);
 
 	// {0B82B25D-E6E1-4B6B-92A1-7EEE99D02CFE}
-	static const GUID g_PropKey_RMS_Data_Offset =
-	{ 0xb82b25d, 0xe6e1, 0x4b6b,{ 0x92, 0xa1, 0x7e, 0xee, 0x99, 0xd0, 0x2c, 0xfe } };
+	//static const GUID g_PropKey_RMS_Data_Offset =
+	//{ 0xb82b25d, 0xe6e1, 0x4b6b,{ 0x92, 0xa1, 0x7e, 0xee, 0x99, 0xd0, 0x2c, 0xfe } };
 
 	// {F4D65F78-CF5A-4949-88C1-76DAD605C313}
-	static const GUID g_PropKey_Data_Step =
-	{ 0xf4d65f78, 0xcf5a, 0x4949,{ 0x88, 0xc1, 0x76, 0xda, 0xd6, 0x5, 0xc3, 0x13 } };
+	//static const GUID g_PropKey_Data_Step =
+	//{ 0xf4d65f78, 0xcf5a, 0x4949,{ 0x88, 0xc1, 0x76, 0xda, 0xd6, 0x5, 0xc3, 0x13 } };
 
 	const size_t CircleBufferSize = 960000;	// 10 sec worth of stereo audio at 48k
 
 	CAnalyzerEffect::CAnalyzerEffect() :
-		m_InputBuffer(CircleBufferSize),
 		m_FramesPerSecond(0),
 		m_nChannels(0),
-		m_hWQAccess(NULL),
-		m_hResetWorkQueue(NULL),
+		_bResetAnalyzer(false),
+		_threadPoolSemaphore(NULL),
 		m_StepFrameCount(0),
 		m_StepFrameOverlap(0),
 		m_StepTotalFrames(0),
 		m_FftLength(0),
 		m_FftLengthLog2(0),
-		m_OutElementsCount(0),
+		//m_OutElementsCount(0),
 		m_fOutputFps(0.0f),
 		m_fInputOverlap(0.0f),
-		m_pWindow(nullptr),
+		/*m_pWindow(nullptr),
 		m_pFftReal(nullptr),
 		m_pFftUnityTable(nullptr),
 		m_pFftBuffers(nullptr),
@@ -52,9 +55,10 @@ namespace AudioVisualizer
 		m_bUseLogAmpScale(true),
 		m_bUseLogFScale(false),
 		m_vClampAmpLow(DirectX::XMVectorReplicate(-100.0f)),	// Clamp DB values between -100 and FLT_MAX
-		m_vClampAmpHigh(DirectX::XMVectorReplicate(FLT_MAX)),
+		m_vClampAmpHigh(DirectX::XMVectorReplicate(FLT_MAX)),*/
 		m_bIsSuspended(false)
 	{
+		_analyzer = std::make_shared<AudioMath::CAudioAnalyzer>(CircleBufferSize);
 #ifdef _TRACE
 		AudioVisualizer::Diagnostics::Trace::Initialize();
 #endif
@@ -62,9 +66,8 @@ namespace AudioVisualizer
 
 	CAnalyzerEffect::~CAnalyzerEffect()
 	{
-		CloseHandle(m_hWQAccess);
-		CloseHandle(m_hResetWorkQueue);
-		Analyzer_FreeBuffers();
+		CloseHandle(_threadPoolSemaphore);
+		//Analyzer_FreeBuffers();
 #ifdef _TRACE
 		AudioVisualizer::Diagnostics::Trace::Shutdown();
 #endif
@@ -77,14 +80,14 @@ namespace AudioVisualizer
 		if (FAILED(hr))
 			return hr;
 
-		m_hWQAccess = CreateSemaphore(nullptr, 1, 1, nullptr);
-		if (m_hWQAccess == NULL)
+		hr = GetActivationFactory(HStringReference(RuntimeClass_Windows_System_Threading_ThreadPool).Get(), &_threadPoolStatics);
+		if (FAILED(hr))
+			return hr;
+		
+		_threadPoolSemaphore = CreateSemaphore(nullptr, 1, 1, nullptr);
+		if (_threadPoolSemaphore == NULL)
 			return E_FAIL;
-
-		m_hResetWorkQueue = CreateEventEx(nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_ALL_ACCESS);	// Manual reset event
-		if (m_hResetWorkQueue == NULL)
-			return E_FAIL;
-
+	
 		return S_OK;
 	}
 
@@ -107,7 +110,7 @@ namespace AudioVisualizer
 		m_FftLength = fftLength;
 		m_fOutputFps = outputFps;
 		m_fInputOverlap = inputOverlap;
-		m_OutElementsCount = m_FftLength;
+		//m_OutElementsCount = m_FftLength;
 
 		// If input type is set then calculate the necessary variables and initialize
 		if (m_FramesPerSecond != 0)
@@ -121,8 +124,27 @@ namespace AudioVisualizer
 		/*ComPtr<VisualizationDataFrame> spData;
 		HRESULT hr = MakeAndInitialize<VisualizationDataFrame>(&spData);
 		spData.CopyTo(ppData);*/
+		if (ppData == nullptr)
+			return E_POINTER;
 		*ppData = nullptr;
-		return S_OK;
+
+		MFTIME currentPosition = -1;
+		HRESULT hr = S_OK;
+		if (m_spPresentationClock != nullptr) {
+			m_spPresentationClock->GetTime(&currentPosition);
+		}
+
+		if (currentPosition != -1)	// If no presentation position then return nullptr
+		{
+			auto lock = m_csOutputQueueAccess.Lock();
+			hr = Analyzer_FFwdQueueTo(currentPosition, ppData);
+		}
+
+#ifdef _TRACE
+		AudioVisualizer::Diagnostics::Trace::Log_GetData(currentPosition, *ppData,m_AnalyzerOutput.empty() ? nullptr : m_AnalyzerOutput.front().Get(), m_AnalyzerOutput.size(),hr);
+#endif
+
+		return hr;
 	}
 
 	/*
@@ -194,7 +216,7 @@ namespace AudioVisualizer
 	STDMETHODIMP CAnalyzerEffect::get_IsSuspended(boolean * pbIsSuspended)
 	{
 		if (pbIsSuspended == nullptr)
-			return E_INVALIDARG;
+			return E_POINTER;
 		*pbIsSuspended = (boolean) m_bIsSuspended;
 		return S_OK;
 	}
@@ -851,6 +873,7 @@ namespace AudioVisualizer
 
 	HRESULT CAnalyzerEffect::Analyzer_Initialize()
 	{
+		
 		m_FftLengthLog2 = 1;
 		while ((size_t)1 << m_FftLengthLog2 != m_FftLength)
 			m_FftLengthLog2++;
@@ -858,7 +881,7 @@ namespace AudioVisualizer
 		m_StepFrameCount = time_to_frames(1.0f / m_fOutputFps);
 		m_StepFrameOverlap = (size_t)(m_fInputOverlap * m_StepFrameCount);
 		m_StepTotalFrames = m_StepFrameCount + m_StepFrameOverlap;
-
+		/*
 		HRESULT hr = Analyzer_AllocateBuffers();
 		if (FAILED(hr))
 			return hr;
@@ -875,17 +898,17 @@ namespace AudioVisualizer
 
 		XDSP::FFTInitializeUnityTable(m_pFftUnityTable, m_FftLength);
 		m_fFftScale = 2.0f / m_FftLength;
-
+		*/
 		// Configure the buffer
-		m_InputBuffer.SetFrameSize(m_nChannels);
-		m_InputBuffer.Configure(m_StepTotalFrames, m_StepFrameOverlap);
+		_analyzer->ConfigureInput(m_nChannels);
+		_analyzer->ConfigureAnalyzer(m_FftLength, m_StepTotalFrames, m_StepFrameOverlap);
 
 #ifdef _TRACE
 		Diagnostics::Trace::Log_Initialize(m_FftLength,m_StepTotalFrames,m_StepFrameOverlap);
 #endif
 		return S_OK;
 	}
-
+	/*
 	HRESULT CAnalyzerEffect::Analyzer_AllocateBuffers()
 	{
 		using namespace DirectX;
@@ -920,7 +943,7 @@ namespace AudioVisualizer
 
 		return S_OK;
 	}
-
+	*/
 	HRESULT CAnalyzerEffect::Analyzer_ProcessSample(IMFSample * pSample)
 	{
 		if (m_FramesPerSecond == 0 || m_nChannels == 0)
@@ -932,18 +955,18 @@ namespace AudioVisualizer
 		Diagnostics::Trace::Log_ProcessSample(pSample);
 #endif
 
-		// Allow processing after a reset event. No effect is processing is in an allowed state
-		SetEvent(m_hResetWorkQueue);
+		// Allow processing after a reset event.
+		_bResetAnalyzer = false;
 
 		HRESULT hr = S_OK;
-		if (m_InputBuffer.GetPosition() == -1)	// Sample index not set, get time from sample
+		long position = -1;
+		if (_analyzer->GetPosition() == -1)	// Sample index not set, get time from sample
 		{
 			REFERENCE_TIME sampleTime = 0;
 			hr = pSample->GetSampleTime(&sampleTime);
 			if (FAILED(hr))
 				return hr;
-			long position = time_to_frames(sampleTime);
-			m_InputBuffer.SetPosition(position);
+			position = time_to_frames(sampleTime);
 #ifdef _TRACE
 			Diagnostics::Trace::Log_SetInputPosition(position);
 #endif
@@ -960,7 +983,7 @@ namespace AudioVisualizer
 		if (FAILED(hr))
 			return hr;
 
-		m_InputBuffer.Add(pBufferData, cbCurrentLength / sizeof(float));
+		_analyzer->AddInput(pBufferData,cbCurrentLength / sizeof(float),position);
 
 		spBuffer->Unlock();
 
@@ -979,10 +1002,23 @@ namespace AudioVisualizer
 			return S_OK;
 
 		// See if the access semaphore is signaled
-		DWORD dwWaitResult = WaitForSingleObject(m_hWQAccess, 0);
-		if (dwWaitResult == WAIT_OBJECT_0) // 
+		DWORD dwWaitResult = WaitForSingleObject(_threadPoolSemaphore, 0);
+		if (dwWaitResult == WAIT_OBJECT_0)
 		{
-			return MFPutWorkItem2(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, 0, this, nullptr);
+			// Execute data processing on threadpool
+			ComPtr<IAsyncAction> action;
+			return _threadPoolStatics->RunAsync(
+			Callback<IWorkItemHandler>(
+				[this](IAsyncAction *pAction) -> HRESULT
+			{
+				Analyzer_ProcessData();
+				ReleaseSemaphore(_threadPoolSemaphore, 1, nullptr);
+				return S_OK;
+			}
+				).Get(),
+			&action);
+
+			// return MFPutWorkItem2(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, 0, this, nullptr);
 		}
 		else if (dwWaitResult == WAIT_TIMEOUT)
 		{
@@ -992,34 +1028,84 @@ namespace AudioVisualizer
 			return E_FAIL;
 	}
 
+	void CAnalyzerEffect::Analyzer_ProcessData()
+	{
+		// Process data until not suspended, not in a reset and output is available
+	
+		while (!m_bIsSuspended && !_bResetAnalyzer && _analyzer->IsOutputAvailable())
+		{
+			ComPtr<ScalarData> rms;
+			if ((int)_analyzisTypes & (int)AnalyzisType::RMS)
+				rms = Make<ScalarData>(m_nChannels);
+
+			ComPtr<ScalarData> peak;
+			if ((int)_analyzisTypes & (int)AnalyzisType::Peak)
+				peak = Make<ScalarData>(m_nChannels);
+
+			ComPtr<VectorData> spectrum;
+			if ((int)_analyzisTypes & (int)AnalyzisType::Spectrum)
+				spectrum = Make<VectorData>(m_nChannels, m_FftLength >> 1);	// Spectrum is half fft length
+			long position = -1;
+
+			_analyzer->Step(&position, rms->GetBuffer(), peak->GetBuffer(), spectrum->GetBuffer());
+
+			auto time = Make<Nullable<TimeSpan>>(TimeSpan() = { frames_to_time(position) });
+			auto duration = Make<Nullable<TimeSpan>>(TimeSpan() = { (REFERENCE_TIME)(1e7 / m_fOutputFps) });
+
+			ComPtr<IVisualizationDataFrame> dataFrame = Make<VisualizationDataFrame>(
+				time.Get(),
+				duration.Get(),
+				rms.Get(),
+				peak.Get(),
+				spectrum.Get()
+				);
+			
+
+			// Only push the result if reset is not pending
+			if (!_bResetAnalyzer)
+			{
+				auto lock = m_csOutputQueueAccess.Lock();
+				Analyzer_CompactOutputQueue();
+				m_AnalyzerOutput.push(dataFrame);
+				
+#ifdef _TRACE
+				Diagnostics::Trace::Log_OutputQueuePush(dataFrame.Get(),m_AnalyzerOutput.size());
+#endif
+			}
+		}
+	}
+
+	/*
 	HRESULT CAnalyzerEffect::Analyzer_Step(IMFAsyncResult * pResult)
 	{
 		// If in reset state do not even process anything
-		DWORD dwWaitResult = WaitForSingleObject(m_hResetWorkQueue, 0);
 		if (dwWaitResult != WAIT_OBJECT_0)
 		{
 			ReleaseSemaphore(m_hWQAccess, 1, nullptr);
 			return S_OK;
 		}
 
-		ComPtr<IMFSample> spSample;
-		HRESULT hr = Analyzer_Calculate(&spSample);
-
-		auto lock = m_csOutputQueueAccess.Lock();
-		dwWaitResult = WaitForSingleObject(m_hResetWorkQueue, 0);
-		// Only push the result if reset is not pending
-		if (hr == S_OK && dwWaitResult == WAIT_OBJECT_0)
+		if (_analyzer->IsOutputAvailable())
 		{
-			// Manage queue size
-			Analyzer_CompactOutputQueue();
-			// TODO: Push sample
-			// m_AnalyzerOutput.push(spSample);
+
+			auto lock = m_csOutputQueueAccess.Lock();
+			dwWaitResult = WaitForSingleObject(m_hResetWorkQueue, 0);
+
+			// Only push the result if reset is not pending
+			if (dwWaitResult == WAIT_OBJECT_0)
+			{
+				// Manage queue size
+				Analyzer_CompactOutputQueue();
+				// TODO: Push sample
+				// m_AnalyzerOutput.push(spSample);
 #ifdef _TRACE
-			Diagnostics::Trace::Log_OutputQueuePush(m_AnalyzerOutput.size());
+				Diagnostics::Trace::Log_OutputQueuePush(m_AnalyzerOutput.size());
 #endif
+			}
 		}
 
-		if (hr != S_OK || dwWaitResult != WAIT_OBJECT_0 || m_bIsSuspended)
+
+		if (!bOutputExists || dwWaitResult != WAIT_OBJECT_0 || m_bIsSuspended)
 		{
 			// Work is done, queue is empty, release the semaphore
 			ReleaseSemaphore(m_hWQAccess, 1, nullptr);
@@ -1028,8 +1114,9 @@ namespace AudioVisualizer
 
 		// Schedule next work item
 		return MFPutWorkItem2(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, 0, this, nullptr);
-	}
+	}*/
 
+	/*
 	HRESULT CAnalyzerEffect::Analyzer_GetFromBuffer(float *pData, REFERENCE_TIME *pPosition)
 	{
 		auto readerLock = m_csInputIndexAccess.Lock();	// Get lock on modifying the reader pointer
@@ -1042,10 +1129,11 @@ namespace AudioVisualizer
 		*pPosition = frames_to_time(currentPosition);
 
 		return S_OK;
-	}
+	}*/
 
 	// Calculate Fft and then the abs values for the first half of the elements (positive frequencies)
 	// The results are placed back into pData
+/*
 	void CAnalyzerEffect::Analyzer_CalculateFft(DirectX::XMVECTOR * pData, DirectX::XMVECTOR * pBuffers)
 	{
 		Diagnostics::Trace::Log_LineNumber(__LINE__);
@@ -1079,7 +1167,7 @@ namespace AudioVisualizer
 		// Place RMS value after the output (which takes only half of the buffer)
 		pData[spectrLength] = XMVectorSqrtEst(XMVectorSum(vRMS));
 	}
-
+	
 	HRESULT CAnalyzerEffect::Analyzer_Calculate(IMFSample ** ppSample)
 	{
 		using namespace DirectX;
@@ -1154,8 +1242,10 @@ namespace AudioVisualizer
 
 		return hr;
 	}
+	*/
 
 	// Creates media sample and sets necessary attributes
+	/*
 	HRESULT  CAnalyzerEffect::Analyzer_CreateOutputSample(
 		IMFSample **ppSample, IMFMediaBuffer *pBuffer,
 		REFERENCE_TIME time, size_t bufferStep)
@@ -1171,19 +1261,18 @@ namespace AudioVisualizer
 		(*ppSample)->SetUINT32(g_PropKey_RMS_Data_Offset,UINT32(m_nChannels * bufferStep));
 		(*ppSample)->SetUINT32(g_PropKey_Data_Step, UINT32(bufferStep));
 		return S_OK;
-	}
+	}*/
 
 	HRESULT CAnalyzerEffect::Analyzer_Reset()
 	{
-		auto inputLock = m_csInputIndexAccess.Lock();
-		m_InputBuffer.Flush();
+		_analyzer->Flush();
 		return S_OK;
 	}
 
 	HRESULT CAnalyzerEffect::Analyzer_Flush()
 	{
-		// Dissallow processing and discard any output until new samples arrive
-		ResetEvent(m_hResetWorkQueue);
+		// Dissallow processing and discard any output until new samples 
+		_bResetAnalyzer = true;
 		// Release input sample and reset the analyzer and queues
 		// Clean up any state from buffer copying
 		Analyzer_Reset();
@@ -1195,7 +1284,7 @@ namespace AudioVisualizer
 #endif
 		return S_OK;
 	}
-
+	/*
 	HRESULT CAnalyzerEffect::Analyzer_LinearInterpolate(const float *pInput, size_t inputSize, float *pOutput, size_t outputSize)
 	{
 		if (outputSize > inputSize)
@@ -1229,18 +1318,17 @@ namespace AudioVisualizer
 			nextInIndex = inIndex + inStep;
 		}
 		return S_OK;
-	}
+	}*/
 
 	HRESULT CAnalyzerEffect::Analyzer_CompactOutputQueue()
 	{
 		Analyzer_FFwdQueueTo(GetPresentationTime(), nullptr);
-		/* TODO 
 		// Now manage queue size - remove items until the size is below limit
 		while (m_AnalyzerOutput.size() > cMaxOutputQueueSize)
 		{
 			m_AnalyzerOutput.front() = nullptr;
 			m_AnalyzerOutput.pop();
-		}*/
+		}
 		return S_OK;
 	}
 
@@ -1248,12 +1336,11 @@ namespace AudioVisualizer
 	{
 		auto lock = m_csOutputQueueAccess.Lock();
 
-		/* TODO
 		while (!m_AnalyzerOutput.empty())
 		{
 			m_AnalyzerOutput.front() = nullptr;
 			m_AnalyzerOutput.pop();
-		}*/
+		}
 		return S_OK;
 	}
 
@@ -1269,33 +1356,34 @@ namespace AudioVisualizer
 		return S_OK;
 	}
 
-	HRESULT CAnalyzerEffect::Analyzer_FFwdQueueTo(REFERENCE_TIME position, IMFSample ** ppSample)
+	HRESULT CAnalyzerEffect::Analyzer_FFwdQueueTo(REFERENCE_TIME position, IVisualizationDataFrame **ppFrame)
 	{
 		if (position < 0)
 			return S_FALSE;
 
 		while (!m_AnalyzerOutput.empty())
 		{
-			REFERENCE_TIME sampleTime = 0, sampleDuration = 0;
-			HRESULT hr = S_OK; // TODO: m_AnalyzerOutput.front()->GetSampleTime(&sampleTime);
-			if (FAILED(hr))
-				return hr;
+			TimeSpan time = { 0 }, duration = { 0 };
+			ComPtr<IReference<TimeSpan>> frameTime, frameDuration;
 
-			hr = S_OK; // TODO: m_AnalyzerOutput.front()->GetSampleDuration(&sampleDuration);
-			if (FAILED(hr))
-				return hr;
+			m_AnalyzerOutput.front()->get_Time(&frameTime);
+			m_AnalyzerOutput.front()->get_Duration(&frameDuration);
+			if (frameTime == nullptr || frameDuration == nullptr)
+				return E_FAIL;
+			frameTime->get_Value(&time);
+			frameDuration->get_Value(&duration);
 
-			if (position < sampleTime)
+			if (position < time.Duration)
 			{
 				return S_FALSE; // Current position is before the frames in visualization queue - wait until we catch up
 			}
 
 			// Add 5uS (about half sample time @96k) to avoid int time math rounding errors
-			if (position <= sampleDuration + sampleTime + 50L)
+			if (position <= duration.Duration + time.Duration + 50L)
 			{
-				// TODO:
-				/* if (ppSample != nullptr)	// If sample is requested, return the sample found
-					m_AnalyzerOutput.front().CopyTo(ppSample);*/
+
+				if (ppFrame != nullptr)	// If frame is requested, return the frame found
+					m_AnalyzerOutput.front().CopyTo(ppFrame);
 				return S_OK;
 			}
 			else
@@ -1305,14 +1393,13 @@ namespace AudioVisualizer
 					return S_FALSE;
 				}
 				// Current position is after the item in the queue - remove and continue searching
-				// TODO:
-				//m_AnalyzerOutput.front() = nullptr; // Dereference the pointer
-				//m_AnalyzerOutput.pop();
+				m_AnalyzerOutput.front() = nullptr; // Dereference the pointer
+				m_AnalyzerOutput.pop();
 			}
 		}
 		return S_FALSE;
 	}
-
+	/*
 	DirectX::XMVECTOR g_vLog10DbScaler = DirectX::XMVectorReplicate(8.68588f); // This is 20.0/LogE(10)
 																			   // {3F692E37-FC20-48DD-93D2-2234E1B1AA23}
 
@@ -1325,7 +1412,7 @@ namespace AudioVisualizer
 			XMVECTOR vLog = XMVectorLogE(vClamped) * g_vLog10DbScaler;
 			pvData[vIndex] = XMVectorClamp(vLog, m_vClampAmpLow, m_vClampAmpHigh);
 		}
-	}
+	}*/
 
 	STDMETHODIMP CAnalyzerEffect::SetProperties(ABI::Windows::Foundation::Collections::IPropertySet * pConfiguration)
 	{

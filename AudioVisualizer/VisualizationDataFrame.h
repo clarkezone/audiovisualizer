@@ -1,5 +1,9 @@
 #pragma once
+
+#define _CRTDBG_MAP_ALLOC 
+
 #include "AudioVisualizer_h.h"
+#include "VisualizationData.h"
 #include "Nullable.h"
 #include <DirectXMath.h>
 
@@ -12,15 +16,21 @@ namespace AudioVisualizer
 	class VisualizationDataFrame : public RuntimeClass<IVisualizationDataFrame>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_VisualizationDataFrame, BaseTrust)
-		unsigned _channels;
 		ComPtr<IReference<TimeSpan>> _time;
 		ComPtr<IReference<TimeSpan>> _duration;
-		ComPtr<IVisualizationData> _rms;
-		ComPtr<IVisualizationData> _peak;
-		ComPtr<IVisualizationData> _specter;
+		ComPtr<ScalarData> _rms;
+		ComPtr<ScalarData> _peak;
+		ComPtr<VectorData> _spectrum;
 
 	public:
-		VisualizationDataFrame(IReference<TimeSpan> *pTime,IReference<TimeSpan> *pDuration,size_t channels,size_t spectralLength);
+		VisualizationDataFrame(IReference<TimeSpan> *pTime, IReference<TimeSpan> *pDuration, ScalarData *pRms, ScalarData *pPeak, VectorData *pSpectrum)
+		{
+			_time = pTime;
+			_duration = pDuration;
+			_rms = pRms;
+			_peak = pPeak;
+			_spectrum = pSpectrum;
+		}
 
 		STDMETHODIMP get_Time(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan> **ppTimeStamp)
 		{
@@ -48,6 +58,13 @@ namespace AudioVisualizer
 			if (ppData == nullptr)
 				return E_INVALIDARG;
 			_peak.CopyTo(ppData);
+			return S_OK;
+		}
+		STDMETHODIMP get_Spectrum(IVisualizationData **ppData)
+		{
+			if (ppData == nullptr)
+				return E_INVALIDARG;
+			_spectrum.CopyTo(ppData);
 			return S_OK;
 		}
 	};

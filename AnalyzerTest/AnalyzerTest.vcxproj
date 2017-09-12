@@ -192,6 +192,7 @@
     <Image Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnalyzerTests.cpp" />
     <ClCompile Include="BufferTests.cpp" />
     <ClCompile Include="MathTests.cpp" />
     <ClCompile Include="UnitTestApp.xaml.cpp">

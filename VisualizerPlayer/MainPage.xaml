@@ -5,7 +5,6 @@
     xmlns:local="using:VisualizerPlayer"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:win2d="using:Microsoft.Graphics.Canvas.UI.Xaml"
     xmlns:a="using:AudioVisualizer"
     mc:Ignorable="d" Loaded="Page_Loaded">
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -18,10 +17,7 @@
             <AppBarButton Icon="OpenFile" Click="OpenFile_Click"></AppBarButton>
         </CommandBar>
         <a:BaseVisualizer Grid.Row="1" x:Name="visualizer" Draw="visualizer_Draw" BackgroundColor="Blue" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></a:BaseVisualizer>
-        <MediaElement x:Name="mePlayer" Grid.Row="2" AudioCategory="Media"
-                      AreTransportControlsEnabled="True">
-            
-        </MediaElement>
+
         <ToggleSwitch IsOn="True" Grid.Row="2" Margin ="20,0"
                       VerticalAlignment="Center" Toggled="ToggleSwitch_Toggled">Visualization</ToggleSwitch>
     </Grid>

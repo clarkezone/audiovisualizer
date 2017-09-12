@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0622 */
 /* at Tue Jan 19 05:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-9c285622:
+/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-2fe3b5be:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -2963,6 +2963,13 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIScalarData;
                     /* [in] */ ABI::Windows::Foundation::TimeSpan timeFromPrevious,
                     /* [out][retval] */ ABI::AudioVisualizer::IVisualizationData **result) = 0;
                 
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Size( 
+                    /* [out][retval] */ UINT32 *size) = 0;
+                
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Values( 
+                    /* [out] */ UINT32 *lsize,
+                    /* [out][retval][size_is][size_is] */ float **data) = 0;
+                
             };
 
             extern const __declspec(selectany) IID & IID_IScalarData = __uuidof(IScalarData);
@@ -3017,6 +3024,15 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIScalarData;
             /* [in] */ __x_ABI_CWindows_CFoundation_CTimeSpan timeFromPrevious,
             /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationData **result);
         
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Size )( 
+            __x_ABI_CAudioVisualizer_CIScalarData * This,
+            /* [out][retval] */ UINT32 *size);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Values )( 
+            __x_ABI_CAudioVisualizer_CIScalarData * This,
+            /* [out] */ UINT32 *lsize,
+            /* [out][retval][size_is][size_is] */ float **data);
+        
         END_INTERFACE
     } __x_ABI_CAudioVisualizer_CIScalarDataVtbl;
 
@@ -3055,6 +3071,12 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIScalarData;
 
 #define __x_ABI_CAudioVisualizer_CIScalarData_ApplyRiseAndFall(This,previous,riseTime,fallTime,timeFromPrevious,result)	\
     ( (This)->lpVtbl -> ApplyRiseAndFall(This,previous,riseTime,fallTime,timeFromPrevious,result) ) 
+
+#define __x_ABI_CAudioVisualizer_CIScalarData_get_Size(This,size)	\
+    ( (This)->lpVtbl -> get_Size(This,size) ) 
+
+#define __x_ABI_CAudioVisualizer_CIScalarData_get_Values(This,lsize,data)	\
+    ( (This)->lpVtbl -> get_Values(This,lsize,data) ) 
 
 #endif /* COBJMACROS */
 
@@ -3298,13 +3320,17 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSourceStatics;
             IVisualizationSourceStatics : public IInspectable
             {
             public:
-                virtual HRESULT STDMETHODCALLTYPE CreateSourceFromMediaElementAsync( 
-                    /* [in] */ ABI::Windows::UI::Xaml::Controls::IMediaElement *pElement,
-                    /* [out][retval] */ __FIAsyncOperation_1_AudioVisualizer__CIVisualizationSource **source) = 0;
+                virtual HRESULT STDMETHODCALLTYPE CreateFromMediaElementAsync( 
+                    /* [in] */ ABI::Windows::UI::Xaml::Controls::IMediaElement *pObject,
+                    /* [out][retval] */ __FIAsyncOperation_1_AudioVisualizer__CIVisualizationSource **ppAsyncOp) = 0;
                 
-                virtual HRESULT STDMETHODCALLTYPE CreateSourceFromAudioNode( 
-                    /* [in] */ ABI::Windows::Media::Audio::IAudioNode *pNode,
-                    /* [out][retval] */ ABI::AudioVisualizer::IVisualizationSource **source) = 0;
+                virtual HRESULT STDMETHODCALLTYPE CreateFromMediaPlayerAsync( 
+                    /* [in] */ ABI::Windows::Media::Playback::IMediaPlayer *pObject,
+                    /* [out][retval] */ __FIAsyncOperation_1_AudioVisualizer__CIVisualizationSource **ppAsyncOp) = 0;
+                
+                virtual HRESULT STDMETHODCALLTYPE CreateFromAudioNode( 
+                    /* [in] */ ABI::Windows::Media::Audio::IAudioNode *pObject,
+                    /* [out][retval] */ ABI::AudioVisualizer::IVisualizationSource **ppSource) = 0;
                 
             };
 
@@ -3346,15 +3372,20 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSourceStatics;
             __x_ABI_CAudioVisualizer_CIVisualizationSourceStatics * This,
             /* [out] */ TrustLevel *trustLevel);
         
-        HRESULT ( STDMETHODCALLTYPE *CreateSourceFromMediaElementAsync )( 
+        HRESULT ( STDMETHODCALLTYPE *CreateFromMediaElementAsync )( 
             __x_ABI_CAudioVisualizer_CIVisualizationSourceStatics * This,
-            /* [in] */ __x_ABI_CWindows_CUI_CXaml_CControls_CIMediaElement *pElement,
-            /* [out][retval] */ __FIAsyncOperation_1_AudioVisualizer__CIVisualizationSource **source);
+            /* [in] */ __x_ABI_CWindows_CUI_CXaml_CControls_CIMediaElement *pObject,
+            /* [out][retval] */ __FIAsyncOperation_1_AudioVisualizer__CIVisualizationSource **ppAsyncOp);
         
-        HRESULT ( STDMETHODCALLTYPE *CreateSourceFromAudioNode )( 
+        HRESULT ( STDMETHODCALLTYPE *CreateFromMediaPlayerAsync )( 
             __x_ABI_CAudioVisualizer_CIVisualizationSourceStatics * This,
-            /* [in] */ __x_ABI_CWindows_CMedia_CAudio_CIAudioNode *pNode,
-            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationSource **source);
+            /* [in] */ __x_ABI_CWindows_CMedia_CPlayback_CIMediaPlayer *pObject,
+            /* [out][retval] */ __FIAsyncOperation_1_AudioVisualizer__CIVisualizationSource **ppAsyncOp);
+        
+        HRESULT ( STDMETHODCALLTYPE *CreateFromAudioNode )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationSourceStatics * This,
+            /* [in] */ __x_ABI_CWindows_CMedia_CAudio_CIAudioNode *pObject,
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationSource **ppSource);
         
         END_INTERFACE
     } __x_ABI_CAudioVisualizer_CIVisualizationSourceStaticsVtbl;
@@ -3389,11 +3420,14 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSourceStatics;
     ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
 
 
-#define __x_ABI_CAudioVisualizer_CIVisualizationSourceStatics_CreateSourceFromMediaElementAsync(This,pElement,source)	\
-    ( (This)->lpVtbl -> CreateSourceFromMediaElementAsync(This,pElement,source) ) 
+#define __x_ABI_CAudioVisualizer_CIVisualizationSourceStatics_CreateFromMediaElementAsync(This,pObject,ppAsyncOp)	\
+    ( (This)->lpVtbl -> CreateFromMediaElementAsync(This,pObject,ppAsyncOp) ) 
 
-#define __x_ABI_CAudioVisualizer_CIVisualizationSourceStatics_CreateSourceFromAudioNode(This,pNode,source)	\
-    ( (This)->lpVtbl -> CreateSourceFromAudioNode(This,pNode,source) ) 
+#define __x_ABI_CAudioVisualizer_CIVisualizationSourceStatics_CreateFromMediaPlayerAsync(This,pObject,ppAsyncOp)	\
+    ( (This)->lpVtbl -> CreateFromMediaPlayerAsync(This,pObject,ppAsyncOp) ) 
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationSourceStatics_CreateFromAudioNode(This,pObject,ppSource)	\
+    ( (This)->lpVtbl -> CreateFromAudioNode(This,pObject,ppSource) ) 
 
 #endif /* COBJMACROS */
 

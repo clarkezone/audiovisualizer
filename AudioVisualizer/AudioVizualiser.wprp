@@ -30,7 +30,7 @@
 
     <Profile Id="MF.Verbose.File" Name="MF" Description="Media Foundation" LoggingMode="File" DetailLevel="Verbose">
       <Collectors>
-        <EventCollectorId Value="EventCollector_AudioAnalyzer">
+        <EventCollectorId Value="EventCollector_AudioVisualizer">
           <EventProviders>
             <EventProviderId Value="MF" />
             <EventProviderId Value="MediaEngine"/>
@@ -45,7 +45,7 @@
 
     <Profile Id="MicrosoftAudio.Verbose.File" Name="MicrosoftAudio" Description="Audio events" LoggingMode="File" DetailLevel="Verbose">
       <Collectors>
-        <EventCollectorId Value="EventCollector_AudioAnalyzer">
+        <EventCollectorId Value="EventCollector_AudioVisualizer">
           <EventProviders>
             <EventProviderId Value="MicrosoftAudio" />
             <EventProviderId Value="AudioGraph"/>
@@ -60,7 +60,7 @@
 
     <Profile Id="AudioVisualizer.Verbose.File" Name="AudioVisualizer" Description="AudioVisualizer Trace" LoggingMode="File" DetailLevel="Verbose">
       <Collectors>
-        <EventCollectorId Value="EventCollector_AudioAnalyzer">
+        <EventCollectorId Value="EventCollector_AudioVisualizer">
           <EventProviders>
             <EventProviderId Value="VisualizerEventSource" />
           </EventProviders>

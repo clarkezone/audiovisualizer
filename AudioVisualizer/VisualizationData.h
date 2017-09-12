@@ -1,4 +1,7 @@
 #pragma once
+
+#define _CRTDBG_MAP_ALLOC 
+
 #include "AudioVisualizer_h.h"
 #include <DirectXMath.h>
 #include <vector>
@@ -18,6 +21,7 @@ namespace AudioVisualizer
 		VisualizationData(ScaleType scaleType = ScaleType::Linear) : _amplitudeScale(scaleType)
 		{
 		}
+	
 
 		STDMETHODIMP get_AmplitudeScale(ScaleType *pScale)
 		{
@@ -29,18 +33,19 @@ namespace AudioVisualizer
 
 	};
 
-	class ScalarData : public RuntimeClass<MixIn<ScalarData,VisualizationData>,IVectorView<float>,IScalarData>, public VisualizationData
+	class ScalarData : public RuntimeClass<MixIn<ScalarData,VisualizationData>,IScalarData>, public VisualizationData
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_ScalarData, BaseTrust);
 
 		DirectX::XMVECTOR *_pData;
 		size_t _size;
+
 	public:
 		ScalarData(size_t cElements, ScaleType scaleType = ScaleType::Linear) :
 			VisualizationData(scaleType) 
 		{
 			size_t vLength = (cElements + 3) >> 2;	// Vector size of the allocated buffer
-			_pData = reinterpret_cast<DirectX::XMVECTOR *>(_aligned_malloc(vLength * sizeof(DirectX::XMVECTOR), 16));
+			_pData = reinterpret_cast<DirectX::XMVECTOR *>(_aligned_malloc_dbg(vLength * sizeof(DirectX::XMVECTOR), 16,__FILE__,__LINE__));
 			_size = cElements;
 		}
 		~ScalarData()
@@ -49,25 +54,22 @@ namespace AudioVisualizer
 				_aligned_free(_pData);
 		}
 
-		STDMETHODIMP GetAt(unsigned int index, float *pResult)
+		DirectX::XMVECTOR *GetBuffer() { return _pData; }
+
+		STDMETHODIMP get_Values(UINT32 *pcElements, float **ppValues)
 		{
-			if (pResult == nullptr)
+			if (ppValues == nullptr)
 				return E_INVALIDARG;
-			if (index >= _size)
-				return E_INVALIDARG;
-			*pResult = ((float *)_pData)[index];
+			*ppValues = (float *)_pData;
+			*pcElements = _size;
 			return S_OK;
 		}
-		STDMETHODIMP get_Size(unsigned int *pSize)
+		STDMETHODIMP get_Size(UINT32 *pSize)
 		{
 			if (pSize == nullptr)
 				return E_INVALIDARG;
-			*pSize = (unsigned int)_size;
+			*pSize = _size;
 			return S_OK;
-		}
-		STDMETHODIMP IndexOf(float, unsigned int *, boolean *)
-		{
-			return E_NOTIMPL;
 		}
 		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, IVisualizationData **ppResult);
 		STDMETHODIMP ApplyRiseAndFall(IVisualizationData *pPrevious, TimeSpan fallTime, TimeSpan riseTime, TimeSpan timeDelta, IVisualizationData **ppResult);
@@ -126,7 +128,7 @@ namespace AudioVisualizer
 			_vElementsCount = (cElements + 3) >> 2;	// Make sure channel data is aligned
 			_size = cElements;
 			_channels = cChannels;
-			_pData = reinterpret_cast<DirectX::XMVECTOR *>(_aligned_malloc(_vElementsCount * cChannels * sizeof(DirectX::XMVECTOR), 16));
+			_pData = reinterpret_cast<DirectX::XMVECTOR *>(_aligned_malloc_dbg(_vElementsCount * cChannels * sizeof(DirectX::XMVECTOR), 16,__FILE__, __LINE__));
 			_channelData.resize(_channels);
 			for (size_t index = 0,vIndex = 0; index < _channels; index++,vIndex+=_vElementsCount)
 			{

@@ -3,11 +3,13 @@
 #include <windows.system.threading.h>
 #include <wrl.h>
 #include "Utilities.h"
+#include <windows.media.playback.h>
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::AudioVisualizer;
+using namespace ABI::Windows::Media::Playback;
 
 namespace AudioVisualizer
 {
@@ -33,14 +35,25 @@ namespace AudioVisualizer
 		{
 			CloseHandle(_hWaitEvent);
 		}
-		HRESULT RuntimeClassInitialize(IMediaElement *pMediaElement)
+		HRESULT RuntimeClassInitialize(IInspectable *pObject)
 		{
 			using namespace ABI::Windows::UI::Xaml::Controls;
 			using namespace ABI::Windows::Foundation::Collections;
 
-			if (pMediaElement == nullptr)
-				return E_INVALIDARG;
 
+			if (pObject == nullptr)
+				return E_POINTER;
+			ComPtr<IInspectable> obj = pObject;
+
+			ComPtr<IMediaElement> mediaElement;
+			ComPtr<IMediaPlayerEffects> mediaPlayer;
+			if (
+				FAILED(obj.As(&mediaPlayer)) &&
+				FAILED(obj.As(&mediaElement))
+				)
+			{
+				return E_INVALIDARG;
+			}
 
 			HRESULT hr = ABI::Windows::Foundation::ActivateInstance(
 				HStringReference(RuntimeClass_Windows_Foundation_Collections_PropertySet).Get(),
@@ -80,10 +93,22 @@ namespace AudioVisualizer
 			if (FAILED(hr))
 				return hr;
 
-			hr = pMediaElement->AddAudioEffect(
-				HStringReference(RuntimeClass_AudioVisualizer_MftAnalyzer).Get(),
-				false,
-				_spPropSet.Get());
+			if (mediaPlayer != nullptr)
+			{
+				hr = mediaPlayer->AddAudioEffect(
+					HStringReference(RuntimeClass_AudioVisualizer_MftAnalyzer).Get(),
+					false,
+					_spPropSet.Get());
+			}
+			else if (mediaElement != nullptr)
+			{
+				hr = mediaElement->AddAudioEffect(
+					HStringReference(RuntimeClass_AudioVisualizer_MftAnalyzer).Get(),
+					false,
+					_spPropSet.Get());
+			}
+			else
+				return E_FAIL;
 
 			if (FAILED(hr))
 				return hr;
@@ -137,6 +162,7 @@ namespace AudioVisualizer
 			});
 
 			ComPtr<IAsyncAction> spAction;
+
 			return spThreadPool->RunAsync(threadPoolDelegate.Get(), &spAction);
 		}
 		virtual void OnCancel()
@@ -184,7 +210,8 @@ namespace AudioVisualizer
 		source.CopyTo(ppvObject);
 		return S_OK;
 	}
-	STDMETHODIMP VisualizationSourceStatics::CreateSourceFromMediaElementAsync(IMediaElement *pElement, IAsyncOperation<IVisualizationSource *> **ppAsyncOp)
+
+	STDMETHODIMP VisualizationSourceStatics::CreateFromMediaPlayerAsync(IMediaPlayer * pElement, IAsyncOperation<IVisualizationSource*>** ppAsyncOp)
 	{
 		ComPtr<CreateSourceAsyncOperation> op;
 		HRESULT hr = MakeAndInitialize<CreateSourceAsyncOperation>(&op, pElement);
@@ -194,5 +221,22 @@ namespace AudioVisualizer
 		hr = op.CopyTo(ppAsyncOp);
 		return hr;
 	}
+
+	STDMETHODIMP VisualizationSourceStatics::CreateFromMediaElementAsync(IMediaElement * pElement, IAsyncOperation<IVisualizationSource*>** ppAsyncOp)
+	{
+		ComPtr<CreateSourceAsyncOperation> op;
+		HRESULT hr = MakeAndInitialize<CreateSourceAsyncOperation>(&op, pElement);
+		if (FAILED(hr))
+			return hr;
+
+		hr = op.CopyTo(ppAsyncOp);
+		return hr;
+	}
+
+	STDMETHODIMP VisualizationSourceStatics::CreateFromAudioNode(IAudioNode * pNode, IVisualizationSource ** pSource)
+	{
+		return E_NOTIMPL;
+	}
+
 
 }

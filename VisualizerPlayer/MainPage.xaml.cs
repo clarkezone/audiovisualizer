@@ -19,6 +19,8 @@ using Windows.UI;
 using System.Threading;
 using System.Threading.Tasks;
 using AudioVisualizer;
+using Windows.Media.Core;
+using Windows.Media.Playback;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -30,29 +32,43 @@ namespace VisualizerPlayer
     public sealed partial class MainPage : Page
     {
 
-        /*
-        public async Task<AudioAnalyzer.IVisualizationSource> CreateAnalyzerAsync(MediaElement element)
+        
+        public async Task<AudioVisualizer.IVisualizationSource> CreateAnalyzerAsync(MediaPlayer element)
         {
             var propSet = new PropertySet();
             ManualResetEventSlim opComplete = new ManualResetEventSlim();
-            AudioAnalyzer.IVisualizationSource source = null;
+            AudioVisualizer.IVisualizationSource source = null;
             propSet.MapChanged += new MapChangedEventHandler<string,object>(
                 (IObservableMap<string, object> sender, IMapChangedEventArgs<string> @event) =>
                 {
-                    source = (AudioAnalyzer.IVisualizationSource)sender["Source"];
+                    source = (AudioVisualizer.IVisualizationSource)sender["Source"];
                     opComplete.Set();
                 }
                 );
-            element.AddAudioEffect("AudioAnalyzer.AnalyzerEffect", false, propSet);
+            element.AddAudioEffect("AudioAnalyzer.MftAnalyzer", false, propSet);
 
             await Task.Run(() => { opComplete.Wait(); }); 
             return source; 
-        }*/
+        }
 
+        MediaPlayer _player;
 
         public MainPage()
         {
             this.InitializeComponent();
+            _player = new MediaPlayer();
+            _player.MediaOpened += _player_MediaOpened;
+            _player.SourceChanged += _player_SourceChanged;
+        }
+
+        private void _player_SourceChanged(MediaPlayer sender, object args)
+        {
+            System.Diagnostics.Debug.WriteLine("Source changed");
+        }
+
+        private void _player_MediaOpened(MediaPlayer sender, object args)
+        {
+            System.Diagnostics.Debug.WriteLine("Mediaopened");
         }
 
         private async void OpenFile_Click(object sender, RoutedEventArgs e)
@@ -65,10 +81,8 @@ namespace VisualizerPlayer
             var file = await picker.PickSingleFileAsync();
             if (file != null)
             {
-                var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
-                mePlayer.SetSource(stream, file.ContentType);
-
-                mePlayer.Play();
+                _player.Source = MediaSource.CreateFromStorageFile(file);
+                _player.AutoPlay = true;
             }
         }
 
@@ -80,36 +94,7 @@ namespace VisualizerPlayer
         {
             if (m_VisualizationSource != null)
             {
-                /*
-                var frame = m_VisualizationSource.GetFrame();
-                if (frame != null)
-                {
-                    try
-                    {
-                        var data = frame.AsVisualizationData();
-                        float barWidth = (float)(m_VisualizationSize.Width / 202.0);
-                        float position = 0.0f;
-                        for (uint i = 0; i < 202; i++, position += barWidth)
-                        {
-                            float height = 100 + data[i];
-                            args.DrawingSession.FillRectangle(position, 0, barWidth, 100 + data[i], Colors.Red);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"{e.Message}");
-                    }
-                }
-                else
-                {
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                    Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, ()=>
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Analyzer frame null Player at:{mePlayer.Position} D2D frame {args.Timing.UpdateCount} ");
-                    }
-                    );
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                }*/
+  
             }
         }
 
@@ -121,16 +106,18 @@ namespace VisualizerPlayer
             m_VisualizationSize = e.NewSize;
         }
 
-        private void Page_Loaded(object sender, RoutedEventArgs e)
+        private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            CreateVisualizer();
+            m_VisualizationSource = await CreateAnalyzerAsync(_player);
+            m_VisualizationSource.Configure(AnalyzisType.All,60, 4096, 0.5f);
+            visualizer.Source = m_VisualizationSource;
         }
 
         private async void CreateVisualizer()
         {
-            m_VisualizationSource = await AudioVisualizer.VisualizationSource.CreateSourceFromMediaElementAsync(mePlayer);
-            m_VisualizationSource.Configure(4096, 60, 0.5f);
-            visualizer.Source = m_VisualizationSource;
+            //m_VisualizationSource = await AudioVisualizer.VisualizationSource.CreateFromMediaPlayerAsync(mePlayer.MediaPlayer);
+            //m_VisualizationSource.Configure(AnalyzisType.All,60, 4096, 0.5f);
+            //visualizer.Source = m_VisualizationSource;
         }
 
         private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
@@ -144,9 +131,24 @@ namespace VisualizerPlayer
         {
         }
 
+        ScalarData previousRMS;
+
         private void visualizer_Draw(AudioVisualizer.IVisualizer sender, AudioVisualizer.VisualizerDrawEventArgs args)
         {
-            args.DrawingSession.DrawText("Hello", 10, 10, Colors.Gray);
+            
+            if (args.Data != null)
+            {
+                var rms = args.Data.RMS;
+                previousRMS = rms.ApplyRiseAndFall(previousRMS, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(300), TimeSpan.FromMilliseconds(16.7));
+                var logRMS = previousRMS.ConvertToLogAmplitude(-100.0f, 0.0f).Values;
+
+                args.DrawingSession.FillRectangle(10, 10, 20 + (100.0f + (logRMS[0])), 20, Colors.Green);
+                args.DrawingSession.FillRectangle(10, 40, 20 + (100.0f + (logRMS[1])), 20, Colors.Green);
+            }
+            else
+            {
+                previousRMS = null;
+            }
         }
     }
 }
