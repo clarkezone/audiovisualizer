@@ -30,9 +30,7 @@ namespace VisualizerPlayer
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class MainPage : Page
-    {
-
-        
+    {       
         public async Task<AudioVisualizer.IVisualizationSource> CreateAnalyzerAsync(MediaPlayer element)
         {
             var propSet = new PropertySet();
@@ -51,14 +49,10 @@ namespace VisualizerPlayer
             return source; 
         }
 
-        MediaPlayer _player;
 
         public MainPage()
         {
             this.InitializeComponent();
-            _player = new MediaPlayer();
-            _player.MediaOpened += _player_MediaOpened;
-            _player.SourceChanged += _player_SourceChanged;
         }
 
         private void _player_SourceChanged(MediaPlayer sender, object args)
@@ -81,8 +75,7 @@ namespace VisualizerPlayer
             var file = await picker.PickSingleFileAsync();
             if (file != null)
             {
-                _player.Source = MediaSource.CreateFromStorageFile(file);
-                _player.AutoPlay = true;
+                mePlayer.SetSource(await file.OpenAsync(Windows.Storage.FileAccessMode.Read), file.FileType);
             }
         }
 
@@ -106,18 +99,16 @@ namespace VisualizerPlayer
             m_VisualizationSize = e.NewSize;
         }
 
-        private async void Page_Loaded(object sender, RoutedEventArgs e)
+        private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            m_VisualizationSource = await CreateAnalyzerAsync(_player);
-            m_VisualizationSource.Configure(AnalyzisType.All,60, 4096, 0.5f);
-            visualizer.Source = m_VisualizationSource;
+            CreateVisualizer();
         }
 
         private async void CreateVisualizer()
         {
-            //m_VisualizationSource = await AudioVisualizer.VisualizationSource.CreateFromMediaPlayerAsync(mePlayer.MediaPlayer);
-            //m_VisualizationSource.Configure(AnalyzisType.All,60, 4096, 0.5f);
-            //visualizer.Source = m_VisualizationSource;
+            m_VisualizationSource = await AudioVisualizer.VisualizationSource.CreateFromMediaElementAsync(mePlayer);
+            m_VisualizationSource.Configure(AnalyzerType.All,60, 4096, 0.5f);
+            visualizer.Source = m_VisualizationSource;
         }
 
         private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
@@ -135,20 +126,26 @@ namespace VisualizerPlayer
 
         private void visualizer_Draw(AudioVisualizer.IVisualizer sender, AudioVisualizer.VisualizerDrawEventArgs args)
         {
+            var traceActivity = Trace.BaseVisualizer_StartDraw();
+
             
             if (args.Data != null)
             {
-                var rms = args.Data.RMS;
-                previousRMS = rms.ApplyRiseAndFall(previousRMS, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(300), TimeSpan.FromMilliseconds(16.7));
-                var logRMS = previousRMS.ConvertToLogAmplitude(-100.0f, 0.0f).Values;
+                using (var data = args.Data.GetReference())
+                {
+                    previousRMS = data.RMS.ApplyRiseAndFall(previousRMS, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(300), TimeSpan.FromMilliseconds(16.7));
+                    var logRMS = previousRMS.ConvertToLogAmplitude(-100.0f, 0.0f).Values;
 
-                args.DrawingSession.FillRectangle(10, 10, 20 + (100.0f + (logRMS[0])), 20, Colors.Green);
-                args.DrawingSession.FillRectangle(10, 40, 20 + (100.0f + (logRMS[1])), 20, Colors.Green);
+                    args.DrawingSession.FillRectangle(10, 10, 20 + (100.0f + (logRMS[0])), 20, Colors.Green);
+                    args.DrawingSession.FillRectangle(10, 40, 20 + (100.0f + (logRMS[1])), 20, Colors.Green);
+                }
             }
             else
             {
                 previousRMS = null;
             }
+
+            traceActivity.StopActivity(traceActivity.Name);
         }
     }
 }

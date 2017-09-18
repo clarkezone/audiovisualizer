@@ -1,184 +1,97 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-//
-// Licensed under the MIT License. See LICENSE.txt in the project root for license information.
-
 #pragma once
-
-#include <algorithm>
-#include <assert.h>
-#include <iterator>
-#include <mutex>
+#include<mutex>
+#include<unordered_map>
 #include <typeindex>
-#include <unordered_map>
-#include "WinStringBuilder.h"
+#include <string>
+#include <locale>
+#include <codecvt>
+#include <windows.foundation.diagnostics.h>
+#include <wrl.h>
+#include "trace.h"
 
-
-// By default, object lifespan tracking is only enabled in debug builds.
-// Define ENABLE_LIFESPAN_TRACKER or DISABLE_LIFESPAN_TRACKER to force it on or off.
-#if defined _DEBUG && !defined DISABLE_LIFESPAN_TRACKER
-#define ENABLE_LIFESPAN_TRACKER
+#ifndef ENABLE_LIFESPAN_TRACKER 
+	#ifdef DEBUG
+		#define ENABLE_LIFESPAN_TRACKER
+	#endif // DEBUG
 #endif
-
-
 #ifdef ENABLE_LIFESPAN_TRACKER
 
+class LifespanInfo
+{
+	struct State
+	{
+		std::mutex mutex;
+		std::unordered_map<std::type_index, size_t> objectCounts;
+	};
 
-// Specialize these to (temporarily!) enable more intrusive lifespan reporting for specific types.
-template<typename T> bool TraceAllocations()  { return false; }
-template<typename T> bool BreakOnAllocation() { return false; }
+	static State m_state;
 
+	LifespanInfo() = delete;
+
+public:
+	// Records that a new object is being allocated.
+	static void AddObject(const void*pObj,type_info const& type,ABI::Windows::Foundation::Diagnostics::ILoggingActivity **ppActivity)
+	{
+		std::lock_guard<std::mutex> lock(m_state.mutex);
+		size_t objectCount = ++m_state.objectCounts[type];
+		std::wstring_convert<std::codecvt<wchar_t, char, mbstate_t>> conv;
+		auto typeName = conv.from_bytes(type.name());
+		AudioVisualizer::Diagnostics::Trace::Log_ctor(typeName.c_str(), pObj, objectCount,ppActivity);
+	}
+
+
+	// Records that an object is being freed.
+	static void RemoveObject(const void*pObj,type_info const& type, ABI::Windows::Foundation::Diagnostics::ILoggingActivity *pActivity)
+	{
+		std::lock_guard<std::mutex> lock(m_state.mutex);
+
+		size_t objectCount = --m_state.objectCounts[type];
+		std::wstring_convert<std::codecvt<wchar_t, char, mbstate_t>> conv;
+		auto typeName = conv.from_bytes(type.name());
+		AudioVisualizer::Diagnostics::Trace::Log_dtor(typeName.c_str(), pObj, objectCount, pActivity);
+	}
+
+	static void CloseObject(const void*pObj, type_info const& type, ABI::Windows::Foundation::Diagnostics::ILoggingActivity *pActivity)
+	{
+		std::lock_guard<std::mutex> lock(m_state.mutex);
+
+		size_t objectCount = m_state.objectCounts[type];
+		std::wstring_convert<std::codecvt<wchar_t, char, mbstate_t>> conv;
+		auto typeName = conv.from_bytes(type.name());
+		AudioVisualizer::Diagnostics::Trace::Log_CloseObject(typeName.c_str(), pObj, objectCount, pActivity);
+
+	}
+};
 
 // Derive from this to make a type trackable.
 template<typename T>
 class LifespanTracker
 {
+	//friend class AudioVisualizer::Diagnostics::Trace;
+
+	Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Diagnostics::ILoggingActivity> _traceLog_Activity;
 protected:
-    LifespanTracker()
-    {
-        LifespanInfo::AddObject(typeid(T), TraceAllocations<T>(), BreakOnAllocation<T>());
-    }
+	LifespanTracker()
+	{
+		LifespanInfo::AddObject(this,typeid(T),&_traceLog_Activity);
+	}
 
-    ~LifespanTracker()
-    {
-        LifespanInfo::RemoveObject(typeid(T), TraceAllocations<T>(), BreakOnAllocation<T>());
-    }
-};
+	~LifespanTracker()
+	{
+		LifespanInfo::RemoveObject(this,typeid(T),_traceLog_Activity.Get());
+	}
 
-
-class LifespanInfo
-{
-    struct State
-    {
-        std::mutex mutex;
-        std::unordered_map<std::type_index, size_t> objectCounts;
-    };
-
-    static State m_state;
-
-    LifespanInfo() = delete;
-
-
+	void Lifespan_CloseObject()
+	{
+		LifespanInfo::CloseObject(this, typeid(T), _traceLog_Activity.Get());
+	}
 public:
-    // Records that a new object is being allocated.
-    static void AddObject(type_info const& type, bool traceAllocations, bool breakOnAllocation)
-    {
-        std::lock_guard<std::mutex> lock(m_state.mutex);
-
-        size_t objectCount = ++m_state.objectCounts[type];
-
-        TraceAllocation(type, traceAllocations, breakOnAllocation, objectCount, true);
-    }
-
-
-    // Records that an object is being freed.
-    static void RemoveObject(type_info const& type, bool traceAllocations, bool breakOnAllocation)
-    {
-        std::lock_guard<std::mutex> lock(m_state.mutex);
-
-        size_t objectCount = --m_state.objectCounts[type];
-
-        TraceAllocation(type, traceAllocations, breakOnAllocation, objectCount, false);
-    }
-
-
-    // Debug spews the counts of all live objects, and returns the total count.
-    static size_t ReportLiveObjects()
-    {
-        std::lock_guard<std::mutex> lock(m_state.mutex);
-
-        return ReportLiveObjectsNoLock();
-    }
-
-
-    // Debug spews the counts of all live objects, without taking out the usual lock.
-    // For use during DLL unload where synchronization primitives are no longer available.
-    static size_t ReportLiveObjectsNoLock()
-    {
-        typedef std::pair<std::type_index, size_t> pair_t;
-
-        // Filter out only types that have remaining live instances.
-        std::vector<pair_t> liveObjects;
-
-        std::copy_if(m_state.objectCounts.begin(), m_state.objectCounts.end(),
-                     back_inserter(liveObjects),
-                     [](pair_t const& typeAndCount) { return typeAndCount.second > 0; });
-
-        // Sort by live instance count (highest first).
-        std::sort(liveObjects.begin(), liveObjects.end(),
-                  [](pair_t const& a, pair_t const& b)
-                  {
-                      return (a.second != b.second) ? (a.second > b.second)
-                                                    : (strcmp(a.first.name(), b.first.name()) < 0);
-                  });
-
-        // Output the results.
-        size_t totalLiveObjects = 0;
-
-        if (!liveObjects.empty())
-        {
-            OutputDebugString(L"Live Win2D objects (may indicate leaks):\n");
-
-            for (auto& typeAndCount : liveObjects)
-            {
-                WinStringBuilder string;
-                string.Format(L"    %hs (%Iu)\n", typeAndCount.first.name(), typeAndCount.second);
-                OutputDebugString((wchar_t const*)string.Get());
-             
-                totalLiveObjects += typeAndCount.second;
-            }
-        }
-
-        return totalLiveObjects;
-    }
-
-
-    // Wipes all lifespan data. This is used by unit tests to start each test invocation with
-    // a clean state, so leaks in one test don't also cause failure reports from subsequent ones.
-    static void Reset()
-    {
-        std::lock_guard<std::mutex> lock(m_state.mutex);
-
-        m_state.objectCounts.clear();
-    }
-
-
-private:
-    static void TraceAllocation(type_info const& type, bool traceAllocations, bool breakOnAllocation, size_t objectCount, bool isNew)
-    {
-        // Optional verbose tracing for alloc and free of selected types.
-        if (traceAllocations)
-        {
-            WinStringBuilder string;
-            string.Format(L"LifespanTracker: %s %hs (%Iu)\n", isNew ? L"new" : L"delete", type.name(), objectCount);
-            OutputDebugString((wchar_t const*)string.Get());
-        }
-
-        // Optional debug break for alloc and free of selected types.
-        if (breakOnAllocation)
-        {
-            __debugbreak();
-        }
-    }
+	ABI::Windows::Foundation::Diagnostics::ILoggingActivity *GetLoggingActivity() { return _traceLog_Activity.Get(); }
 };
 
 
-__declspec(selectany) LifespanInfo::State LifespanInfo::m_state;
-
-
-#else   // ENABLE_LIFESPAN_TRACKER
-
-
-// No-op implementation for when lifespan tracking is disabled.
+#else
 template<typename T>
 struct LifespanTracker { };
 
-struct LifespanInfo
-{
-    static size_t ReportLiveObjects()       { return 0; }
-    static size_t ReportLiveObjectsNoLock() { return 0; }
-
-    static void Reset() { }
-};
-
-
-#endif  // ENABLE_LIFESPAN_TRACKER
+#endif

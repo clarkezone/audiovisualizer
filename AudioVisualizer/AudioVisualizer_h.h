@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0622 */
 /* at Tue Jan 19 05:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-2fe3b5be:
+/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-ee288bd2:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -160,22 +160,6 @@ namespace ABI {
 #endif 	/* ____x_ABI_CAudioVisualizer_CIBaseVisualizerFactory_FWD_DEFINED__ */
 
 
-#ifndef ____x_ABI_CAudioVisualizer_CIVisualizationData_FWD_DEFINED__
-#define ____x_ABI_CAudioVisualizer_CIVisualizationData_FWD_DEFINED__
-typedef interface __x_ABI_CAudioVisualizer_CIVisualizationData __x_ABI_CAudioVisualizer_CIVisualizationData;
-
-#ifdef __cplusplus
-namespace ABI {
-    namespace AudioVisualizer {
-        interface IVisualizationData;
-    } /* end namespace */
-} /* end namespace */
-
-#endif /* __cplusplus */
-
-#endif 	/* ____x_ABI_CAudioVisualizer_CIVisualizationData_FWD_DEFINED__ */
-
-
 #ifndef ____x_ABI_CAudioVisualizer_CIVectorData_FWD_DEFINED__
 #define ____x_ABI_CAudioVisualizer_CIVectorData_FWD_DEFINED__
 typedef interface __x_ABI_CAudioVisualizer_CIVectorData __x_ABI_CAudioVisualizer_CIVectorData;
@@ -206,6 +190,22 @@ namespace ABI {
 #endif /* __cplusplus */
 
 #endif 	/* ____x_ABI_CAudioVisualizer_CIScalarData_FWD_DEFINED__ */
+
+
+#ifndef ____x_ABI_CAudioVisualizer_CIVisualizationDataReference_FWD_DEFINED__
+#define ____x_ABI_CAudioVisualizer_CIVisualizationDataReference_FWD_DEFINED__
+typedef interface __x_ABI_CAudioVisualizer_CIVisualizationDataReference __x_ABI_CAudioVisualizer_CIVisualizationDataReference;
+
+#ifdef __cplusplus
+namespace ABI {
+    namespace AudioVisualizer {
+        interface IVisualizationDataReference;
+    } /* end namespace */
+} /* end namespace */
+
+#endif /* __cplusplus */
+
+#endif 	/* ____x_ABI_CAudioVisualizer_CIVisualizationDataReference_FWD_DEFINED__ */
 
 
 #ifndef ____x_ABI_CAudioVisualizer_CIVisualizationDataFrame_FWD_DEFINED__
@@ -829,18 +829,18 @@ typedef enum __x_ABI_CAudioVisualizer_CInterpolationType __x_ABI_CAudioVisualize
 
 #if !defined(__cplusplus)
 /* [v1_enum] */ 
-enum __x_ABI_CAudioVisualizer_CAnalyzisType
+enum __x_ABI_CAudioVisualizer_CAnalyzerType
     {
-        AnalyzisType_RMS	= ( int  )1,
-        AnalyzisType_Peak	= ( int  )2,
-        AnalyzisType_Spectrum	= ( int  )4,
-        AnalyzisType_All	= ( int  )7
+        AnalyzerType_RMS	= ( int  )1,
+        AnalyzerType_Peak	= ( int  )2,
+        AnalyzerType_Spectrum	= ( int  )4,
+        AnalyzerType_All	= ( int  )7
     } ;
 #endif /* end if !defined(__cplusplus) */
 
 #if !defined(__cplusplus)
 
-typedef enum __x_ABI_CAudioVisualizer_CAnalyzisType __x_ABI_CAudioVisualizer_CAnalyzisType;
+typedef enum __x_ABI_CAudioVisualizer_CAnalyzerType __x_ABI_CAudioVisualizer_CAnalyzerType;
 
 
 #endif /* end if !defined(__cplusplus) */
@@ -850,11 +850,11 @@ typedef enum __x_ABI_CAudioVisualizer_CAnalyzisType __x_ABI_CAudioVisualizer_CAn
 namespace ABI {
 namespace AudioVisualizer {
 #if defined(MIDL_ENUM)
-typedef MIDL_ENUM AnalyzisType AnalyzisType;
+typedef MIDL_ENUM AnalyzerType AnalyzerType;
 #else
-typedef enum class AnalyzisType AnalyzisType;
+typedef enum class AnalyzerType AnalyzerType;
 #endif
-DEFINE_ENUM_FLAG_OPERATORS(AnalyzisType)
+DEFINE_ENUM_FLAG_OPERATORS(AnalyzerType)
 } /*AudioVisualizer*/
 }
 #endif
@@ -874,6 +874,7 @@ class ScalarData;
 } /*AudioVisualizer*/
 }
 #endif
+
 
 
 /* interface __MIDL_itf_AudioVisualizer_0000_0010 */
@@ -956,7 +957,7 @@ namespace ABI {
     namespace AudioVisualizer {
         
         /* [v1_enum] */ 
-        MIDL_ENUM AnalyzisType
+        MIDL_ENUM AnalyzerType
             {
                 RMS	= ( int  )1,
                 Peak	= ( int  )2,
@@ -964,10 +965,10 @@ namespace ABI {
                 All	= ( int  )7
             } ;
 
-        const MIDL_ENUM AnalyzisType AnalyzisType_RMS = AnalyzisType::RMS;
-        const MIDL_ENUM AnalyzisType AnalyzisType_Peak = AnalyzisType::Peak;
-        const MIDL_ENUM AnalyzisType AnalyzisType_Spectrum = AnalyzisType::Spectrum;
-        const MIDL_ENUM AnalyzisType AnalyzisType_All = AnalyzisType::All;
+        const MIDL_ENUM AnalyzerType AnalyzerType_RMS = AnalyzerType::RMS;
+        const MIDL_ENUM AnalyzerType AnalyzerType_Peak = AnalyzerType::Peak;
+        const MIDL_ENUM AnalyzerType AnalyzerType_Spectrum = AnalyzerType::Spectrum;
+        const MIDL_ENUM AnalyzerType AnalyzerType_All = AnalyzerType::All;
         
     } /* end namespace */
 } /* end namespace */
@@ -981,13 +982,14 @@ extern "C" {
 namespace ABI {
     namespace AudioVisualizer {
         
-        typedef MIDL_ENUM AnalyzisType AnalyzisType;
+        typedef MIDL_ENUM AnalyzerType AnalyzerType;
         
     } /* end namespace */
 } /* end namespace */
 
 extern "C" { 
 #endif
+
 
 
 
@@ -2557,9 +2559,9 @@ class BaseVisualizer;
 #define RUNTIMECLASS_AudioVisualizer_BaseVisualizer_DEFINED
 extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_AudioVisualizer_BaseVisualizer[] = L"AudioVisualizer.BaseVisualizer";
 #endif
-#if !defined(____x_ABI_CAudioVisualizer_CIVisualizationData_INTERFACE_DEFINED__)
-extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioVisualizer_IVisualizationData[] = L"AudioVisualizer.IVisualizationData";
-#endif /* !defined(____x_ABI_CAudioVisualizer_CIVisualizationData_INTERFACE_DEFINED__) */
+#if !defined(____x_ABI_CAudioVisualizer_CIVectorData_INTERFACE_DEFINED__)
+extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioVisualizer_IVectorData[] = L"AudioVisualizer.IVectorData";
+#endif /* !defined(____x_ABI_CAudioVisualizer_CIVectorData_INTERFACE_DEFINED__) */
 
 
 /* interface __MIDL_itf_AudioVisualizer_0000_0026 */
@@ -2569,139 +2571,6 @@ extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioVi
 
 extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0026_v0_0_c_ifspec;
 extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0026_v0_0_s_ifspec;
-
-#ifndef ____x_ABI_CAudioVisualizer_CIVisualizationData_INTERFACE_DEFINED__
-#define ____x_ABI_CAudioVisualizer_CIVisualizationData_INTERFACE_DEFINED__
-
-/* interface __x_ABI_CAudioVisualizer_CIVisualizationData */
-/* [uuid][object] */ 
-
-
-
-/* interface ABI::AudioVisualizer::IVisualizationData */
-/* [uuid][object] */ 
-
-
-EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationData;
-
-#if defined(__cplusplus) && !defined(CINTERFACE)
-    } /* end extern "C" */
-    namespace ABI {
-        namespace AudioVisualizer {
-            
-            MIDL_INTERFACE("8D7C253F-BCE1-47E8-9F79-838F329FD0A9")
-            IVisualizationData : public IInspectable
-            {
-            public:
-                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_AmplitudeScale( 
-                    /* [out][retval] */ ABI::AudioVisualizer::ScaleType *scale) = 0;
-                
-            };
-
-            extern const __declspec(selectany) IID & IID_IVisualizationData = __uuidof(IVisualizationData);
-
-            
-        }  /* end namespace */
-    }  /* end namespace */
-    extern "C" { 
-    
-#else 	/* C style interface */
-
-    typedef struct __x_ABI_CAudioVisualizer_CIVisualizationDataVtbl
-    {
-        BEGIN_INTERFACE
-        
-        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
-            __x_ABI_CAudioVisualizer_CIVisualizationData * This,
-            /* [in] */ REFIID riid,
-            /* [annotation][iid_is][out] */ 
-            _COM_Outptr_  void **ppvObject);
-        
-        ULONG ( STDMETHODCALLTYPE *AddRef )( 
-            __x_ABI_CAudioVisualizer_CIVisualizationData * This);
-        
-        ULONG ( STDMETHODCALLTYPE *Release )( 
-            __x_ABI_CAudioVisualizer_CIVisualizationData * This);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetIids )( 
-            __x_ABI_CAudioVisualizer_CIVisualizationData * This,
-            /* [out] */ ULONG *iidCount,
-            /* [size_is][size_is][out] */ IID **iids);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetRuntimeClassName )( 
-            __x_ABI_CAudioVisualizer_CIVisualizationData * This,
-            /* [out] */ HSTRING *className);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetTrustLevel )( 
-            __x_ABI_CAudioVisualizer_CIVisualizationData * This,
-            /* [out] */ TrustLevel *trustLevel);
-        
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AmplitudeScale )( 
-            __x_ABI_CAudioVisualizer_CIVisualizationData * This,
-            /* [out][retval] */ __x_ABI_CAudioVisualizer_CScaleType *scale);
-        
-        END_INTERFACE
-    } __x_ABI_CAudioVisualizer_CIVisualizationDataVtbl;
-
-    interface __x_ABI_CAudioVisualizer_CIVisualizationData
-    {
-        CONST_VTBL struct __x_ABI_CAudioVisualizer_CIVisualizationDataVtbl *lpVtbl;
-    };
-
-    
-
-#ifdef COBJMACROS
-
-
-#define __x_ABI_CAudioVisualizer_CIVisualizationData_QueryInterface(This,riid,ppvObject)	\
-    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
-
-#define __x_ABI_CAudioVisualizer_CIVisualizationData_AddRef(This)	\
-    ( (This)->lpVtbl -> AddRef(This) ) 
-
-#define __x_ABI_CAudioVisualizer_CIVisualizationData_Release(This)	\
-    ( (This)->lpVtbl -> Release(This) ) 
-
-
-#define __x_ABI_CAudioVisualizer_CIVisualizationData_GetIids(This,iidCount,iids)	\
-    ( (This)->lpVtbl -> GetIids(This,iidCount,iids) ) 
-
-#define __x_ABI_CAudioVisualizer_CIVisualizationData_GetRuntimeClassName(This,className)	\
-    ( (This)->lpVtbl -> GetRuntimeClassName(This,className) ) 
-
-#define __x_ABI_CAudioVisualizer_CIVisualizationData_GetTrustLevel(This,trustLevel)	\
-    ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
-
-
-#define __x_ABI_CAudioVisualizer_CIVisualizationData_get_AmplitudeScale(This,scale)	\
-    ( (This)->lpVtbl -> get_AmplitudeScale(This,scale) ) 
-
-#endif /* COBJMACROS */
-
-
-#endif 	/* C style interface */
-
-
-
-
-#endif 	/* ____x_ABI_CAudioVisualizer_CIVisualizationData_INTERFACE_DEFINED__ */
-
-
-/* interface __MIDL_itf_AudioVisualizer_0000_0027 */
-/* [local] */ 
-
-#if !defined(____x_ABI_CAudioVisualizer_CIVectorData_INTERFACE_DEFINED__)
-extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioVisualizer_IVectorData[] = L"AudioVisualizer.IVectorData";
-#endif /* !defined(____x_ABI_CAudioVisualizer_CIVectorData_INTERFACE_DEFINED__) */
-
-
-/* interface __MIDL_itf_AudioVisualizer_0000_0027 */
-/* [local] */ 
-
-
-
-extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0027_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0027_v0_0_s_ifspec;
 
 #ifndef ____x_ABI_CAudioVisualizer_CIVectorData_INTERFACE_DEFINED__
 #define ____x_ABI_CAudioVisualizer_CIVectorData_INTERFACE_DEFINED__
@@ -2726,6 +2595,9 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVectorData;
             IVectorData : public IInspectable
             {
             public:
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_AmplitudeScale( 
+                    /* [out][retval] */ ABI::AudioVisualizer::ScaleType *scale) = 0;
+                
                 virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_FrequencyScale( 
                     /* [out][retval] */ ABI::AudioVisualizer::ScaleType *scale) = 0;
                 
@@ -2738,28 +2610,31 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVectorData;
                 virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_FrequencyStep( 
                     /* [out][retval] */ float *value) = 0;
                 
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Values( 
+                    /* [out][retval] */ __FIVectorView_1___FIVectorView_1_float **data) = 0;
+                
                 virtual HRESULT STDMETHODCALLTYPE CreateLinearDistribution( 
                     UINT32 elementCount,
-                    /* [out][retval] */ ABI::AudioVisualizer::IVisualizationData **result) = 0;
+                    /* [out][retval] */ ABI::AudioVisualizer::IVectorData **result) = 0;
                 
                 virtual HRESULT STDMETHODCALLTYPE CreateLogDistribution( 
                     /* [in] */ UINT32 elementCount,
                     /* [in] */ float fromFrequency,
                     /* [in] */ float toFrequency,
                     /* [in] */ ABI::AudioVisualizer::InterpolationType type,
-                    /* [out][retval] */ ABI::AudioVisualizer::IVisualizationData **result) = 0;
+                    /* [out][retval] */ ABI::AudioVisualizer::IVectorData **result) = 0;
                 
                 virtual HRESULT STDMETHODCALLTYPE ApplyRiseAndFall( 
-                    /* [in] */ ABI::AudioVisualizer::IVisualizationData *previous,
+                    /* [in] */ ABI::AudioVisualizer::IVectorData *previous,
                     /* [in] */ ABI::Windows::Foundation::TimeSpan riseTime,
                     /* [in] */ ABI::Windows::Foundation::TimeSpan fallTime,
                     /* [in] */ ABI::Windows::Foundation::TimeSpan timeFromPrevious,
-                    /* [out][retval] */ ABI::AudioVisualizer::IVisualizationData **result) = 0;
+                    /* [out][retval] */ ABI::AudioVisualizer::IVectorData **result) = 0;
                 
                 virtual HRESULT STDMETHODCALLTYPE ConvertToLogAmplitude( 
                     /* [in] */ float minValue,
                     /* [in] */ float maxValue,
-                    /* [out][retval] */ ABI::AudioVisualizer::IVisualizationData **result) = 0;
+                    /* [out][retval] */ ABI::AudioVisualizer::IVectorData **result) = 0;
                 
             };
 
@@ -2801,6 +2676,10 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVectorData;
             __x_ABI_CAudioVisualizer_CIVectorData * This,
             /* [out] */ TrustLevel *trustLevel);
         
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AmplitudeScale )( 
+            __x_ABI_CAudioVisualizer_CIVectorData * This,
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CScaleType *scale);
+        
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_FrequencyScale )( 
             __x_ABI_CAudioVisualizer_CIVectorData * This,
             /* [out][retval] */ __x_ABI_CAudioVisualizer_CScaleType *scale);
@@ -2817,10 +2696,14 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVectorData;
             __x_ABI_CAudioVisualizer_CIVectorData * This,
             /* [out][retval] */ float *value);
         
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Values )( 
+            __x_ABI_CAudioVisualizer_CIVectorData * This,
+            /* [out][retval] */ __FIVectorView_1___FIVectorView_1_float **data);
+        
         HRESULT ( STDMETHODCALLTYPE *CreateLinearDistribution )( 
             __x_ABI_CAudioVisualizer_CIVectorData * This,
             UINT32 elementCount,
-            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationData **result);
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVectorData **result);
         
         HRESULT ( STDMETHODCALLTYPE *CreateLogDistribution )( 
             __x_ABI_CAudioVisualizer_CIVectorData * This,
@@ -2828,21 +2711,21 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVectorData;
             /* [in] */ float fromFrequency,
             /* [in] */ float toFrequency,
             /* [in] */ __x_ABI_CAudioVisualizer_CInterpolationType type,
-            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationData **result);
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVectorData **result);
         
         HRESULT ( STDMETHODCALLTYPE *ApplyRiseAndFall )( 
             __x_ABI_CAudioVisualizer_CIVectorData * This,
-            /* [in] */ __x_ABI_CAudioVisualizer_CIVisualizationData *previous,
+            /* [in] */ __x_ABI_CAudioVisualizer_CIVectorData *previous,
             /* [in] */ __x_ABI_CWindows_CFoundation_CTimeSpan riseTime,
             /* [in] */ __x_ABI_CWindows_CFoundation_CTimeSpan fallTime,
             /* [in] */ __x_ABI_CWindows_CFoundation_CTimeSpan timeFromPrevious,
-            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationData **result);
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVectorData **result);
         
         HRESULT ( STDMETHODCALLTYPE *ConvertToLogAmplitude )( 
             __x_ABI_CAudioVisualizer_CIVectorData * This,
             /* [in] */ float minValue,
             /* [in] */ float maxValue,
-            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationData **result);
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVectorData **result);
         
         END_INTERFACE
     } __x_ABI_CAudioVisualizer_CIVectorDataVtbl;
@@ -2877,6 +2760,9 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVectorData;
     ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
 
 
+#define __x_ABI_CAudioVisualizer_CIVectorData_get_AmplitudeScale(This,scale)	\
+    ( (This)->lpVtbl -> get_AmplitudeScale(This,scale) ) 
+
 #define __x_ABI_CAudioVisualizer_CIVectorData_get_FrequencyScale(This,scale)	\
     ( (This)->lpVtbl -> get_FrequencyScale(This,scale) ) 
 
@@ -2888,6 +2774,9 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVectorData;
 
 #define __x_ABI_CAudioVisualizer_CIVectorData_get_FrequencyStep(This,value)	\
     ( (This)->lpVtbl -> get_FrequencyStep(This,value) ) 
+
+#define __x_ABI_CAudioVisualizer_CIVectorData_get_Values(This,data)	\
+    ( (This)->lpVtbl -> get_Values(This,data) ) 
 
 #define __x_ABI_CAudioVisualizer_CIVectorData_CreateLinearDistribution(This,elementCount,result)	\
     ( (This)->lpVtbl -> CreateLinearDistribution(This,elementCount,result) ) 
@@ -2912,7 +2801,7 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVectorData;
 #endif 	/* ____x_ABI_CAudioVisualizer_CIVectorData_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_AudioVisualizer_0000_0028 */
+/* interface __MIDL_itf_AudioVisualizer_0000_0027 */
 /* [local] */ 
 
 #if !defined(____x_ABI_CAudioVisualizer_CIScalarData_INTERFACE_DEFINED__)
@@ -2920,13 +2809,13 @@ extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioVi
 #endif /* !defined(____x_ABI_CAudioVisualizer_CIScalarData_INTERFACE_DEFINED__) */
 
 
-/* interface __MIDL_itf_AudioVisualizer_0000_0028 */
+/* interface __MIDL_itf_AudioVisualizer_0000_0027 */
 /* [local] */ 
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0028_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0028_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0027_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0027_v0_0_s_ifspec;
 
 #ifndef ____x_ABI_CAudioVisualizer_CIScalarData_INTERFACE_DEFINED__
 #define ____x_ABI_CAudioVisualizer_CIScalarData_INTERFACE_DEFINED__
@@ -2954,14 +2843,17 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIScalarData;
                 virtual HRESULT STDMETHODCALLTYPE ConvertToLogAmplitude( 
                     /* [in] */ float minValue,
                     /* [in] */ float maxValue,
-                    /* [out][retval] */ ABI::AudioVisualizer::IVisualizationData **result) = 0;
+                    /* [out][retval] */ ABI::AudioVisualizer::IScalarData **result) = 0;
                 
                 virtual HRESULT STDMETHODCALLTYPE ApplyRiseAndFall( 
-                    /* [in] */ ABI::AudioVisualizer::IVisualizationData *previous,
+                    /* [in] */ ABI::AudioVisualizer::IScalarData *previous,
                     /* [in] */ ABI::Windows::Foundation::TimeSpan riseTime,
                     /* [in] */ ABI::Windows::Foundation::TimeSpan fallTime,
                     /* [in] */ ABI::Windows::Foundation::TimeSpan timeFromPrevious,
-                    /* [out][retval] */ ABI::AudioVisualizer::IVisualizationData **result) = 0;
+                    /* [out][retval] */ ABI::AudioVisualizer::IScalarData **result) = 0;
+                
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_AmplitudeScale( 
+                    /* [out][retval] */ ABI::AudioVisualizer::ScaleType *scale) = 0;
                 
                 virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Size( 
                     /* [out][retval] */ UINT32 *size) = 0;
@@ -3014,15 +2906,19 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIScalarData;
             __x_ABI_CAudioVisualizer_CIScalarData * This,
             /* [in] */ float minValue,
             /* [in] */ float maxValue,
-            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationData **result);
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIScalarData **result);
         
         HRESULT ( STDMETHODCALLTYPE *ApplyRiseAndFall )( 
             __x_ABI_CAudioVisualizer_CIScalarData * This,
-            /* [in] */ __x_ABI_CAudioVisualizer_CIVisualizationData *previous,
+            /* [in] */ __x_ABI_CAudioVisualizer_CIScalarData *previous,
             /* [in] */ __x_ABI_CWindows_CFoundation_CTimeSpan riseTime,
             /* [in] */ __x_ABI_CWindows_CFoundation_CTimeSpan fallTime,
             /* [in] */ __x_ABI_CWindows_CFoundation_CTimeSpan timeFromPrevious,
-            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationData **result);
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIScalarData **result);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AmplitudeScale )( 
+            __x_ABI_CAudioVisualizer_CIScalarData * This,
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CScaleType *scale);
         
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Size )( 
             __x_ABI_CAudioVisualizer_CIScalarData * This,
@@ -3072,6 +2968,9 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIScalarData;
 #define __x_ABI_CAudioVisualizer_CIScalarData_ApplyRiseAndFall(This,previous,riseTime,fallTime,timeFromPrevious,result)	\
     ( (This)->lpVtbl -> ApplyRiseAndFall(This,previous,riseTime,fallTime,timeFromPrevious,result) ) 
 
+#define __x_ABI_CAudioVisualizer_CIScalarData_get_AmplitudeScale(This,scale)	\
+    ( (This)->lpVtbl -> get_AmplitudeScale(This,scale) ) 
+
 #define __x_ABI_CAudioVisualizer_CIScalarData_get_Size(This,size)	\
     ( (This)->lpVtbl -> get_Size(This,size) ) 
 
@@ -3089,7 +2988,7 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIScalarData;
 #endif 	/* ____x_ABI_CAudioVisualizer_CIScalarData_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_AudioVisualizer_0000_0029 */
+/* interface __MIDL_itf_AudioVisualizer_0000_0028 */
 /* [local] */ 
 
 #ifndef RUNTIMECLASS_AudioVisualizer_ScalarData_DEFINED
@@ -3100,6 +2999,171 @@ extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_AudioVis
 #define RUNTIMECLASS_AudioVisualizer_VectorData_DEFINED
 extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_AudioVisualizer_VectorData[] = L"AudioVisualizer.VectorData";
 #endif
+#if !defined(____x_ABI_CAudioVisualizer_CIVisualizationDataReference_INTERFACE_DEFINED__)
+extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioVisualizer_IVisualizationDataReference[] = L"AudioVisualizer.IVisualizationDataReference";
+#endif /* !defined(____x_ABI_CAudioVisualizer_CIVisualizationDataReference_INTERFACE_DEFINED__) */
+
+
+/* interface __MIDL_itf_AudioVisualizer_0000_0028 */
+/* [local] */ 
+
+
+
+extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0028_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0028_v0_0_s_ifspec;
+
+#ifndef ____x_ABI_CAudioVisualizer_CIVisualizationDataReference_INTERFACE_DEFINED__
+#define ____x_ABI_CAudioVisualizer_CIVisualizationDataReference_INTERFACE_DEFINED__
+
+/* interface __x_ABI_CAudioVisualizer_CIVisualizationDataReference */
+/* [uuid][object] */ 
+
+
+
+/* interface ABI::AudioVisualizer::IVisualizationDataReference */
+/* [uuid][object] */ 
+
+
+EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationDataReference;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    } /* end extern "C" */
+    namespace ABI {
+        namespace AudioVisualizer {
+            
+            MIDL_INTERFACE("E79F8DBE-D602-49A1-9776-67F2515D327F")
+            IVisualizationDataReference : public IInspectable
+            {
+            public:
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_RMS( 
+                    /* [out][retval] */ ABI::AudioVisualizer::IScalarData **data) = 0;
+                
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Peak( 
+                    /* [out][retval] */ ABI::AudioVisualizer::IScalarData **data) = 0;
+                
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Spectrum( 
+                    /* [out][retval] */ ABI::AudioVisualizer::IVectorData **data) = 0;
+                
+            };
+
+            extern const __declspec(selectany) IID & IID_IVisualizationDataReference = __uuidof(IVisualizationDataReference);
+
+            
+        }  /* end namespace */
+    }  /* end namespace */
+    extern "C" { 
+    
+#else 	/* C style interface */
+
+    typedef struct __x_ABI_CAudioVisualizer_CIVisualizationDataReferenceVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationDataReference * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationDataReference * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationDataReference * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetIids )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationDataReference * This,
+            /* [out] */ ULONG *iidCount,
+            /* [size_is][size_is][out] */ IID **iids);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetRuntimeClassName )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationDataReference * This,
+            /* [out] */ HSTRING *className);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetTrustLevel )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationDataReference * This,
+            /* [out] */ TrustLevel *trustLevel);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_RMS )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationDataReference * This,
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIScalarData **data);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Peak )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationDataReference * This,
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIScalarData **data);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Spectrum )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationDataReference * This,
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVectorData **data);
+        
+        END_INTERFACE
+    } __x_ABI_CAudioVisualizer_CIVisualizationDataReferenceVtbl;
+
+    interface __x_ABI_CAudioVisualizer_CIVisualizationDataReference
+    {
+        CONST_VTBL struct __x_ABI_CAudioVisualizer_CIVisualizationDataReferenceVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationDataReference_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationDataReference_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationDataReference_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationDataReference_GetIids(This,iidCount,iids)	\
+    ( (This)->lpVtbl -> GetIids(This,iidCount,iids) ) 
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationDataReference_GetRuntimeClassName(This,className)	\
+    ( (This)->lpVtbl -> GetRuntimeClassName(This,className) ) 
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationDataReference_GetTrustLevel(This,trustLevel)	\
+    ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
+
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationDataReference_get_RMS(This,data)	\
+    ( (This)->lpVtbl -> get_RMS(This,data) ) 
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationDataReference_get_Peak(This,data)	\
+    ( (This)->lpVtbl -> get_Peak(This,data) ) 
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationDataReference_get_Spectrum(This,data)	\
+    ( (This)->lpVtbl -> get_Spectrum(This,data) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* ____x_ABI_CAudioVisualizer_CIVisualizationDataReference_INTERFACE_DEFINED__ */
+
+
+/* interface __MIDL_itf_AudioVisualizer_0000_0029 */
+/* [local] */ 
+
+#ifdef __cplusplus
+namespace ABI {
+namespace AudioVisualizer {
+class VisualizationDataReference;
+} /*AudioVisualizer*/
+}
+#endif
+
+#ifndef RUNTIMECLASS_AudioVisualizer_VisualizationDataReference_DEFINED
+#define RUNTIMECLASS_AudioVisualizer_VisualizationDataReference_DEFINED
+extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_AudioVisualizer_VisualizationDataReference[] = L"AudioVisualizer.VisualizationDataReference";
+#endif
 #if !defined(____x_ABI_CAudioVisualizer_CIVisualizationDataFrame_INTERFACE_DEFINED__)
 extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioVisualizer_IVisualizationDataFrame[] = L"AudioVisualizer.IVisualizationDataFrame";
 #endif /* !defined(____x_ABI_CAudioVisualizer_CIVisualizationDataFrame_INTERFACE_DEFINED__) */
@@ -3107,6 +3171,7 @@ extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioVi
 
 /* interface __MIDL_itf_AudioVisualizer_0000_0029 */
 /* [local] */ 
+
 
 
 
@@ -3142,14 +3207,8 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationDataFrame;
                 virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Duration( 
                     /* [out][retval] */ __FIReference_1_Windows__CFoundation__CTimeSpan **time) = 0;
                 
-                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_RMS( 
-                    /* [out][retval] */ ABI::AudioVisualizer::IVisualizationData **data) = 0;
-                
-                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Peak( 
-                    /* [out][retval] */ ABI::AudioVisualizer::IVisualizationData **data) = 0;
-                
-                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Spectrum( 
-                    /* [out][retval] */ ABI::AudioVisualizer::IVisualizationData **data) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetReference( 
+                    /* [out][retval] */ ABI::AudioVisualizer::IVisualizationDataReference **result) = 0;
                 
             };
 
@@ -3199,17 +3258,9 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationDataFrame;
             __x_ABI_CAudioVisualizer_CIVisualizationDataFrame * This,
             /* [out][retval] */ __FIReference_1_Windows__CFoundation__CTimeSpan **time);
         
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_RMS )( 
+        HRESULT ( STDMETHODCALLTYPE *GetReference )( 
             __x_ABI_CAudioVisualizer_CIVisualizationDataFrame * This,
-            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationData **data);
-        
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Peak )( 
-            __x_ABI_CAudioVisualizer_CIVisualizationDataFrame * This,
-            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationData **data);
-        
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Spectrum )( 
-            __x_ABI_CAudioVisualizer_CIVisualizationDataFrame * This,
-            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationData **data);
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationDataReference **result);
         
         END_INTERFACE
     } __x_ABI_CAudioVisualizer_CIVisualizationDataFrameVtbl;
@@ -3250,14 +3301,8 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationDataFrame;
 #define __x_ABI_CAudioVisualizer_CIVisualizationDataFrame_get_Duration(This,time)	\
     ( (This)->lpVtbl -> get_Duration(This,time) ) 
 
-#define __x_ABI_CAudioVisualizer_CIVisualizationDataFrame_get_RMS(This,data)	\
-    ( (This)->lpVtbl -> get_RMS(This,data) ) 
-
-#define __x_ABI_CAudioVisualizer_CIVisualizationDataFrame_get_Peak(This,data)	\
-    ( (This)->lpVtbl -> get_Peak(This,data) ) 
-
-#define __x_ABI_CAudioVisualizer_CIVisualizationDataFrame_get_Spectrum(This,data)	\
-    ( (This)->lpVtbl -> get_Spectrum(This,data) ) 
+#define __x_ABI_CAudioVisualizer_CIVisualizationDataFrame_GetReference(This,result)	\
+    ( (This)->lpVtbl -> GetReference(This,result) ) 
 
 #endif /* COBJMACROS */
 
@@ -3480,7 +3525,7 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSource;
             {
             public:
                 virtual HRESULT STDMETHODCALLTYPE Configure( 
-                    /* [in] */ ABI::AudioVisualizer::AnalyzisType analyzesToRun,
+                    /* [in] */ ABI::AudioVisualizer::AnalyzerType analyzersToRun,
                     /* [in] */ float outSampleRate,
                     /* [in] */ UINT32 fftLength,
                     /* [in] */ float overlapPercent) = 0;
@@ -3536,7 +3581,7 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSource;
         
         HRESULT ( STDMETHODCALLTYPE *Configure )( 
             __x_ABI_CAudioVisualizer_CIVisualizationSource * This,
-            /* [in] */ __x_ABI_CAudioVisualizer_CAnalyzisType analyzesToRun,
+            /* [in] */ __x_ABI_CAudioVisualizer_CAnalyzerType analyzersToRun,
             /* [in] */ float outSampleRate,
             /* [in] */ UINT32 fftLength,
             /* [in] */ float overlapPercent);
@@ -3586,8 +3631,8 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSource;
     ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
 
 
-#define __x_ABI_CAudioVisualizer_CIVisualizationSource_Configure(This,analyzesToRun,outSampleRate,fftLength,overlapPercent)	\
-    ( (This)->lpVtbl -> Configure(This,analyzesToRun,outSampleRate,fftLength,overlapPercent) ) 
+#define __x_ABI_CAudioVisualizer_CIVisualizationSource_Configure(This,analyzersToRun,outSampleRate,fftLength,overlapPercent)	\
+    ( (This)->lpVtbl -> Configure(This,analyzersToRun,outSampleRate,fftLength,overlapPercent) ) 
 
 #define __x_ABI_CAudioVisualizer_CIVisualizationSource_GetData(This,result)	\
     ( (This)->lpVtbl -> GetData(This,result) ) 

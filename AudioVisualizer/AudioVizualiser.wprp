@@ -5,7 +5,11 @@
       <BufferSize Value="1024" />
       <Buffers Value="200" />
     </EventCollector>
-    <EventProvider Id="VisualizerEventSource" Name="*AudioVisualizer" />
+    <EventProvider Id="VisualizerMftEventSource" Name="*AudioVisualizer-MftAnalyzer" />
+    <EventProvider Id="VisualizerControlEventSource" Name="*AudioVisualizer-BaseVisualizer"/>
+    <EventProvider Id="VisualizerDiagnosticsEventSource" Name="*AudioVisualizer-Diagnostics"/>
+    <EventProvider Id="VisualizerApplicationEventSource" Name="*AudioVisualizer-Application"/>
+
     <EventProvider Id="MFReadWrite" Name="Microsoft-Windows-MediaFoundation-MFReadWrite"/> <!--4b7eac67-fc53-448c-a49d-7cc6db524da7-->
     <EventProvider Id="MicrosoftAudio" Name="Microsoft-Windows-Audio"/>
     <EventProvider Id="AudioGraph" Name="0D641FB9-A0E3-42E3-9E9D-501D33A6FA79"/>
@@ -62,7 +66,10 @@
       <Collectors>
         <EventCollectorId Value="EventCollector_AudioVisualizer">
           <EventProviders>
-            <EventProviderId Value="VisualizerEventSource" />
+            <EventProviderId Value="VisualizerMftEventSource" />
+            <EventProviderId Value="VisualizerControlEventSource" />
+            <EventProviderId Value="VisualizerDiagnosticsEventSource" />
+            <EventProviderId Value="VisualizerApplicationEventSource" />
           </EventProviders>
         </EventCollectorId>
       </Collectors>

@@ -11,6 +11,8 @@
 #include <windows.system.threading.h>
 #include "VisualizationDataFrame.h"
 #include "VisualizerDrawEventArgs.h"
+#include "trace.h"
+#include <crtdbg.h>
 
 using namespace ABI::Windows::UI::Xaml::Hosting;
 using namespace ABI::Windows::UI::Composition;
@@ -46,6 +48,10 @@ namespace AudioVisualizer
 		_cancelDrawLoop(INVALID_HANDLE_VALUE),
 		_backgroundColor(Color() = { 0, 0, 0, 0 })
 	{
+#ifdef _TRACE
+		AudioVisualizer::Diagnostics::Trace::Initialize();
+#endif
+
 		ComPtr<IElementCompositionPreviewStatics> spComp;
 
 		ThrowIfFailed(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Hosting_ElementCompositionPreview).Get(), &spComp));
@@ -140,26 +146,91 @@ namespace AudioVisualizer
 
 	HRESULT BaseVisualizer::OnDraw()
 	{
+		IVisualizationDataFrame *pDataFrame = nullptr;
+		TimeSpan frameTime = { -1 };
+		HRESULT hr = S_OK;
 		if (_swapChain != nullptr)
 		{
 			ComPtr<ICanvasDrawingSession> drawingSession;
 			HRESULT hr = _swapChain->CreateDrawingSession(_backgroundColor, &drawingSession);
 			if (SUCCEEDED(hr))
 			{
-				ComPtr<IVisualizationDataFrame> data;
+				ComPtr<IVisualizationDataFrame> dataFrame;
 				if (_source != nullptr)
 				{
-					hr = _source->GetData(&data);
+					hr = _source->GetData(&dataFrame);	// This call will cause addref to dataFrame
 				}
-				auto args = Make<VisualizerDrawEventArgs>(drawingSession.Get(), data.Get());			
-				hr = _drawEventList.InvokeAll(this, args.Get());
+				pDataFrame = dataFrame.Get();
+				if (pDataFrame != nullptr)
+				{
+					pDataFrame->AddRef();
+					ComPtr<IReference<TimeSpan>> tsRef;
+					pDataFrame->get_Time(&tsRef);
+					if (tsRef != nullptr)
+					{
+						tsRef->get_Value(&frameTime);
+					}
+				}
+
+				if (pDataFrame != nullptr)
+				{
+					pDataFrame->AddRef();
+					size_t refCount = pDataFrame->Release()-1;
+					_RPTF2(_CRT_WARN, "Before makeargs, refcount = %u (%ld)\n", refCount,frameTime);
+				}
+
+				auto args = Make<VisualizerDrawEventArgs>(drawingSession.Get(), dataFrame.Get());
+				
+				IVisualizerDrawEventArgs *pArgs = args.Get();
+				
+				if (pDataFrame != nullptr)
+				{
+					pDataFrame->AddRef();
+					size_t refCount = pDataFrame->Release() - 1;
+					_RPTF2(_CRT_WARN, "After makeargs, refcount = %u (%ld)\n", refCount, frameTime);
+				}
+
+
+				{
+#ifdef _TRACE
+					ComPtr<ILoggingActivity> activity;
+					Diagnostics::Trace::Log_StartDraw(dataFrame.Get(), &activity);
+					AudioVisualizer::Diagnostics::CLogActivityHelper drawActivity(activity.Get());
+					if (pDataFrame != nullptr)
+					{
+						pDataFrame->AddRef();
+						size_t refCount = pDataFrame->Release()-1;
+						_RPTF2(_CRT_WARN, "Before event, refcount = %u (%ld)\n", refCount, frameTime);
+					}
+					pArgs->AddRef();
+					_RPTF1(_CRT_WARN, "Before event, args refcount = %u\n", pArgs->Release());
+
+#endif
+					ThrowIfFailed(_drawEventList.InvokeAll(this, args.Get()));
+
+					pArgs->AddRef();
+					_RPTF1(_CRT_WARN, "After event, args refcount = %u\n", pArgs->Release());
+
+					if (pDataFrame != nullptr)
+					{
+						pDataFrame->AddRef();
+						size_t refCount = pDataFrame->Release()-1;
+						_RPTF2(_CRT_WARN, "After event, refcount = %u (%ld)\n", refCount, frameTime);
+					}
+				}
 				As<IClosable>(drawingSession)->Close();
 				_swapChain->Present();
 			}
-			return hr;
 		}
-		else
-			return S_OK;
+		if (pDataFrame != nullptr)
+		{
+			pDataFrame->AddRef();
+			size_t refCount = pDataFrame->Release()-1;
+			_RPTF2(_CRT_WARN, "Before return, refcount = %u (%ld)\n=========\n\n", refCount, frameTime);
+			pDataFrame->Release();
+		}
+
+		return hr;
 	}
 
 	HRESULT BaseVisualizer::OnSizeChanged(const ABI::Windows::Foundation::Size & size)

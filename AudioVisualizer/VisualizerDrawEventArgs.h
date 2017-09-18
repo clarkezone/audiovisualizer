@@ -1,5 +1,6 @@
 #pragma once
 #include "AudioVisualizer_h.h"
+#include "LifeSpanTracker.h"
 
 namespace AudioVisualizer
 {
@@ -7,7 +8,7 @@ namespace AudioVisualizer
 	using namespace ABI::AudioVisualizer;
 	using namespace ABI::Microsoft::Graphics::Canvas;
 
-	class VisualizerDrawEventArgs : public RuntimeClass<IVisualizerDrawEventArgs>
+	class VisualizerDrawEventArgs : public RuntimeClass<IVisualizerDrawEventArgs>, LifespanTracker<VisualizerDrawEventArgs>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_VisualizerDrawEventArgs,BaseTrust);
 
@@ -18,6 +19,10 @@ namespace AudioVisualizer
 		{
 			_drawingSession = pSession;
 			_data = pData;
+		}
+		~VisualizerDrawEventArgs()
+		{
+
 		}
 		STDMETHODIMP get_DrawingSession(ICanvasDrawingSession **ppSession)
 		{

@@ -11,7 +11,7 @@ import "Canvas.abi.idl";
 //#include <sdkddkver.h>
 
 
-namespace AudioVisualizer
+namespace AudioVisualizer 
 {
 	[version(1.0)]
 	typedef enum ScaleType
@@ -28,13 +28,13 @@ namespace AudioVisualizer
 	} InterpolationType;
 
 	[version(1.0),flags]
-	typedef enum AnalyzisType
+	typedef enum AnalyzerType
 	{
 		RMS = (int)1,
 		Peak = (int)2,
 		Spectrum = (int)4,
 		All = (int)7
-	} AnalyzisType;
+	} AnalyzerType;
 
 	interface IVisualizationSource;
 	interface IVisualizationDataFrame;
@@ -101,20 +101,15 @@ namespace AudioVisualizer
 		[default] interface IVisualizer;
 	}
 
-	[uuid(8D7C253F-BCE1-47E8-9F79-838F329FD0A9)]
-	[version(1.0)]
-	interface IVisualizationData : IInspectable
-	{
-		[propget] HRESULT AmplitudeScale([out,retval] AudioVisualizer.ScaleType *scale);
-	}
-
 	[uuid(199F41A4-8EF0-4E0B-AAD3-9E0666511F6A),version(1.0)]
 	interface IVectorData : IInspectable
 	{
+		[propget] HRESULT AmplitudeScale([out, retval] AudioVisualizer.ScaleType *scale);
 		[propget] HRESULT FrequencyScale([out, retval] AudioVisualizer.ScaleType *scale);
 		[propget] HRESULT MinFrequency([out, retval] float *value);
 		[propget] HRESULT MaxFrequency([out, retval] float *value);
 		[propget] HRESULT FrequencyStep([out, retval] float *value);
+		[propget] HRESULT Values([out,retval] Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float>*> **data);
 		HRESULT CreateLinearDistribution(UINT32 elementCount, [out, retval] VectorData **result);
 		HRESULT CreateLogDistribution([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [in] InterpolationType type, [out, retval] VectorData **result);
 		HRESULT ApplyRiseAndFall([in] VectorData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] VectorData **result);
@@ -126,23 +121,37 @@ namespace AudioVisualizer
 	{
 		HRESULT ConvertToLogAmplitude([in] float minValue, [in] float maxValue, [out, retval] ScalarData **result);
 		HRESULT ApplyRiseAndFall([in] ScalarData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] ScalarData **result);
-		[propget] HRESULT Size([out, retval] UINT32 *size); 
+		[propget] HRESULT AmplitudeScale([out, retval] AudioVisualizer.ScaleType *scale);
+		[propget] HRESULT Size([out, retval] UINT32 *size);
 		[propget] HRESULT Values([out] UINT32* lsize, [out, retval, size_is(, *lsize)] float **data);
 	};
 
-	[version(1.0)]
+	[version(1.0), marshaling_behavior(agile), threading(both)]
 	runtimeclass ScalarData
 	{
-		[default] interface IVisualizationData;
-		interface IScalarData;
+		[default] interface IScalarData;
 	}
 
-	[version(1.0)]
+	[version(1.0), marshaling_behavior(agile), threading(both)]
 	runtimeclass VectorData
 	{
-		[default] interface IVisualizationData;
-		interface IVectorData;
-		interface Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float> *>;
+		[default]interface IVectorData;
+	}
+
+
+	[uuid(E79F8DBE-D602-49A1-9776-67F2515D327F)]
+	[version(1.0)]
+	interface IVisualizationDataReference : IInspectable {
+		[propget] HRESULT RMS([out, retval] ScalarData **data);
+		[propget] HRESULT Peak([out, retval] ScalarData **data);
+		[propget] HRESULT Spectrum([out, retval] VectorData **data);
+	};
+
+	[version(1.0)]
+	runtimeclass VisualizationDataReference
+	{
+		[default] interface IVisualizationDataReference;
+		interface Windows.Foundation.IClosable;
 	}
 
 	[uuid(E4C11BE5-112E-49AD-A565-EE713089C447)]
@@ -150,10 +159,9 @@ namespace AudioVisualizer
 	interface IVisualizationDataFrame : IInspectable {
 		[propget] HRESULT Time([out, retval] Windows.Foundation.IReference<Windows.Foundation.TimeSpan> **time);
 		[propget] HRESULT Duration([out, retval] Windows.Foundation.IReference<Windows.Foundation.TimeSpan> **time);
-		[propget] HRESULT RMS([out, retval] ScalarData **data);
-		[propget] HRESULT Peak([out, retval] ScalarData **data);
-		[propget] HRESULT Spectrum([out, retval] VectorData **data);
+		HRESULT GetReference([out, retval] VisualizationDataReference **result);
 	};
+
 
 	[version(1.0)]
 	runtimeclass VisualizationDataFrame
@@ -173,7 +181,7 @@ namespace AudioVisualizer
 	[uuid(B74989FE-1436-4179-92B6-E06B540E0C7E)]
 	[version(1.0)]
 	interface IVisualizationSource : IInspectable {
-		HRESULT Configure([in] AnalyzisType analyzesToRun, [in] float outSampleRate, [in] UINT32 fftLength, [in] float overlapPercent);
+		HRESULT Configure([in] AnalyzerType analyzersToRun, [in] float outSampleRate, [in] UINT32 fftLength, [in] float overlapPercent);
 		HRESULT GetData([out][retval] IVisualizationDataFrame **result);
 		[propget] HRESULT IsSuspended([out][retval] boolean *bIsSuspended);
 		[propput] HRESULT IsSuspended(boolean bIsSuspended);

@@ -312,26 +312,29 @@
   <ItemGroup>
     <ClInclude Include="AsyncOperation.h" />
     <ClInclude Include="Canvas.abi.h" />
+    <ClInclude Include="LifeSpanTracker.h" />
     <ClInclude Include="MftAnalyzer.h" />
     <ClInclude Include="ErrorHandling.h" />
-    <ClInclude Include="LifespanTracker.h" />
+    <ClInclude Include="LifespanTracker_w2d.h" />
     <ClInclude Include="Nullable.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="ring_buffer.h" />
+    <ClInclude Include="ScalarData.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="BaseVisualizer.h" />
     <ClInclude Include="Utilities.h" />
+    <ClInclude Include="VectorData.h" />
+    <ClInclude Include="VisualizationDataReference.h" />
     <ClInclude Include="VisualizationDataFrame.h" />
     <ClInclude Include="VisualizationSource.h" />
     <ClInclude Include="VisualizerDrawEventArgs.h" />
-    <ClInclude Include="VisualizationData.h" />
     <ClInclude Include="WinStringBuilder.h" />
     <ClInclude Include="WinStringWrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="LifespanTracker.cpp" />
     <ClCompile Include="MftAnalyzer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -341,12 +344,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ScalarData.cpp" />
     <ClCompile Include="Trace.cpp" />
     <ClCompile Include="BaseVisualizer.cpp" />
+    <ClCompile Include="VectorData.cpp" />
+    <ClCompile Include="VisualizationDataReference.cpp" />
     <ClCompile Include="VisualizationDataFrame.cpp" />
     <ClCompile Include="VisualizationSource.cpp" />
     <ClCompile Include="VisualizerDrawEventArgs.cpp" />
-    <ClCompile Include="VisualizationData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="AudioVisualizer.idl" />

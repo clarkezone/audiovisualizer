@@ -2,6 +2,7 @@
 #include "VisualizationSource.h"
 #include <windows.system.threading.h>
 #include <wrl.h>
+#include "LifeSpanTracker.h"
 #include "Utilities.h"
 #include <windows.media.playback.h>
 

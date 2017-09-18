@@ -1,6 +1,11 @@
 ﻿#pragma once
 
-#define _CRTDBG_MAP_ALLOC  
+#ifdef _DEBUG
+	#define _TRACE
+	#define ENABLE_LIFESPAN_TRACKER
+	#define _CRTDBG_MAP_ALLOC 
+#endif
+
 #include <stdlib.h>  
 #include <crtdbg.h>
 

@@ -82,7 +82,7 @@ namespace AudioVisualizer
 		//DirectX::XMVECTOR m_vClampAmpLow;
 		//DirectX::XMVECTOR m_vClampAmpHigh;
 
-		ABI::AudioVisualizer::AnalyzisType  _analyzisTypes;
+		ABI::AudioVisualizer::AnalyzerType  _analyzisTypes;
 
 		HRESULT Analyzer_TestInputType(IMFMediaType *pType);
 		HRESULT Analyzer_SetMediaType(IMFMediaType *pType);
@@ -183,7 +183,7 @@ namespace AudioVisualizer
 		~CAnalyzerEffect();
 		HRESULT RuntimeClassInitialize();
 #pragma region IAudioVisualizer
-		STDMETHODIMP Configure(ABI::AudioVisualizer::AnalyzisType types, float outputFps,unsigned fftLength,  float inputOverlap);
+		STDMETHODIMP Configure(ABI::AudioVisualizer::AnalyzerType types, float outputFps,unsigned fftLength,  float inputOverlap);
 		STDMETHODIMP GetData(ABI::AudioVisualizer::IVisualizationDataFrame **pData);
 		STDMETHODIMP get_IsSuspended(boolean *pbIsSuspended);
 		STDMETHODIMP put_IsSuspended(boolean bIsSuspended);

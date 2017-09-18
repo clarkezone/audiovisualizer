@@ -11,13 +11,6 @@ using namespace ABI::Windows::UI;
 
 namespace AudioVisualizer
 {
-	class CVisualizerDrawEventArgs : public Microsoft::WRL::RuntimeClass<
-		ABI::AudioVisualizer::IVisualizerDrawEventArgs,
-		Microsoft::WRL::ComposableBase<>>, public Microsoft::WRL::Implements<ABI::Windows::UI::Xaml::IFrameworkElement>
-	{
-
-	};
-
 	class BaseVisualizer : public Microsoft::WRL::RuntimeClass<
 		Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::RuntimeClassType::WinRt>,
 		Microsoft::WRL::Implements<ABI::AudioVisualizer::IVisualizer>,

@@ -5,12 +5,7 @@
 #include <windows.media.core.interop.h>
 #include <trace.h>
 #include "Nullable.h"
-#include <VisualizationData.h>
 #include <VisualizationDataFrame.h>
-
-#ifdef _DEBUG
-	#define _TRACE
-#endif
 
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "mfuuid.lib")
@@ -24,14 +19,6 @@ namespace AudioVisualizer
 {
 	ActivatableClass(CAnalyzerEffect);
 
-	// {0B82B25D-E6E1-4B6B-92A1-7EEE99D02CFE}
-	//static const GUID g_PropKey_RMS_Data_Offset =
-	//{ 0xb82b25d, 0xe6e1, 0x4b6b,{ 0x92, 0xa1, 0x7e, 0xee, 0x99, 0xd0, 0x2c, 0xfe } };
-
-	// {F4D65F78-CF5A-4949-88C1-76DAD605C313}
-	//static const GUID g_PropKey_Data_Step =
-	//{ 0xf4d65f78, 0xcf5a, 0x4949,{ 0x88, 0xc1, 0x76, 0xda, 0xd6, 0x5, 0xc3, 0x13 } };
-
 	const size_t CircleBufferSize = 960000;	// 10 sec worth of stereo audio at 48k
 
 	CAnalyzerEffect::CAnalyzerEffect() :
@@ -44,18 +31,8 @@ namespace AudioVisualizer
 		m_StepTotalFrames(0),
 		m_FftLength(0),
 		m_FftLengthLog2(0),
-		//m_OutElementsCount(0),
 		m_fOutputFps(0.0f),
 		m_fInputOverlap(0.0f),
-		/*m_pWindow(nullptr),
-		m_pFftReal(nullptr),
-		m_pFftUnityTable(nullptr),
-		m_pFftBuffers(nullptr),
-		m_fFftScale(0.0f),
-		m_bUseLogAmpScale(true),
-		m_bUseLogFScale(false),
-		m_vClampAmpLow(DirectX::XMVectorReplicate(-100.0f)),	// Clamp DB values between -100 and FLT_MAX
-		m_vClampAmpHigh(DirectX::XMVectorReplicate(FLT_MAX)),*/
 		m_bIsSuspended(false)
 	{
 		_analyzer = std::make_shared<AudioMath::CAudioAnalyzer>(CircleBufferSize);
@@ -67,7 +44,6 @@ namespace AudioVisualizer
 	CAnalyzerEffect::~CAnalyzerEffect()
 	{
 		CloseHandle(_threadPoolSemaphore);
-		//Analyzer_FreeBuffers();
 #ifdef _TRACE
 		AudioVisualizer::Diagnostics::Trace::Shutdown();
 #endif
@@ -91,7 +67,7 @@ namespace AudioVisualizer
 		return S_OK;
 	}
 
-	STDMETHODIMP CAnalyzerEffect::Configure(ABI::AudioVisualizer::AnalyzisType types, float outputFps, unsigned fftLength,  float inputOverlap)
+	STDMETHODIMP CAnalyzerEffect::Configure(ABI::AudioVisualizer::AnalyzerType types, float outputFps, unsigned fftLength,  float inputOverlap)
 	{
 		if ((fftLength & fftLength - 1) != 0)	// FFT length needs to be power of 2
 			return E_INVALIDARG;
@@ -110,7 +86,6 @@ namespace AudioVisualizer
 		m_FftLength = fftLength;
 		m_fOutputFps = outputFps;
 		m_fInputOverlap = inputOverlap;
-		//m_OutElementsCount = m_FftLength;
 
 		// If input type is set then calculate the necessary variables and initialize
 		if (m_FramesPerSecond != 0)
@@ -121,9 +96,6 @@ namespace AudioVisualizer
 
 	STDMETHODIMP CAnalyzerEffect::GetData(ABI::AudioVisualizer::IVisualizationDataFrame **ppData)
 	{
-		/*ComPtr<VisualizationDataFrame> spData;
-		HRESULT hr = MakeAndInitialize<VisualizationDataFrame>(&spData);
-		spData.CopyTo(ppData);*/
 		if (ppData == nullptr)
 			return E_POINTER;
 		*ppData = nullptr;
@@ -136,8 +108,17 @@ namespace AudioVisualizer
 
 		if (currentPosition != -1)	// If no presentation position then return nullptr
 		{
-			auto lock = m_csOutputQueueAccess.Lock();
+#ifdef _TRACE
+			AudioVisualizer::Diagnostics::Trace::Trace_Lock(&m_csOutputQueueAccess,L"OutputQueue",
+				[&hr,this,currentPosition,ppData] 
+			{
+				hr = Analyzer_FFwdQueueTo(currentPosition, ppData);
+			}
+			);
+#else
+			auto lock = m_csOutputQueueAccess.Lock();	
 			hr = Analyzer_FFwdQueueTo(currentPosition, ppData);
+#endif
 		}
 
 #ifdef _TRACE
@@ -147,72 +128,6 @@ namespace AudioVisualizer
 		return hr;
 	}
 
-	/*
-	STDMETHODIMP CAnalyzerEffect::GetFrame(ABI::Windows::Media::IAudioFrame ** ppAudioFrame)
-	{
-		using namespace Microsoft::WRL;
-		using namespace Microsoft::WRL::Wrappers;
-		using namespace ABI::Windows::Media;
-		using namespace ABI::Windows::Foundation;
-
-		// Get current presentation position
-		MFTIME currentPosition = -1;
-		HRESULT hr = S_OK;
-		if (m_spPresentationClock != nullptr) {
-			m_spPresentationClock->GetTime(&currentPosition);
-		}
-
-		auto lock = m_csOutputQueueAccess.Lock();
-
-		if (currentPosition == -1)
-		{
-			*ppAudioFrame = nullptr;
-			return S_OK;
-		}
-
-		ComPtr<IMFSample> spSample;
-
-#ifdef _TRACE
-		size_t queueSize = m_AnalyzerOutput.size();
-		ComPtr<IMFSample> spFront;
-		if (queueSize != 0)
-			spFront = m_AnalyzerOutput.front();
-#endif
-		hr = Analyzer_FFwdQueueTo(currentPosition, &spSample);
-
-		lock.Unlock();
-
-		if (FAILED(hr))
-			return hr;
-
-#ifdef _TRACE
-		Diagnostics::Trace::Log_GetData(currentPosition, spSample.Get(), spFront.Get(), queueSize, hr);
-#endif
-		// Position not found in the queue
-		if (hr != S_OK || spSample == nullptr)
-		{
-			*ppAudioFrame = nullptr;
-			return S_OK;
-		}
-
-		// Convert IMFSample into WinRT AudioFrame using IAudioFrameNativeFactory
-		MULTI_QI qiFactory[1] = { { &__uuidof(IAudioFrameNativeFactory),nullptr,S_OK } };
-		hr = CoCreateInstanceFromApp(CLSID_AudioFrameNativeFactory, nullptr, CLSCTX_INPROC_SERVER, nullptr, 1, qiFactory);
-		if (FAILED(hr))
-			return hr;
-		if (FAILED(qiFactory[0].hr))
-			return qiFactory[0].hr;
-
-		ComPtr<IAudioFrameNativeFactory> spNativeFactory = (IAudioFrameNativeFactory *)qiFactory[0].pItf;
-
-		// Now use the factory to create frame out of IMFSample
-		hr = spNativeFactory->CreateFromMFSample(spSample.Get(), false, IID_PPV_ARGS(ppAudioFrame));
-
-		return hr;
-
-	}
-	*/
-
 	STDMETHODIMP CAnalyzerEffect::get_IsSuspended(boolean * pbIsSuspended)
 	{
 		if (pbIsSuspended == nullptr)
@@ -220,7 +135,6 @@ namespace AudioVisualizer
 		*pbIsSuspended = (boolean) m_bIsSuspended;
 		return S_OK;
 	}
-
 	STDMETHODIMP CAnalyzerEffect::put_IsSuspended(boolean bNewValue)
 	{
 		if (m_bIsSuspended != (bool) bNewValue)
@@ -881,25 +795,7 @@ namespace AudioVisualizer
 		m_StepFrameCount = time_to_frames(1.0f / m_fOutputFps);
 		m_StepFrameOverlap = (size_t)(m_fInputOverlap * m_StepFrameCount);
 		m_StepTotalFrames = m_StepFrameCount + m_StepFrameOverlap;
-		/*
-		HRESULT hr = Analyzer_AllocateBuffers();
-		if (FAILED(hr))
-			return hr;
 
-		// Initialize window, use Blackman-Nuttall window for low sidelobes
-		float a0 = 0.3635819f, a1 = 0.4891775f, a2 = 0.1365995f, a3 = 0.0106411f;
-		float pi = 3.14159f;
-		for (size_t index = 0; index < m_StepTotalFrames; index++)
-		{
-			m_pWindow[index] = a0 - a1 * cosf(2 * pi * index / (m_StepTotalFrames - 1)) +
-				a2 * cosf(4 * pi * index / (m_StepTotalFrames - 1)) -
-				a3 * cosf(6 * pi * index / (m_StepTotalFrames - 1));
-		}
-
-		XDSP::FFTInitializeUnityTable(m_pFftUnityTable, m_FftLength);
-		m_fFftScale = 2.0f / m_FftLength;
-		*/
-		// Configure the buffer
 		_analyzer->ConfigureInput(m_nChannels);
 		_analyzer->ConfigureAnalyzer(m_FftLength, m_StepTotalFrames, m_StepFrameOverlap);
 
@@ -908,42 +804,7 @@ namespace AudioVisualizer
 #endif
 		return S_OK;
 	}
-	/*
-	HRESULT CAnalyzerEffect::Analyzer_AllocateBuffers()
-	{
-		using namespace DirectX;
 
-		Analyzer_FreeBuffers();	// First free any existing memory allocations
-
-		m_pWindow = static_cast<float *>(malloc(m_StepTotalFrames * sizeof(float)));
-		m_pFftReal = static_cast<XMVECTOR *>(_aligned_malloc(m_FftLength * sizeof(XMVECTOR) * m_nChannels, 16));	// For real data allocate space for all channels
-		m_pFftUnityTable = static_cast<XMVECTOR *> (_aligned_malloc(2 * m_FftLength * sizeof(XMVECTOR), 16));	// Complex values 
-		m_pFftBuffers = static_cast<XMVECTOR *>(_aligned_malloc(2 * m_FftLength * sizeof(XMVECTOR), 16));	// Preallocate buffers for FFT calculation 2*length of Fft
-
-		if (m_pFftReal == nullptr || m_pWindow == nullptr || m_pFftUnityTable == nullptr || m_pFftBuffers == nullptr)
-			return E_OUTOFMEMORY;
-
-		return S_OK;
-	}
-
-	HRESULT CAnalyzerEffect::Analyzer_FreeBuffers()
-	{
-		if (m_pFftReal != nullptr)
-			_aligned_free(m_pFftReal);
-		m_pFftReal = nullptr;
-		if (m_pFftUnityTable != nullptr)
-			_aligned_free(m_pFftUnityTable);
-		m_pFftUnityTable = nullptr;
-		if (m_pFftBuffers != nullptr)
-			_aligned_free(m_pFftBuffers);
-		m_pFftBuffers = nullptr;
-		if (m_pWindow != nullptr)
-			free(m_pWindow);
-		m_pWindow = nullptr;
-
-		return S_OK;
-	}
-	*/
 	HRESULT CAnalyzerEffect::Analyzer_ProcessSample(IMFSample * pSample)
 	{
 		if (m_FramesPerSecond == 0 || m_nChannels == 0)
@@ -1007,7 +868,7 @@ namespace AudioVisualizer
 		{
 			// Execute data processing on threadpool
 			ComPtr<IAsyncAction> action;
-			return _threadPoolStatics->RunAsync(
+			return _threadPoolStatics->RunWithPriorityAsync(
 			Callback<IWorkItemHandler>(
 				[this](IAsyncAction *pAction) -> HRESULT
 			{
@@ -1016,6 +877,7 @@ namespace AudioVisualizer
 				return S_OK;
 			}
 				).Get(),
+				WorkItemPriority::WorkItemPriority_High,
 			&action);
 
 			// return MFPutWorkItem2(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, 0, this, nullptr);
@@ -1035,15 +897,15 @@ namespace AudioVisualizer
 		while (!m_bIsSuspended && !_bResetAnalyzer && _analyzer->IsOutputAvailable())
 		{
 			ComPtr<ScalarData> rms;
-			if ((int)_analyzisTypes & (int)AnalyzisType::RMS)
+			if ((int)_analyzisTypes & (int)AnalyzerType::RMS)
 				rms = Make<ScalarData>(m_nChannels);
 
 			ComPtr<ScalarData> peak;
-			if ((int)_analyzisTypes & (int)AnalyzisType::Peak)
+			if ((int)_analyzisTypes & (int)AnalyzerType::Peak)
 				peak = Make<ScalarData>(m_nChannels);
 
 			ComPtr<VectorData> spectrum;
-			if ((int)_analyzisTypes & (int)AnalyzisType::Spectrum)
+			if ((int)_analyzisTypes & (int)AnalyzerType::Spectrum)
 				spectrum = Make<VectorData>(m_nChannels, m_FftLength >> 1);	// Spectrum is half fft length
 			long position = -1;
 
@@ -1052,7 +914,7 @@ namespace AudioVisualizer
 			auto time = Make<Nullable<TimeSpan>>(TimeSpan() = { frames_to_time(position) });
 			auto duration = Make<Nullable<TimeSpan>>(TimeSpan() = { (REFERENCE_TIME)(1e7 / m_fOutputFps) });
 
-			ComPtr<IVisualizationDataFrame> dataFrame = Make<VisualizationDataFrame>(
+			ComPtr<VisualizationDataFrame> dataFrame = Make<VisualizationDataFrame>(
 				time.Get(),
 				duration.Get(),
 				rms.Get(),
@@ -1064,204 +926,22 @@ namespace AudioVisualizer
 			// Only push the result if reset is not pending
 			if (!_bResetAnalyzer)
 			{
-				auto lock = m_csOutputQueueAccess.Lock();
+#ifdef _TRACE
+				AudioVisualizer::Diagnostics::Trace::Trace_Lock(&m_csOutputQueueAccess,L"OutputQueue",
+					[=] {
+					Analyzer_CompactOutputQueue();
+					m_AnalyzerOutput.push(dataFrame);
+				});
+				Diagnostics::Trace::Log_OutputQueuePush(dataFrame.Get(), m_AnalyzerOutput.size());
+#else
+				auto _lock = m_csOutputQueueAccess.Lock();
 				Analyzer_CompactOutputQueue();
 				m_AnalyzerOutput.push(dataFrame);
-				
-#ifdef _TRACE
-				Diagnostics::Trace::Log_OutputQueuePush(dataFrame.Get(),m_AnalyzerOutput.size());
 #endif
+			
 			}
 		}
 	}
-
-	/*
-	HRESULT CAnalyzerEffect::Analyzer_Step(IMFAsyncResult * pResult)
-	{
-		// If in reset state do not even process anything
-		if (dwWaitResult != WAIT_OBJECT_0)
-		{
-			ReleaseSemaphore(m_hWQAccess, 1, nullptr);
-			return S_OK;
-		}
-
-		if (_analyzer->IsOutputAvailable())
-		{
-
-			auto lock = m_csOutputQueueAccess.Lock();
-			dwWaitResult = WaitForSingleObject(m_hResetWorkQueue, 0);
-
-			// Only push the result if reset is not pending
-			if (dwWaitResult == WAIT_OBJECT_0)
-			{
-				// Manage queue size
-				Analyzer_CompactOutputQueue();
-				// TODO: Push sample
-				// m_AnalyzerOutput.push(spSample);
-#ifdef _TRACE
-				Diagnostics::Trace::Log_OutputQueuePush(m_AnalyzerOutput.size());
-#endif
-			}
-		}
-
-
-		if (!bOutputExists || dwWaitResult != WAIT_OBJECT_0 || m_bIsSuspended)
-		{
-			// Work is done, queue is empty, release the semaphore
-			ReleaseSemaphore(m_hWQAccess, 1, nullptr);
-			return S_OK;
-		}
-
-		// Schedule next work item
-		return MFPutWorkItem2(MFASYNC_CALLBACK_QUEUE_MULTITHREADED, 0, this, nullptr);
-	}*/
-
-	/*
-	HRESULT CAnalyzerEffect::Analyzer_GetFromBuffer(float *pData, REFERENCE_TIME *pPosition)
-	{
-		auto readerLock = m_csInputIndexAccess.Lock();	// Get lock on modifying the reader pointer
-
-		long currentPosition = m_InputBuffer.GetPosition();
-		HRESULT hr = m_InputBuffer.Step(pData, m_FftLength, m_pWindow);
-		if (FAILED(hr))
-			return S_FALSE;
-
-		*pPosition = frames_to_time(currentPosition);
-
-		return S_OK;
-	}*/
-
-	// Calculate Fft and then the abs values for the first half of the elements (positive frequencies)
-	// The results are placed back into pData
-/*
-	void CAnalyzerEffect::Analyzer_CalculateFft(DirectX::XMVECTOR * pData, DirectX::XMVECTOR * pBuffers)
-	{
-		Diagnostics::Trace::Log_LineNumber(__LINE__);
-		using namespace DirectX;
-		using namespace XDSP;
-		size_t fftVectorLength = m_FftLength >> 2;
-		XMVECTOR *pImag = pBuffers;
-		XMVECTOR *pRealUnswizzled = pBuffers + fftVectorLength;
-
-		memset(pImag, 0, sizeof(float)*m_FftLength);	// Imaginary values are 0 for input
-
-		Diagnostics::Trace::Log_LineNumber(__LINE__);
-		FFT(pData, pImag, m_pFftUnityTable, m_FftLength);
-		Diagnostics::Trace::Log_LineNumber(__LINE__);
-		FFTUnswizzle(pRealUnswizzled, pData, m_FftLengthLog2);
-		FFTUnswizzle(pData, pImag, m_FftLengthLog2); // Use input data for temporary buffer for reordered imaginary data
-
-		XMVECTOR vRMS = XMVectorZero();
-		size_t spectrLength = fftVectorLength >> 1;
-		// Calculate abs value first half of FFT output and copy to output
-		for (size_t vIndex = 0; vIndex < spectrLength; vIndex++)	// vector length is 4 times shorter, copy only positive frequency values
-		{
-			XMVECTOR vRR = XMVectorMultiply(pRealUnswizzled[vIndex], pRealUnswizzled[vIndex]);
-			XMVECTOR vII = XMVectorMultiply(pData[vIndex], pData[vIndex]);	// pData is used as buffer for reordered imaginary values
-			XMVECTOR vRRplusvII = XMVectorAdd(vRR, vII);
-			XMVECTOR vAbs = XMVectorSqrtEst(vRRplusvII);
-			XMVECTOR vScaledAbs = XMVectorScale(vAbs, m_fFftScale);
-			pData[vIndex] = vScaledAbs;
-			vRMS += vScaledAbs * vScaledAbs;
-		}
-		// Place RMS value after the output (which takes only half of the buffer)
-		pData[spectrLength] = XMVectorSqrtEst(XMVectorSum(vRMS));
-	}
-	
-	HRESULT CAnalyzerEffect::Analyzer_Calculate(IMFSample ** ppSample)
-	{
-		using namespace DirectX;
-
-		// Not initialized
-		if (m_nChannels == 0)
-			return E_NOT_VALID_STATE;
-
-		auto lock = m_csAnalyzerConfig.Lock();	// Lock object for config changes
-
-#ifdef _TRACE
-		ComPtr<ABI::Windows::Foundation::Diagnostics::ILoggingActivity> spActivity;
-		Diagnostics::Trace::Log_StartCalculate(&spActivity,m_InputBuffer.GetPosition(),m_InputBuffer.GetLength());
-		Diagnostics::CLogActivityHelper activity(spActivity.Get());
-#endif
-
-		REFERENCE_TIME hnsDataTime = 0;
-		HRESULT hr = Analyzer_GetFromBuffer((float *)m_pFftReal, &hnsDataTime);
-		if (hr != S_OK)
-			return hr;
-#ifdef _TRACE
-		Diagnostics::Trace::Log_GetFromBuffer(hnsDataTime);
-#endif
-			// Create output media sample
-		ComPtr<IMFMediaBuffer> spBuffer;
-		// Create aligned buffer for vector math + 16 bytes for 8 floats for RMS values
-		// In linear output length is going to be 1/2 of the FFT length
-		size_t vOutputLength = (m_OutElementsCount + 3) >> 2;		// To use vector math allocate buffer for each channel which is rounded up to the next 16 byte boundary
-
-		hr = MFCreateAlignedMemoryBuffer(DWORD((sizeof(XMVECTOR)*vOutputLength*m_nChannels) + 2 * sizeof(XMVECTOR)), 16, &spBuffer);
-		if (FAILED(hr))
-			return hr;
-
-		spBuffer->SetCurrentLength(DWORD(sizeof(XMVECTOR)*(2 + m_nChannels * vOutputLength)));
-
-		float *pBufferData;	// This is pointer to the media buffer data
-		hr = spBuffer->Lock((BYTE **)&pBufferData, nullptr, nullptr);
-		if (FAILED(hr))
-			return hr;
-
-		float *pRMSData = (float *)(pBufferData + m_nChannels * (vOutputLength << 2));
-		memset(pRMSData, 0, sizeof(float) * 8);	// Zero the 8 RMS value slots
-
-		// Process each channel now. FFT values are in the m_pFftReal
-		for (size_t channelIndex = 0; channelIndex < m_nChannels; channelIndex++)
-		{
-			// Output data goes directly into the allocated buffer
-			// One channel output is fftLength / 2, array vector size is fftLength / 4 hence fftLength >> 3
-			float *pOutData = pBufferData + channelIndex * (vOutputLength << 2);
-
-			DirectX::XMVECTOR *pFftData = m_pFftReal + channelIndex * (m_FftLength >> 2);
-			Analyzer_CalculateFft(pFftData, m_pFftBuffers);
-			// RMS data is placed right after the spectral data which is half the fft length
-			pRMSData[channelIndex] = ((float *)(pFftData))[m_FftLength >> 1];
-
-			Analyzer_LinearInterpolate((float*)pFftData, m_FftLength >> 1, pOutData, m_OutElementsCount);
-		}
-		// Scale the output value, we can use vector math as there is space after the buffer and it is aligned
-		if (m_bUseLogAmpScale)
-		{
-			// Process all amplitude and RMS values in one pass
-			Analyzer_ConvertToDb((XMVECTOR *)pBufferData, vOutputLength * m_nChannels + 2);
-		}
-
-		spBuffer->Unlock();
-
-		hr = Analyzer_CreateOutputSample(ppSample,
-			spBuffer.Get(),
-			hnsDataTime,
-			vOutputLength << 2);
-
-
-		return hr;
-	}
-	*/
-
-	// Creates media sample and sets necessary attributes
-	/*
-	HRESULT  CAnalyzerEffect::Analyzer_CreateOutputSample(
-		IMFSample **ppSample, IMFMediaBuffer *pBuffer,
-		REFERENCE_TIME time, size_t bufferStep)
-	{
-		HRESULT hr = MFCreateSample(ppSample);
-		if (FAILED(hr))
-			return hr;
-
-		(*ppSample)->AddBuffer(pBuffer);
-		(*ppSample)->SetSampleTime(time);
-		(*ppSample)->SetSampleDuration(frames_to_time((long) m_StepFrameCount));
-
-		(*ppSample)->SetUINT32(g_PropKey_RMS_Data_Offset,UINT32(m_nChannels * bufferStep));
-		(*ppSample)->SetUINT32(g_PropKey_Data_Step, UINT32(bufferStep));
-		return S_OK;
-	}*/
 
 	HRESULT CAnalyzerEffect::Analyzer_Reset()
 	{
@@ -1284,41 +964,6 @@ namespace AudioVisualizer
 #endif
 		return S_OK;
 	}
-	/*
-	HRESULT CAnalyzerEffect::Analyzer_LinearInterpolate(const float *pInput, size_t inputSize, float *pOutput, size_t outputSize)
-	{
-		if (outputSize > inputSize)
-			return E_INVALIDARG;
-		if (inputSize == outputSize)
-		{
-			memcpy(pOutput, pInput, outputSize * sizeof(float));
-		}
-
-		float inStep = (float)inputSize / (float)outputSize;
-		float inIndex = 0;
-		float nextInIndex = inIndex + inStep;
-		float scaler = 1 / inStep;
-
-		for (size_t outIndex = 0; outIndex < outputSize; outIndex++)
-		{
-			int inValueIntIndex = (int)floor(inIndex);
-			int inValueIntNextIndex = (int)floor(nextInIndex);
-
-			float sum = 0;
-			for (int index = inValueIntIndex + 1; index < inValueIntNextIndex && index < (int)inputSize; index++)
-			{
-				sum += pInput[index];
-			}
-			sum += pInput[inValueIntIndex] * (1 - inIndex + (float)inValueIntIndex);
-			if (inValueIntNextIndex < (int)inputSize)
-				sum += pInput[inValueIntNextIndex] * (nextInIndex - (float)inValueIntNextIndex);
-			pOutput[outIndex] = sum * scaler;
-
-			inIndex = nextInIndex;
-			nextInIndex = inIndex + inStep;
-		}
-		return S_OK;
-	}*/
 
 	HRESULT CAnalyzerEffect::Analyzer_CompactOutputQueue()
 	{
@@ -1326,7 +971,10 @@ namespace AudioVisualizer
 		// Now manage queue size - remove items until the size is below limit
 		while (m_AnalyzerOutput.size() > cMaxOutputQueueSize)
 		{
-			m_AnalyzerOutput.front() = nullptr;
+#ifdef _TRACE
+			AudioVisualizer::Diagnostics::Trace::Log_OutputQueuePop(m_AnalyzerOutput.front().Get(),m_AnalyzerOutput.size(), 1);
+#endif
+			//m_AnalyzerOutput.front() = nullptr;
 			m_AnalyzerOutput.pop();
 		}
 		return S_OK;
@@ -1338,7 +986,10 @@ namespace AudioVisualizer
 
 		while (!m_AnalyzerOutput.empty())
 		{
-			m_AnalyzerOutput.front() = nullptr;
+#ifdef _TRACE
+			AudioVisualizer::Diagnostics::Trace::Log_OutputQueuePop(m_AnalyzerOutput.front().Get(),m_AnalyzerOutput.size(), 2);
+#endif
+			//m_AnalyzerOutput.front() = nullptr;
 			m_AnalyzerOutput.pop();
 		}
 		return S_OK;
@@ -1383,7 +1034,9 @@ namespace AudioVisualizer
 			{
 
 				if (ppFrame != nullptr)	// If frame is requested, return the frame found
+				{
 					m_AnalyzerOutput.front().CopyTo(ppFrame);
+				}
 				return S_OK;
 			}
 			else
@@ -1393,26 +1046,14 @@ namespace AudioVisualizer
 					return S_FALSE;
 				}
 				// Current position is after the item in the queue - remove and continue searching
-				m_AnalyzerOutput.front() = nullptr; // Dereference the pointer
+				auto front = m_AnalyzerOutput.front().Get();
+				AudioVisualizer::Diagnostics::Trace::Log_OutputQueuePop(m_AnalyzerOutput.front().Get(),m_AnalyzerOutput.size(), 0);
+				//m_AnalyzerOutput.front() = nullptr; // Dereference the pointer
 				m_AnalyzerOutput.pop();
 			}
 		}
 		return S_FALSE;
 	}
-	/*
-	DirectX::XMVECTOR g_vLog10DbScaler = DirectX::XMVectorReplicate(8.68588f); // This is 20.0/LogE(10)
-																			   // {3F692E37-FC20-48DD-93D2-2234E1B1AA23}
-
-	void CAnalyzerEffect::Analyzer_ConvertToDb(DirectX::XMVECTOR * pvData, size_t nElements)
-	{
-		using namespace DirectX;
-		for (size_t vIndex = 0; vIndex < nElements; vIndex++)
-		{
-			XMVECTOR vClamped = XMVectorClamp(pvData[vIndex], DirectX::g_XMZero, XMVectorReplicate(FLT_MAX));
-			XMVECTOR vLog = XMVectorLogE(vClamped) * g_vLog10DbScaler;
-			pvData[vIndex] = XMVectorClamp(vLog, m_vClampAmpLow, m_vClampAmpHigh);
-		}
-	}*/
 
 	STDMETHODIMP CAnalyzerEffect::SetProperties(ABI::Windows::Foundation::Collections::IPropertySet * pConfiguration)
 	{

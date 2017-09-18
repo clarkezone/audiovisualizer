@@ -28,6 +28,7 @@ namespace VisualizerPlayer
         /// </summary>
         public App()
         {
+            Trace.Initialize();
             this.InitializeComponent();
             this.Suspending += OnSuspending;
         }
