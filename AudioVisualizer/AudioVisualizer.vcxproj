@@ -354,7 +354,14 @@
     <ClCompile Include="VisualizerDrawEventArgs.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="AudioVisualizer.idl" />
+    <Midl Include="AudioVisualizer.idl">
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).abi.h</HeaderFileName>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).abi.h</HeaderFileName>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">%(Filename).abi.h</HeaderFileName>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">%(Filename).abi.h</HeaderFileName>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename).abi.h</HeaderFileName>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename).abi.h</HeaderFileName>
+    </Midl>
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

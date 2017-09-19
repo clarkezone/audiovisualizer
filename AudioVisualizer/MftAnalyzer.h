@@ -2,7 +2,7 @@
 
 #define _CRTDBG_MAP_ALLOC 
 
-#include "AudioVisualizer_h.h"
+#include "AudioVisualizer.abi.h"
 #include <DirectXMath.h>
 #include <queue>
 #include <memory>
@@ -49,18 +49,10 @@ namespace AudioVisualizer
 		const size_t cMaxOutputQueueSize = 600;	// Keep 10sec worth of data for 60fps output
 
 		std::shared_ptr<AudioMath::CAudioAnalyzer> _analyzer;
-		//AudioMath::CAudioBuffer m_InputBuffer;
-
-		//long m_InputSampleIndex;	// Current read position sample index in stream
-		//Microsoft::WRL::Wrappers::CriticalSection m_csInputIndexAccess;
-
-		//HANDLE m_hWQAccess;	// Semaphore that is used to detect is work queue processing is running
-		//HANDLE m_hResetWorkQueue;	// Event that is used to cancel and reset work queue processing
-		
-
+	
 		Microsoft::WRL::Wrappers::CriticalSection m_csAnalyzerConfig;	// Critical section to lock analyzer configuration changing
 		Microsoft::WRL::Wrappers::CriticalSection m_csOutputQueueAccess;
-		std::queue<ComPtr<IVisualizationDataFrame>> m_AnalyzerOutput;
+		std::queue<ComPtr<AudioMath::AnalyzerFrame>> m_AnalyzerOutput;
 
 		size_t m_StepFrameCount;	// How many samples does calculate consume each step
 		size_t m_StepFrameOverlap;
@@ -70,48 +62,30 @@ namespace AudioVisualizer
 
 		float m_fOutputFps;
 		float m_fInputOverlap;
-	//	size_t m_OutElementsCount;
-	//	bool m_bUseLogAmpScale;
-	//	bool m_bUseLogFScale;
-
-		//float *m_pWindow;
-		//DirectX::XMVECTOR *m_pFftReal;
-		//DirectX::XMVECTOR *m_pFftUnityTable;
-		//DirectX::XMVECTOR *m_pFftBuffers;
-		//float m_fFftScale;	// 2/N scale factor for fft output
-		//DirectX::XMVECTOR m_vClampAmpLow;
-		//DirectX::XMVECTOR m_vClampAmpHigh;
 
 		ABI::AudioVisualizer::AnalyzerType  _analyzisTypes;
 
 		HRESULT Analyzer_TestInputType(IMFMediaType *pType);
 		HRESULT Analyzer_SetMediaType(IMFMediaType *pType);
 		HRESULT Analyzer_Initialize();
-		//HRESULT Analyzer_AllocateBuffers();
-		//HRESULT Analyzer_FreeBuffers();
 		HRESULT Analyzer_ProcessSample(IMFSample *pSample);
 		HRESULT Analyzer_ScheduleProcessing();
 		void Analyzer_ProcessData();
-		//HRESULT Analyzer_Step(IMFAsyncResult *pResult);
-		//HRESULT Analyzer_Calculate(IMFSample **ppSample);
-		//HRESULT Analyzer_GetFromBuffer(float *pData, REFERENCE_TIME *pPosition);
-		//void	Analyzer_CalculateFft(DirectX::XMVECTOR *pData, DirectX::XMVECTOR *pBuffers);
-		//HRESULT	Analyzer_LinearInterpolate(const float *pInput, size_t inputSize, float *pOutput, size_t outputSize);
-		//HRESULT Analyzer_CreateOutputSample(IMFSample **ppSample, IMFMediaBuffer *pBuffer, REFERENCE_TIME time,size_t bufferStep);
 		HRESULT Analyzer_Reset();
 		HRESULT Analyzer_Flush(); 
 		HRESULT Analyzer_CompactOutputQueue();
 		HRESULT Analyzer_FlushOutputQueue();
 		HRESULT Analyzer_Resume();
 		HRESULT Analyzer_Suspend();
-		HRESULT Analyzer_FFwdQueueTo(REFERENCE_TIME time, IVisualizationDataFrame **ppFrame);
-		//void Analyzer_ConvertToDb(DirectX::XMVECTOR *pvData, size_t nElements);	// Converts input values to db range
+		HRESULT Analyzer_FFwdQueueTo(REFERENCE_TIME time, AudioMath::AnalyzerFrame **ppFrame);
 
+		
 		inline long time_to_samples(REFERENCE_TIME time) const { return m_nChannels * (long)((time * m_FramesPerSecond + 5000000L) / 10000000L); }
 		inline long time_to_frames(REFERENCE_TIME time) const { return (long)((time * m_FramesPerSecond + 5000000L) / 10000000L); }
 		inline long time_to_frames(float time) const { return (long)((((REFERENCE_TIME)(1e7 * time))  * m_FramesPerSecond + 5000000L) / 10000000L); }
 		inline REFERENCE_TIME frames_to_time(long frames) { return 10000000L * (long long)frames / m_FramesPerSecond; }
 		inline REFERENCE_TIME samples_to_time(long samples) { return 10000000L * (long long)(samples / m_nChannels) / m_FramesPerSecond; }
+
 		REFERENCE_TIME GetPresentationTime()
 		{
 			MFTIME presentationTime = -1;

@@ -1,7 +1,8 @@
 #pragma once
 #include <mfapi.h>
 #include <windows.foundation.diagnostics.h>
-#include "AudioVisualizer_h.h"
+#include "AudioVisualizer.abi.h"
+#include <AudioAnalyzer.h>
 #include <Unknwn.h>
 
 
@@ -49,9 +50,9 @@ namespace AudioVisualizer
 			static HRESULT Log_SetInputPosition(long frameIndex);
 			static HRESULT Log_ProcessSample(IMFSample *pSample);
 			static HRESULT Log_StartCalculate(ABI::Windows::Foundation::Diagnostics::ILoggingActivity **ppActivity, long position, size_t bufferLength);
-			static HRESULT Log_GetData(REFERENCE_TIME currentPosition, IVisualizationDataFrame *pFrame, IVisualizationDataFrame	*pQueueFront, size_t queueSize, HRESULT result);
-			static HRESULT Log_OutputQueuePush(IVisualizationDataFrame *pFrame,size_t queueSize);
-			static HRESULT Log_OutputQueuePop(IVisualizationDataFrame *pFrame, size_t queueSize, int reason);
+			static HRESULT Log_GetData(REFERENCE_TIME currentPosition, AudioMath::AnalyzerFrame *pFrame, AudioMath::AnalyzerFrame *pQueueFront, size_t queueSize, HRESULT result);
+			static HRESULT Log_OutputQueuePush(AudioMath::AnalyzerFrame *pFrame,size_t queueSize);
+			static HRESULT Log_OutputQueuePop(AudioMath::AnalyzerFrame *pFrame, size_t queueSize, int reason);
 
 			static HRESULT Log_GetFromBuffer(REFERENCE_TIME position);
 			static HRESULT Log_StartCalculateFft(ILoggingActivity **ppActivity);

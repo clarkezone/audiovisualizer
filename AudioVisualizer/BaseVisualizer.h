@@ -1,5 +1,5 @@
 #pragma once
-#include "AudioVisualizer_h.h"
+#include "AudioVisualizer.abi.h"
 #include <wrl.h>
 #include <windows.ui.composition.h>
 #include <mutex>

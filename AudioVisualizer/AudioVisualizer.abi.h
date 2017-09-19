@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0622 */
 /* at Tue Jan 19 05:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-ee288bd2:
+/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-77fdbdfb:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -36,8 +36,8 @@
 #include "ole2.h"
 #endif /*COM_NO_WINDOWS_H*/
 
-#ifndef __AudioVisualizer_h_h__
-#define __AudioVisualizer_h_h__
+#ifndef __AudioVisualizer2Eabi_h__
+#define __AudioVisualizer2Eabi_h__
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
@@ -859,6 +859,13 @@ DEFINE_ENUM_FLAG_OPERATORS(AnalyzerType)
 }
 #endif
 
+#ifdef __cplusplus
+namespace ABI {
+namespace AudioVisualizer {
+class VisualizationDataFrame;
+} /*AudioVisualizer*/
+}
+#endif
 #ifdef __cplusplus
 namespace ABI {
 namespace AudioVisualizer {
@@ -3318,13 +3325,6 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationDataFrame;
 /* interface __MIDL_itf_AudioVisualizer_0000_0030 */
 /* [local] */ 
 
-#ifdef __cplusplus
-namespace ABI {
-namespace AudioVisualizer {
-class VisualizationDataFrame;
-} /*AudioVisualizer*/
-}
-#endif
 #ifndef RUNTIMECLASS_AudioVisualizer_VisualizationDataFrame_DEFINED
 #define RUNTIMECLASS_AudioVisualizer_VisualizationDataFrame_DEFINED
 extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_AudioVisualizer_VisualizationDataFrame[] = L"AudioVisualizer.VisualizationDataFrame";

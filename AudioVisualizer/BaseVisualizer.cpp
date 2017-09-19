@@ -146,7 +146,6 @@ namespace AudioVisualizer
 
 	HRESULT BaseVisualizer::OnDraw()
 	{
-		IVisualizationDataFrame *pDataFrame = nullptr;
 		TimeSpan frameTime = { -1 };
 		HRESULT hr = S_OK;
 		if (_swapChain != nullptr)
@@ -160,75 +159,25 @@ namespace AudioVisualizer
 				{
 					hr = _source->GetData(&dataFrame);	// This call will cause addref to dataFrame
 				}
-				pDataFrame = dataFrame.Get();
-				if (pDataFrame != nullptr)
-				{
-					pDataFrame->AddRef();
-					ComPtr<IReference<TimeSpan>> tsRef;
-					pDataFrame->get_Time(&tsRef);
-					if (tsRef != nullptr)
-					{
-						tsRef->get_Value(&frameTime);
-					}
-				}
 
-				if (pDataFrame != nullptr)
-				{
-					pDataFrame->AddRef();
-					size_t refCount = pDataFrame->Release()-1;
-					_RPTF2(_CRT_WARN, "Before makeargs, refcount = %u (%ld)\n", refCount,frameTime);
-				}
-
-				auto args = Make<VisualizerDrawEventArgs>(drawingSession.Get(), dataFrame.Get());
-				
-				IVisualizerDrawEventArgs *pArgs = args.Get();
-				
-				if (pDataFrame != nullptr)
-				{
-					pDataFrame->AddRef();
-					size_t refCount = pDataFrame->Release() - 1;
-					_RPTF2(_CRT_WARN, "After makeargs, refcount = %u (%ld)\n", refCount, frameTime);
-				}
-
-
+				auto args = Make<VisualizerDrawEventArgs>(drawingSession.Get(), nullptr /*dataFrame.Get()*/);					
 				{
 #ifdef _TRACE
 					ComPtr<ILoggingActivity> activity;
 					Diagnostics::Trace::Log_StartDraw(dataFrame.Get(), &activity);
 					AudioVisualizer::Diagnostics::CLogActivityHelper drawActivity(activity.Get());
-					if (pDataFrame != nullptr)
-					{
-						pDataFrame->AddRef();
-						size_t refCount = pDataFrame->Release()-1;
-						_RPTF2(_CRT_WARN, "Before event, refcount = %u (%ld)\n", refCount, frameTime);
-					}
-					pArgs->AddRef();
-					_RPTF1(_CRT_WARN, "Before event, args refcount = %u\n", pArgs->Release());
-
 #endif
 					ThrowIfFailed(_drawEventList.InvokeAll(this, args.Get()));
-
-					pArgs->AddRef();
-					_RPTF1(_CRT_WARN, "After event, args refcount = %u\n", pArgs->Release());
-
-					if (pDataFrame != nullptr)
-					{
-						pDataFrame->AddRef();
-						size_t refCount = pDataFrame->Release()-1;
-						_RPTF2(_CRT_WARN, "After event, refcount = %u (%ld)\n", refCount, frameTime);
-					}
 				}
 				As<IClosable>(drawingSession)->Close();
+				if (dataFrame != nullptr)
+				{
+					As<IClosable>(dataFrame)->Close();
+				}
 				_swapChain->Present();
 			}
 		}
-		if (pDataFrame != nullptr)
-		{
-			pDataFrame->AddRef();
-			size_t refCount = pDataFrame->Release()-1;
-			_RPTF2(_CRT_WARN, "Before return, refcount = %u (%ld)\n=========\n\n", refCount, frameTime);
-			pDataFrame->Release();
-		}
+
 
 		return hr;
 	}

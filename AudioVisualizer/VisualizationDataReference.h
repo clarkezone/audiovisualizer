@@ -3,7 +3,7 @@
 #include "ScalarData.h"
 #include "VectorData.h"
 #include "VisualizationDataFrame.h"
-#include "AudioVisualizer_h.h"
+#include "AudioVisualizer.abi.h"
 #include <windows.foundation.h>
 #include "LifeSpanTracker.h"
 

@@ -41,6 +41,7 @@ namespace AudioVisualizer
 	interface IVisualizer;
 
 	runtimeclass VisualizerDrawEventArgs;
+	runtimeclass VisualizationDataFrame;
 	runtimeclass VectorData;
 	runtimeclass ScalarData;
 
@@ -54,7 +55,7 @@ namespace AudioVisualizer
 	[exclusiveto(VisualizerDrawEventArgs)]
 	interface IVisualizerDrawEventArgs : IInspectable
 	{
-		[propget] HRESULT Data([out][retval] IVisualizationDataFrame **pData);
+		[propget] HRESULT Data([out][retval] VisualizationDataFrame **pData);
 		[propget] HRESULT DrawingSession([out][retval] Microsoft.Graphics.Canvas.CanvasDrawingSession **pSession);
 	}
 
@@ -163,10 +164,11 @@ namespace AudioVisualizer
 	};
 
 
-	[version(1.0)]
+	[version(1.0), marshaling_behavior(agile), threading(both)]
 	runtimeclass VisualizationDataFrame
 	{
 		[default] interface IVisualizationDataFrame; 
+		interface Windows.Foundation.IClosable;
 	}
 
 	[uuid(B7589126-33C4-43E8-9D8E-BCF3F3DCE802)]

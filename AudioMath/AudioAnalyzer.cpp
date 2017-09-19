@@ -18,7 +18,10 @@ namespace AudioMath
 		_pWindow(nullptr),
 		_pFftReal(nullptr),
 		_pFftUnityTable(nullptr),
-		_pFftBuffers(nullptr)
+		_pFftBuffers(nullptr),
+		_bCalculateRMS(true),
+		_bCalculatePeak(true),
+		_bCalculateSpectrum(true)
 	{
 		_spInputBuffer = std::make_shared<CAudioBuffer>(inputBufferSize);
 		_spInputBuffer->SetFrameSize(_inputChannels);
@@ -102,20 +105,26 @@ namespace AudioMath
 		_spInputBuffer->Add(pData, frameCount);
 	}
 
-	bool CAudioAnalyzer::Step(long *pPosition, DirectX::XMVECTOR *pRMS, DirectX::XMVECTOR *pPeak, DirectX::XMVECTOR *pSpectrum)
+	bool CAudioAnalyzer::Step(AnalyzerFrame **ppFrame)
 	{
+		if (ppFrame == nullptr)
+			return FALSE;
+
+		long position = -1;
 		{	/* Code block for scoped lock during copying the data from the input buffer */	
 			std::lock_guard<std::mutex> inputLock(_inputBufferAccess);
 			if (!IsOutputAvailable())
 				return false;
-			if (pPosition != nullptr)
-				*pPosition = _spInputBuffer->GetPosition();
+
+			position = _spInputBuffer->GetPosition();
 			_spInputBuffer->Step((float*)_pFftReal, _fftLength);
 		}
 
+		ComPtr<AnalyzerFrame> spDataFrame = Make<AnalyzerFrame>(_inputChannels, _fftLength >> 1, position,_stepFrames - _overlapFrames);
+
 		size_t vStep = _fftLength >> 2;
 
-		if (pRMS != nullptr || pPeak != nullptr)
+		if (_bCalculateRMS || _bCalculateRMS)
 		{
 			size_t vFromFrame = _overlapFrames >> 2, vToFrame = (_stepFrames - _overlapFrames) >> 2;
 			float rmsScaler = 1.0f / ((vToFrame - vFromFrame) << 2);
@@ -130,19 +139,19 @@ namespace AudioMath
 					vRMSSum +=  vValue * vValue;
 					vPeak = XMVectorMax(vPeak, XMVectorAbs(vValue));
 				}
-				if (pRMS != nullptr)
+				if (_bCalculateRMS)
 				{
 					XMVECTOR vRMS = XMVectorSqrt(XMVectorScale(XMVectorSum(vRMSSum), rmsScaler));
-					((float *)pRMS)[channelIndex] = vRMS.m128_f32[0];
+					((float *)spDataFrame->GetRMS())[channelIndex] = vRMS.m128_f32[0];
 				}
-				if (pPeak != nullptr)
+				if (_bCalculatePeak)
 				{
 					float peakValue = std::max(std::max(std::max(vPeak.m128_f32[0], vPeak.m128_f32[1]), vPeak.m128_f32[2]), vPeak.m128_f32[3]);
-					((float*)pPeak)[channelIndex] = peakValue;
+					((float*)spDataFrame->GetPeak())[channelIndex] = peakValue;
 				}
 			}
 		}
-		if (pSpectrum != nullptr)
+		if (_bCalculateSpectrum)
 		{
 			// First window the data
 			for (size_t vIndex = 0; vIndex < (_stepFrames >> 2); vIndex++)
@@ -155,12 +164,7 @@ namespace AudioMath
 			for (size_t channelIndex = 0; channelIndex < _inputChannels; channelIndex++)
 			{
 				XMVECTOR *pData = _pFftReal + channelIndex * vStep;
-				XMVECTOR *pOutput = pSpectrum + channelIndex * (vStep >> 1);
-				/*
-				for (size_t vIndex = 0; vIndex < _stepFrames << 2; vIndex++)
-				{
-					pData[vIndex] *= _pWindow[vIndex];
-				}*/
+				XMVECTOR *pOutput = spDataFrame->GetSpectrum() + channelIndex * (vStep >> 1);
 
 				XMVECTOR *pImag = _pFftBuffers;
 				XMVECTOR *pRealUnswizzled = _pFftBuffers + vStep;
@@ -183,6 +187,7 @@ namespace AudioMath
 				}
 			}
 		}
+		*ppFrame = spDataFrame.Detach();
 		return true;
 	}
 

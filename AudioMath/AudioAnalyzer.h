@@ -3,12 +3,55 @@
 #include "AudioBuffer.h"
 #include <memory>
 #include <mutex>
-
+#include <wrl.h>
 
 using namespace DirectX;
+using namespace Microsoft::WRL;
 
 namespace AudioMath
 {
+	
+	class AnalyzerFrame : public RuntimeClass<RuntimeClassFlags<RuntimeClassType::ClassicCom>,IUnknown>
+	{
+		XMVECTOR *_pRms;
+		XMVECTOR *_pPeak;
+		XMVECTOR *_pData;
+		long _position;
+		long _duration;
+	public:
+		XMVECTOR *GetRMS() { return _pRms; }
+		XMVECTOR *GetPeak() { return _pPeak; }
+		XMVECTOR *GetSpectrum() { return _pData; }
+		long GetPosition() const { return  _position; }
+		long GetDuration() const { return _duration; }
+
+		AnalyzerFrame(size_t channels, size_t spectrumBins,long position,long duration) : 
+			_pData(nullptr),
+			_pRms(nullptr),
+			_pPeak(nullptr),
+			_position(position),
+			_duration(duration)
+		{
+			size_t vScalarElements = (channels + 3) >> 2;
+			size_t vSpectrumElements = (spectrumBins + 3) >> 2;
+			// Allocate one buffer as |--- spectrum --- | rms | peak |
+			size_t vMallocSize = vSpectrumElements * channels + 2 * vScalarElements;
+
+			_pData = static_cast<DirectX::XMVECTOR *>(_aligned_malloc(vMallocSize*sizeof(DirectX::XMVECTOR),16));
+			_pRms = _pData + vSpectrumElements * channels;
+			_pPeak = _pRms + vScalarElements;
+		}
+
+		~AnalyzerFrame()
+		{
+			if (_pData != nullptr)
+				_aligned_free(_pData);
+			_pData = nullptr;
+			_pRms = nullptr;
+			_pPeak = nullptr;
+		}
+	};
+
 	class CAudioAnalyzer
 	{
 		UINT32 _inputChannels;
@@ -28,6 +71,10 @@ namespace AudioMath
 
 		void AllocateBuffers();
 		void FreeBuffers();
+
+		bool _bCalculateRMS;
+		bool _bCalculatePeak;
+		bool _bCalculateSpectrum;
 	public:
 		CAudioAnalyzer(size_t inputBufferSize);
 		~CAudioAnalyzer();
@@ -46,7 +93,7 @@ namespace AudioMath
 		void AddInput(float *pData, size_t sampleCount, long frameIndex = -1);
 		
 		// Fetches next set of data from buffer and analyzes
-		bool Step(long *pPosition, DirectX::XMVECTOR *pRMS, DirectX::XMVECTOR *pPeak, DirectX::XMVECTOR *pSpectrum);
+		bool Step(AnalyzerFrame **ppFrame);
 		
 		// Flushes all data from the input buffer
 		void Flush();

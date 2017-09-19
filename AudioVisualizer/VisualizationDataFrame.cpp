@@ -4,13 +4,12 @@
 
 namespace AudioVisualizer
 {
-	VisualizationDataFrame::VisualizationDataFrame(IReference<TimeSpan>* pTime, IReference<TimeSpan>* pDuration, ScalarData * pRms, ScalarData * pPeak, VectorData * pSpectrum)
+	VisualizationDataFrame::VisualizationDataFrame(AudioMath::AnalyzerFrame *pFrame, REFERENCE_TIME time, REFERENCE_TIME duration)
 	{
-		_time = pTime;
-		_duration = pDuration;
-		_rms = pRms;
-		_peak = pPeak;
-		_spectrum = pSpectrum;
+		_bIsClosed = false;
+		_time.Duration = time;
+		_duration.Duration = duration;
+		_frame = pFrame;
 	}
 	VisualizationDataFrame::~VisualizationDataFrame()
 	{
@@ -21,8 +20,14 @@ namespace AudioVisualizer
 	{
 			if (ppResult == nullptr)
 				return E_INVALIDARG;
-
-			ComPtr<IVisualizationDataReference> reference = Make<VisualizationDataReference>(this, _rms.Get(), _peak.Get(), _spectrum.Get());
-			return reference.CopyTo(ppResult);
+			return S_OK;
+	}
+	STDMETHODIMP VisualizationDataFrame::Close()
+	{
+		if (_bIsClosed)
+			return S_OK;
+		_frame = nullptr;
+		_bIsClosed = true;
+		return S_OK;
 	}
 }

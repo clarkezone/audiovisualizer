@@ -2,11 +2,12 @@
 
 #define _CRTDBG_MAP_ALLOC 
 
-#include "AudioVisualizer_h.h"
+#include "AudioVisualizer.abi.h"
 #include "ScalarData.h"
 #include "VectorData.h"
 #include "Nullable.h"
 #include <DirectXMath.h>
+#include <AudioAnalyzer.h>
 #include "LifeSpanTracker.h"
 #include "trace.h"
 
@@ -14,37 +15,43 @@ using namespace ABI::AudioVisualizer;
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Foundation::Diagnostics;
+using namespace Microsoft::WRL::Wrappers;
 
 namespace AudioVisualizer
 {
-	class VisualizationDataFrame : public RuntimeClass<IVisualizationDataFrame>, public LifespanTracker<VisualizationDataFrame>
+	class VisualizationDataFrame : public RuntimeClass<IVisualizationDataFrame,ABI::Windows::Foundation::IClosable,FtmBase>, public LifespanTracker<VisualizationDataFrame>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_VisualizationDataFrame, BaseTrust)
-		ComPtr<IReference<TimeSpan>> _time;
-		ComPtr<IReference<TimeSpan>> _duration;
-		ComPtr<ScalarData> _rms;
-		ComPtr<ScalarData> _peak;
-		ComPtr<VectorData> _spectrum;
+		TimeSpan _time;
+		TimeSpan _duration;
+		ComPtr<AudioMath::AnalyzerFrame> _frame;
+		bool _bIsClosed;
+
 	public:
-		VisualizationDataFrame(IReference<TimeSpan> *pTime, IReference<TimeSpan> *pDuration, ScalarData *pRms, ScalarData *pPeak, VectorData *pSpectrum);
+		VisualizationDataFrame(AudioMath::AnalyzerFrame *pFrame,REFERENCE_TIME time,REFERENCE_TIME duration);
 		~VisualizationDataFrame();
 
-		STDMETHODIMP get_Time(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan> **ppTimeStamp)
+		STDMETHODIMP get_Time(IReference<TimeSpan> **ppTimeStamp)
 		{
 			if (ppTimeStamp == nullptr)
 				return E_INVALIDARG;
-			_time.CopyTo(ppTimeStamp);
+			ComPtr<Nullable<TimeSpan>> spTime = Make<Nullable<TimeSpan>>(_time);
+			
+			spTime.CopyTo(ppTimeStamp);
 			return S_OK;
 		}
-		STDMETHODIMP get_Duration(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan> **ppTimeStamp)
+		STDMETHODIMP get_Duration(IReference<TimeSpan> **ppTimeStamp)
 		{
 			if (ppTimeStamp == nullptr)
 				return E_INVALIDARG;
-			_duration.CopyTo(ppTimeStamp);
+			ComPtr<Nullable<TimeSpan>> spTime = Make<Nullable<TimeSpan>>(_duration);
+
+			spTime.CopyTo(ppTimeStamp);
 			return S_OK;
 		}
 		STDMETHODIMP GetReference(ABI::AudioVisualizer::IVisualizationDataReference **ppResult);
 
+		STDMETHODIMP Close();
 	};
 }
 

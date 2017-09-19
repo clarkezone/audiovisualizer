@@ -1,7 +1,7 @@
 #pragma once
 #include <wrl.h>
 #include <wrl\async.h>
-#include "AudioVisualizer_h.h"
+#include "AudioVisualizer.abi.h"
 
 
 using namespace ABI::AudioVisualizer;

@@ -127,24 +127,23 @@ namespace VisualizerPlayer
         private void visualizer_Draw(AudioVisualizer.IVisualizer sender, AudioVisualizer.VisualizerDrawEventArgs args)
         {
             var traceActivity = Trace.BaseVisualizer_StartDraw();
+            args.DrawingSession.DrawText("Me", 10, 10, Colors.Wheat);
 
-            
-            if (args.Data != null)
-            {
-                using (var data = args.Data.GetReference())
+    /*            if (args.Data != null)
                 {
-                    previousRMS = data.RMS.ApplyRiseAndFall(previousRMS, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(300), TimeSpan.FromMilliseconds(16.7));
-                    var logRMS = previousRMS.ConvertToLogAmplitude(-100.0f, 0.0f).Values;
+                    args.DrawingSession.DrawText("Me", 10, 10, Colors.Wheat);
+                    /*
+                    using (var data = args.Data.GetReference())
+                    {
+                        previousRMS = data.RMS.ApplyRiseAndFall(previousRMS, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(300), TimeSpan.FromMilliseconds(16.7));
+                        var logRMS = previousRMS.ConvertToLogAmplitude(-100.0f, 0.0f).Values;
 
-                    args.DrawingSession.FillRectangle(10, 10, 20 + (100.0f + (logRMS[0])), 20, Colors.Green);
-                    args.DrawingSession.FillRectangle(10, 40, 20 + (100.0f + (logRMS[1])), 20, Colors.Green);
-                }
-            }
-            else
-            {
-                previousRMS = null;
-            }
+                        args.DrawingSession.FillRectangle(10, 10, 20 + (100.0f + (logRMS[0])), 20, Colors.Green);
+                        args.DrawingSession.FillRectangle(10, 40, 20 + (100.0f + (logRMS[1])), 20, Colors.Green);
+                   
+                }*/
 
+            //}
             traceActivity.StopActivity(traceActivity.Name);
         }
     }

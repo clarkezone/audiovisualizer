@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AudioVisualizer_h.h"
+#include "AudioVisualizer.abi.h"
 #include <DirectXMath.h>
 #include <vector>
 #include "LifeSpanTracker.h"
