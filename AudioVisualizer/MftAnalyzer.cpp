@@ -105,11 +105,9 @@ namespace AudioVisualizer
 		if (m_spPresentationClock != nullptr) {
 			m_spPresentationClock->GetTime(&currentPosition);
 		}
-		AudioMath::AnalyzerFrame *pFrame;
-
 		if (currentPosition != -1)	// If no presentation position then return nullptr
 		{
-			ComPtr<AudioMath::AnalyzerFrame> spFrameFound;
+			ComPtr<IVisualizationDataFrame> spFrameFound;
 #ifdef _TRACE
 			AudioVisualizer::Diagnostics::Trace::Trace_Lock(&m_csOutputQueueAccess,L"OutputQueue",
 				[&hr,this,currentPosition,&spFrameFound]
@@ -121,11 +119,9 @@ namespace AudioVisualizer
 			auto lock = m_csOutputQueueAccess.Lock();	
 			hr = Analyzer_FFwdQueueTo(currentPosition, &spFrameFound);
 #endif
-			pFrame = spFrameFound.Get();
 			if (spFrameFound != nullptr)
 			{
-				auto dataFrame = Make<VisualizationDataFrame>(spFrameFound.Get(), frames_to_time(spFrameFound->GetPosition()), frames_to_time(spFrameFound->GetDuration()));
-				dataFrame.CopyTo(ppData);
+				spFrameFound.CopyTo(ppData);
 			}
 		}
 
@@ -908,24 +904,20 @@ namespace AudioVisualizer
 			if ((int)_analyzisTypes & (int)AnalyzerType::Peak)
 				peak = Make<ScalarData>(m_nChannels);
 
-			ComPtr<VectorData> spectrum;
+			ComPtr<ArrayData> spectrum;
 			if ((int)_analyzisTypes & (int)AnalyzerType::Spectrum)
-				spectrum = Make<VectorData>(m_nChannels, m_FftLength >> 1);	// Spectrum is half fft length
+				spectrum = Make<ArrayData>(m_nChannels, m_FftLength >> 1);	// Spectrum is half fft length
 			long position = -1;
 
-			ComPtr<AudioMath::AnalyzerFrame> frame;
-			bool bStepSuccess = _analyzer->Step(&frame);
-
-			/*auto time = Make<Nullable<TimeSpan>>(TimeSpan() = { frames_to_time(position) });
-			auto duration = Make<Nullable<TimeSpan>>(TimeSpan() = { (REFERENCE_TIME)(1e7 / m_fOutputFps) });
+			bool bStepSuccess = _analyzer->Step(&position,rms->GetBuffer(),peak->GetBuffer(),spectrum->GetBuffer());
 
 			ComPtr<VisualizationDataFrame> dataFrame = Make<VisualizationDataFrame>(
-				time.Get(),
-				duration.Get(),
+				frames_to_time(position),
+				(REFERENCE_TIME)(1e7 / m_fOutputFps),
 				rms.Get(),
 				peak.Get(),
 				spectrum.Get()
-				);*/
+				);
 			
 
 			// Only push the result if reset is not pending
@@ -935,9 +927,9 @@ namespace AudioVisualizer
 				AudioVisualizer::Diagnostics::Trace::Trace_Lock(&m_csOutputQueueAccess,L"OutputQueue",
 					[=] {
 					Analyzer_CompactOutputQueue();
-					m_AnalyzerOutput.push(frame);
+					m_AnalyzerOutput.push(dataFrame);
 				});
-				Diagnostics::Trace::Log_OutputQueuePush(frame.Get(), m_AnalyzerOutput.size());
+				Diagnostics::Trace::Log_OutputQueuePush(dataFrame.Get(), m_AnalyzerOutput.size());
 #else
 				auto _lock = m_csOutputQueueAccess.Lock();
 				Analyzer_CompactOutputQueue();
@@ -1012,27 +1004,24 @@ namespace AudioVisualizer
 		return S_OK;
 	}
 
-	HRESULT CAnalyzerEffect::Analyzer_FFwdQueueTo(REFERENCE_TIME position, AudioMath::AnalyzerFrame **ppFrame)
+	HRESULT CAnalyzerEffect::Analyzer_FFwdQueueTo(REFERENCE_TIME position, IVisualizationDataFrame **ppFrame)
 	{
 		if (position < 0)
 			return S_FALSE;
-
-		long currentPositionIndex = time_to_frames(position);
 
 		while (!m_AnalyzerOutput.empty())
 		{
 			TimeSpan time = { 0 }, duration = { 0 };
 			ComPtr<IReference<TimeSpan>> frameTime, frameDuration;
 
-			if (currentPositionIndex < m_AnalyzerOutput.front()->GetPosition())
+			if (m_AnalyzerOutput.front()->IsBefore(position))
 			{
 				return S_FALSE; // Current position is before the frames in visualization queue - wait until we catch up
 			}
 
 			// Add 5uS (about half sample time @96k) to avoid int time math rounding errors
-			if (currentPositionIndex <= m_AnalyzerOutput.front()->GetPosition() + m_AnalyzerOutput.front()->GetDuration())
+			if (!m_AnalyzerOutput.front()->IsAfter(position))	// If frame is not after current position there is a match
 			{
-
 				if (ppFrame != nullptr)	// If frame is requested, return the frame found
 				{
 					m_AnalyzerOutput.front().CopyTo(ppFrame);	// Copyto calls AddRef

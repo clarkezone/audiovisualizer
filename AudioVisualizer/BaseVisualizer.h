@@ -5,6 +5,7 @@
 #include <mutex>
 
 using namespace Microsoft::WRL;
+using namespace Microsoft::WRL::Wrappers;
 using namespace ABI::Microsoft::Graphics::Canvas;
 using namespace ABI::Windows::UI::Composition;
 using namespace ABI::Windows::UI;
@@ -37,6 +38,7 @@ namespace AudioVisualizer
 		Color _backgroundColor;
 
 		std::mutex _mtxSwapChain;
+		CriticalSection _csLock;
 
 	private:
 		HRESULT CreateDevice();
@@ -78,8 +80,8 @@ namespace AudioVisualizer
 
 		STDMETHODIMP put_Source(ABI::AudioVisualizer::IVisualizationSource *pSource)
 		{
+			auto lock = _csLock.Lock();
 			_source = pSource;
-			OnDraw();
 			return S_OK;
 		}
 
@@ -92,6 +94,7 @@ namespace AudioVisualizer
 		}
 		STDMETHODIMP put_BackgroundColor(Color color)
 		{
+			auto lock = _csLock.Lock();
 			_backgroundColor = color;
 			return S_OK;
 		}

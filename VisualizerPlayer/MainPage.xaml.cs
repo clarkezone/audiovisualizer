@@ -122,7 +122,8 @@ namespace VisualizerPlayer
         {
         }
 
-        ScalarData previousRMS;
+        ScalarData _previousRMS;
+        ScalarData _previousPeak;
 
         private void visualizer_Draw(AudioVisualizer.IVisualizer sender, AudioVisualizer.VisualizerDrawEventArgs args)
         {
@@ -130,17 +131,21 @@ namespace VisualizerPlayer
 
             if (args.Data != null)
             {
-                args.DrawingSession.DrawText("Me", 10, 10, Colors.Wheat);
-                using (var data = args.Data.GetReference())
-                {
-                    previousRMS = data.RMS.ApplyRiseAndFall(previousRMS, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(300), TimeSpan.FromMilliseconds(16.7));
-                    var logRMS = previousRMS.ConvertToLogAmplitude(-100.0f, 0.0f).Values;
+                _previousRMS = args.Data.RMS.ApplyRiseAndFall(_previousRMS, TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(16.7));
+                _previousPeak = args.Data.Peak.ApplyRiseAndFall(_previousPeak, TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(3000), TimeSpan.FromMilliseconds(16.7));
+                var logRMS = _previousRMS.ConvertToLogAmplitude(-100.0f, 0.0f).Values;
+                var logPeak = _previousPeak.ConvertToLogAmplitude(-100.0f, 0.0f).Values;
 
-                    args.DrawingSession.FillRectangle(10, 10, 20 + (100.0f + (logRMS[0])), 20, Colors.Green);
-                    args.DrawingSession.FillRectangle(10, 40, 20 + (100.0f + (logRMS[1])), 20, Colors.Green);
+                args.DrawingSession.FillRectangle(10, 10, 20 + (100.0f + (logRMS[0])), 20, Colors.Green);
+                args.DrawingSession.FillRectangle(10, 40, 20 + (100.0f + (logRMS[1])), 20, Colors.Green);
 
-                }
-
+                args.DrawingSession.DrawLine(120.0f + logPeak[0], 10, 120.0f + logPeak[0], 30, Colors.Red, 3);
+                args.DrawingSession.DrawLine(120.0f + logPeak[1], 40, 120.0f + logPeak[1], 60, Colors.Red, 3);
+            }
+            else
+            {
+                //_previousRMS = null;
+                //_previousPeak = null;
             }
             traceActivity.StopActivity(traceActivity.Name);
         }

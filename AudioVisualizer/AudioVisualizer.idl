@@ -42,7 +42,7 @@ namespace AudioVisualizer
 
 	runtimeclass VisualizerDrawEventArgs;
 	runtimeclass VisualizationDataFrame;
-	runtimeclass VectorData;
+	runtimeclass ArrayData;
 	runtimeclass ScalarData;
 
 	declare{
@@ -103,7 +103,7 @@ namespace AudioVisualizer
 	}
 
 	[uuid(199F41A4-8EF0-4E0B-AAD3-9E0666511F6A),version(1.0)]
-	interface IVectorData : IInspectable
+	interface IArrayData : IInspectable
 	{
 		[propget] HRESULT AmplitudeScale([out, retval] AudioVisualizer.ScaleType *scale);
 		[propget] HRESULT FrequencyScale([out, retval] AudioVisualizer.ScaleType *scale);
@@ -111,10 +111,10 @@ namespace AudioVisualizer
 		[propget] HRESULT MaxFrequency([out, retval] float *value);
 		[propget] HRESULT FrequencyStep([out, retval] float *value);
 		[propget] HRESULT Values([out,retval] Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float>*> **data);
-		HRESULT CreateLinearDistribution(UINT32 elementCount, [out, retval] VectorData **result);
-		HRESULT CreateLogDistribution([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [in] InterpolationType type, [out, retval] VectorData **result);
-		HRESULT ApplyRiseAndFall([in] VectorData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] VectorData **result);
-		HRESULT ConvertToLogAmplitude([in] float minValue,[in] float maxValue, [out, retval] VectorData **result );
+		HRESULT CreateLinearDistribution(UINT32 elementCount, [out, retval] ArrayData **result);
+		HRESULT CreateLogDistribution([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [in] InterpolationType type, [out, retval] ArrayData **result);
+		HRESULT ApplyRiseAndFall([in] ArrayData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] ArrayData **result);
+		HRESULT ConvertToLogAmplitude([in] float minValue,[in] float maxValue, [out, retval] ArrayData **result );
 	};
 
 	[uuid(FA6EDA25-96DC-473E-AA4C-5F67C2307134),version(1.0)]
@@ -134,25 +134,9 @@ namespace AudioVisualizer
 	}
 
 	[version(1.0), marshaling_behavior(agile), threading(both)]
-	runtimeclass VectorData
+	runtimeclass ArrayData
 	{
-		[default]interface IVectorData;
-	}
-
-
-	[uuid(E79F8DBE-D602-49A1-9776-67F2515D327F)]
-	[version(1.0)]
-	interface IVisualizationDataReference : IInspectable {
-		[propget] HRESULT RMS([out, retval] ScalarData **data);
-		[propget] HRESULT Peak([out, retval] ScalarData **data);
-		[propget] HRESULT Spectrum([out, retval] VectorData **data);
-	};
-
-	[version(1.0)]
-	runtimeclass VisualizationDataReference
-	{
-		[default] interface IVisualizationDataReference;
-		interface Windows.Foundation.IClosable;
+		[default]interface IArrayData;
 	}
 
 	[uuid(E4C11BE5-112E-49AD-A565-EE713089C447)]
@@ -160,15 +144,16 @@ namespace AudioVisualizer
 	interface IVisualizationDataFrame : IInspectable {
 		[propget] HRESULT Time([out, retval] Windows.Foundation.IReference<Windows.Foundation.TimeSpan> **time);
 		[propget] HRESULT Duration([out, retval] Windows.Foundation.IReference<Windows.Foundation.TimeSpan> **time);
-		HRESULT GetReference([out, retval] VisualizationDataReference **result);
+		[propget] HRESULT RMS([out, retval] ScalarData **data);
+		[propget] HRESULT Peak([out, retval] ScalarData **data);
+		[propget] HRESULT Spectrum([out, retval] ArrayData **data);
 	};
 
-
+	 
 	[version(1.0), marshaling_behavior(agile), threading(both)]
 	runtimeclass VisualizationDataFrame
 	{
 		[default] interface IVisualizationDataFrame; 
-		interface Windows.Foundation.IClosable;
 	}
 
 	[uuid(B7589126-33C4-43E8-9D8E-BCF3F3DCE802)]

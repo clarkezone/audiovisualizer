@@ -18,10 +18,9 @@
     <ClCompile Include="VisualizerDrawEventArgs.cpp" />
     <ClCompile Include="VisualizationSource.cpp" />
     <ClCompile Include="VisualizationDataFrame.cpp" />
-    <ClCompile Include="VisualizationDataReference.cpp" />
     <ClCompile Include="LifespanTracker.cpp" />
-    <ClCompile Include="VectorData.cpp" />
     <ClCompile Include="ScalarData.cpp" />
+    <ClCompile Include="ArrayData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -40,11 +39,10 @@
     <ClInclude Include="VisualizerDrawEventArgs.h" />
     <ClInclude Include="VisualizationSource.h" />
     <ClInclude Include="VisualizationDataFrame.h" />
-    <ClInclude Include="VisualizationDataReference.h" />
     <ClInclude Include="LifespanTracker_w2d.h" />
     <ClInclude Include="LifeSpanTracker.h" />
-    <ClInclude Include="VectorData.h" />
     <ClInclude Include="ScalarData.h" />
+    <ClInclude Include="ArrayData.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

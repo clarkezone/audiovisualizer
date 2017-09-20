@@ -11,7 +11,7 @@ using namespace Microsoft::WRL;
 namespace AudioMath
 {
 	
-	class AnalyzerFrame : public RuntimeClass<RuntimeClassFlags<RuntimeClassType::ClassicCom>,IUnknown>
+	/*class AnalyzerFrame : public RuntimeClass<RuntimeClassFlags<RuntimeClassType::ClassicCom>,IUnknown>
 	{
 		XMVECTOR *_pRms;
 		XMVECTOR *_pPeak;
@@ -50,7 +50,7 @@ namespace AudioMath
 			_pRms = nullptr;
 			_pPeak = nullptr;
 		}
-	};
+	};*/
 
 	class CAudioAnalyzer
 	{
@@ -72,9 +72,6 @@ namespace AudioMath
 		void AllocateBuffers();
 		void FreeBuffers();
 
-		bool _bCalculateRMS;
-		bool _bCalculatePeak;
-		bool _bCalculateSpectrum;
 	public:
 		CAudioAnalyzer(size_t inputBufferSize);
 		~CAudioAnalyzer();
@@ -93,7 +90,7 @@ namespace AudioMath
 		void AddInput(float *pData, size_t sampleCount, long frameIndex = -1);
 		
 		// Fetches next set of data from buffer and analyzes
-		bool Step(AnalyzerFrame **ppFrame);
+		bool Step(long *pPosition, XMVECTOR *pRms, DirectX::XMVECTOR *pPeak, DirectX::XMVECTOR *pSpectrum);
 		
 		// Flushes all data from the input buffer
 		void Flush();

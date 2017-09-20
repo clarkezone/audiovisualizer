@@ -45,7 +45,7 @@ namespace AudioMath
 		for (size_t vIndex = 0; vIndex < count; vIndex++)
 		{
 			XMVECTOR vDelta = pCurrent[vIndex] - pPrevious[vIndex];
-			XMVECTOR vSelector = XMVectorGreaterOrEqual(DirectX::g_XMZero,vDelta);
+			XMVECTOR vSelector = XMVectorLess(DirectX::g_XMZero,vDelta);
 			XMVECTOR vFactors = XMVectorSelect(vRiseExp, vFallExp, vSelector);
 			pResult[vIndex] = pPrevious[vIndex] + vFactors * vDelta;
 		}

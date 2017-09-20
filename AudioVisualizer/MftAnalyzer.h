@@ -24,8 +24,7 @@ namespace AudioVisualizer
 		ABI::Windows::Media::IMediaExtension,
 		IMFTransform,
 		IMFClockConsumer,
-		ABI::AudioVisualizer::IVisualizationSource
-		/*IMFAsyncCallback*/>
+		ABI::AudioVisualizer::IVisualizationSource>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_MftAnalyzer, BaseTrust)
 		
@@ -52,7 +51,7 @@ namespace AudioVisualizer
 	
 		Microsoft::WRL::Wrappers::CriticalSection m_csAnalyzerConfig;	// Critical section to lock analyzer configuration changing
 		Microsoft::WRL::Wrappers::CriticalSection m_csOutputQueueAccess;
-		std::queue<ComPtr<AudioMath::AnalyzerFrame>> m_AnalyzerOutput;
+		std::queue<ComPtr<IAnalyzerFrame>> m_AnalyzerOutput;
 
 		size_t m_StepFrameCount;	// How many samples does calculate consume each step
 		size_t m_StepFrameOverlap;
@@ -77,7 +76,7 @@ namespace AudioVisualizer
 		HRESULT Analyzer_FlushOutputQueue();
 		HRESULT Analyzer_Resume();
 		HRESULT Analyzer_Suspend();
-		HRESULT Analyzer_FFwdQueueTo(REFERENCE_TIME time, AudioMath::AnalyzerFrame **ppFrame);
+		HRESULT Analyzer_FFwdQueueTo(REFERENCE_TIME time, IVisualizationDataFrame **ppFrame);
 
 		
 		inline long time_to_samples(REFERENCE_TIME time) const { return m_nChannels * (long)((time * m_FramesPerSecond + 5000000L) / 10000000L); }

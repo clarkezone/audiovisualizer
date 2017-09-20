@@ -11,6 +11,8 @@ using namespace ABI::AudioVisualizer;
 
 namespace AudioVisualizer
 {
+	struct IAnalyzerFrame;
+
 	namespace Diagnostics
 	{
 		// Helper class to log stop event automatically when object goes out of scope
@@ -50,9 +52,9 @@ namespace AudioVisualizer
 			static HRESULT Log_SetInputPosition(long frameIndex);
 			static HRESULT Log_ProcessSample(IMFSample *pSample);
 			static HRESULT Log_StartCalculate(ABI::Windows::Foundation::Diagnostics::ILoggingActivity **ppActivity, long position, size_t bufferLength);
-			static HRESULT Log_GetData(REFERENCE_TIME currentPosition, AudioMath::AnalyzerFrame *pFrame, AudioMath::AnalyzerFrame *pQueueFront, size_t queueSize, HRESULT result);
-			static HRESULT Log_OutputQueuePush(AudioMath::AnalyzerFrame *pFrame,size_t queueSize);
-			static HRESULT Log_OutputQueuePop(AudioMath::AnalyzerFrame *pFrame, size_t queueSize, int reason);
+			static HRESULT Log_GetData(REFERENCE_TIME currentPosition, AudioVisualizer::IAnalyzerFrame *pFrame, AudioVisualizer::IAnalyzerFrame *pQueueFront, size_t queueSize, HRESULT result);
+			static HRESULT Log_OutputQueuePush(AudioVisualizer::IAnalyzerFrame *pFrame,size_t queueSize);
+			static HRESULT Log_OutputQueuePop(AudioVisualizer::IAnalyzerFrame *pFrame, size_t queueSize, int reason);
 
 			static HRESULT Log_GetFromBuffer(REFERENCE_TIME position);
 			static HRESULT Log_StartCalculateFft(ILoggingActivity **ppActivity);

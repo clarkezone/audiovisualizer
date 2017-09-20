@@ -147,7 +147,7 @@ namespace AudioVisualizer
 
 	HRESULT BaseVisualizer::OnDraw()
 	{
-		TimeSpan frameTime = { -1 };
+		auto lock = _csLock.Lock();
 		HRESULT hr = S_OK;
 		if (_swapChain != nullptr)
 		{
@@ -171,15 +171,9 @@ namespace AudioVisualizer
 					ThrowIfFailed(_drawEventList.InvokeAll(this, args.Get()));
 				}			
 				hr = As<IClosable>(drawingSession)->Close();		
-				if (dataFrame != nullptr)
-				{
-					As<IClosable>(dataFrame)->Close();
-				}
 				_swapChain->Present();
 			}
 		}
-
-
 		return hr;
 	}
 

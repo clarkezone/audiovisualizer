@@ -40,13 +40,12 @@ namespace AudioVisualizer
 
 			pPrevious->get_Values(&cCount, (float **)&pLastData);
 
-			AudioMath::ApplyRiseAndFall(pLastData, _pData, data->_pData, vSize, 1e7f * timeDelta.Duration / riseTime.Duration, 1e7f * timeDelta.Duration / fallTime.Duration);
+			AudioMath::ApplyRiseAndFall(pLastData, _pData, data->_pData, vSize, (float) timeDelta.Duration / riseTime.Duration, (float) timeDelta.Duration / fallTime.Duration);
 		}
 		else
 		{
 			data = Make<ScalarData>(_size, _amplitudeScale);
 			memcpy(data->_pData, _pData, vSize * sizeof(DirectX::XMVECTOR));
-			_CrtCheckMemory();
 		}
 		return data.CopyTo(ppResult);
 	}
