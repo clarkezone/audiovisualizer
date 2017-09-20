@@ -312,6 +312,7 @@
   <ItemGroup>
     <ClInclude Include="AsyncOperation.h" />
     <ClInclude Include="Canvas.abi.h" />
+    <ClInclude Include="ClosablePtr.h" />
     <ClInclude Include="LifeSpanTracker.h" />
     <ClInclude Include="MftAnalyzer.h" />
     <ClInclude Include="ErrorHandling.h" />

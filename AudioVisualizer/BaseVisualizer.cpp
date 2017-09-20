@@ -143,6 +143,7 @@ namespace AudioVisualizer
 			
 		return S_OK;
 	}
+	static int ctr = 1;
 
 	HRESULT BaseVisualizer::OnDraw()
 	{
@@ -152,15 +153,15 @@ namespace AudioVisualizer
 		{
 			ComPtr<ICanvasDrawingSession> drawingSession;
 			HRESULT hr = _swapChain->CreateDrawingSession(_backgroundColor, &drawingSession);
+
 			if (SUCCEEDED(hr))
 			{
 				ComPtr<IVisualizationDataFrame> dataFrame;
 				if (_source != nullptr)
 				{
-					hr = _source->GetData(&dataFrame);	// This call will cause addref to dataFrame
+					hr = _source->GetData(&dataFrame);
 				}
-
-				auto args = Make<VisualizerDrawEventArgs>(drawingSession.Get(), nullptr /*dataFrame.Get()*/);					
+				auto args = Make<VisualizerDrawEventArgs>(drawingSession.Get(), nullptr);				
 				{
 #ifdef _TRACE
 					ComPtr<ILoggingActivity> activity;
@@ -168,8 +169,8 @@ namespace AudioVisualizer
 					AudioVisualizer::Diagnostics::CLogActivityHelper drawActivity(activity.Get());
 #endif
 					ThrowIfFailed(_drawEventList.InvokeAll(this, args.Get()));
-				}
-				As<IClosable>(drawingSession)->Close();
+				}			
+				hr = As<IClosable>(drawingSession)->Close();		
 				if (dataFrame != nullptr)
 				{
 					As<IClosable>(dataFrame)->Close();

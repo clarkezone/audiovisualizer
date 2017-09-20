@@ -1,6 +1,7 @@
 #pragma once
 #include "AudioVisualizer.abi.h"
 #include "LifeSpanTracker.h"
+#include "ClosablePtr.h"
 
 namespace AudioVisualizer
 {
@@ -22,22 +23,20 @@ namespace AudioVisualizer
 		}
 		~VisualizerDrawEventArgs()
 		{
-
 		}
 		STDMETHODIMP get_DrawingSession(ICanvasDrawingSession **ppSession)
 		{
 			if (ppSession == nullptr)
 				return E_INVALIDARG;
 
-			*ppSession = _drawingSession.Get();
-			return S_OK;
+			return _drawingSession.CopyTo(ppSession);
 		}
+
 		STDMETHODIMP get_Data(IVisualizationDataFrame **ppData)
 		{
 			if (ppData == nullptr)
 				return E_INVALIDARG;
-			
-			*ppData = _data.Get();
+			_data.CopyTo(ppData);
 			return S_OK;
 		}
 
