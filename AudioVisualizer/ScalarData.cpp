@@ -29,24 +29,17 @@ namespace AudioVisualizer
 		if (_amplitudeScale != ScaleType::Linear || riseTime.Duration == 0 || fallTime.Duration == 0)
 			return E_INVALIDARG;
 
-		ComPtr<ScalarData> data;
+		ComPtr<ScalarData> result = Make<ScalarData>(_size, _amplitudeScale);
+
 		size_t vSize = (_size + 3) >> 2;
+		UINT32 cCount;
+		DirectX::XMVECTOR *pLastData = nullptr;
 		if (pPrevious != nullptr)
 		{
-			data = Make<ScalarData>(_size, _amplitudeScale);
-
-			UINT32 cCount;
-			DirectX::XMVECTOR *pLastData;
-
 			pPrevious->get_Values(&cCount, (float **)&pLastData);
+		}
+		AudioMath::ApplyRiseAndFall(pLastData, _pData, result->_pData, vSize, (float)timeDelta.Duration / riseTime.Duration, (float)timeDelta.Duration / fallTime.Duration);
 
-			AudioMath::ApplyRiseAndFall(pLastData, _pData, data->_pData, vSize, (float) timeDelta.Duration / riseTime.Duration, (float) timeDelta.Duration / fallTime.Duration);
-		}
-		else
-		{
-			data = Make<ScalarData>(_size, _amplitudeScale);
-			memcpy(data->_pData, _pData, vSize * sizeof(DirectX::XMVECTOR));
-		}
-		return data.CopyTo(ppResult);
+		return result.CopyTo(ppResult);
 	}
 }

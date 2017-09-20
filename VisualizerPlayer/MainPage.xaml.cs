@@ -144,8 +144,8 @@ namespace VisualizerPlayer
             }
             else
             {
-                //_previousRMS = null;
-                //_previousPeak = null;
+                _previousRMS = null;
+                _previousPeak = null;
             }
             traceActivity.StopActivity(traceActivity.Name);
         }

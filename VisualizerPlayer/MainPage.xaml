@@ -12,6 +12,7 @@
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="1*"></RowDefinition>
             <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
         <CommandBar Grid.Row="0">
             <AppBarButton Icon="OpenFile" Click="OpenFile_Click"></AppBarButton>
@@ -19,7 +20,8 @@
         <a:BaseVisualizer Grid.Row="1" x:Name="visualizer" Draw="visualizer_Draw" BackgroundColor="Blue" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></a:BaseVisualizer>
         <MediaElement Grid.Row="2" x:Name="mePlayer"></MediaElement>
 
-        <ToggleSwitch IsOn="True" Grid.Row="2" Margin ="20,0"
+        <ToggleSwitch IsOn="True" Grid.Row="3" Margin ="20,0"
                       VerticalAlignment="Center" Toggled="ToggleSwitch_Toggled">Visualization</ToggleSwitch>
+
     </Grid>
 </Page>
