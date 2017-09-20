@@ -161,7 +161,7 @@ namespace AudioVisualizer
 				{
 					hr = _source->GetData(&dataFrame);
 				}
-				auto args = Make<VisualizerDrawEventArgs>(drawingSession.Get(), nullptr);				
+				auto args = Make<VisualizerDrawEventArgs>(drawingSession.Get(), dataFrame.Get());				
 				{
 #ifdef _TRACE
 					ComPtr<ILoggingActivity> activity;

@@ -127,13 +127,11 @@ namespace AudioVisualizer
 				auto dataFrame = Make<VisualizationDataFrame>(spFrameFound.Get(), frames_to_time(spFrameFound->GetPosition()), frames_to_time(spFrameFound->GetDuration()));
 				dataFrame.CopyTo(ppData);
 			}
-			int i = 0;
 		}
 
 #ifdef _TRACE
 		//AudioVisualizer::Diagnostics::Trace::Log_GetData(currentPosition, *ppData,m_AnalyzerOutput.empty() ? nullptr : m_AnalyzerOutput.front().Get(), m_AnalyzerOutput.size(),hr);
 #endif
-
 		return hr;
 	}
 

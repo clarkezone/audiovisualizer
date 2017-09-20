@@ -1,7 +1,6 @@
 #pragma once
 #include "AudioVisualizer.abi.h"
 #include "LifeSpanTracker.h"
-#include "ClosablePtr.h"
 
 namespace AudioVisualizer
 {

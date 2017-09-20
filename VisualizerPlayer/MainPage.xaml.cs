@@ -30,13 +30,13 @@ namespace VisualizerPlayer
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class MainPage : Page
-    {       
+    {
         public async Task<AudioVisualizer.IVisualizationSource> CreateAnalyzerAsync(MediaPlayer element)
         {
             var propSet = new PropertySet();
             ManualResetEventSlim opComplete = new ManualResetEventSlim();
             AudioVisualizer.IVisualizationSource source = null;
-            propSet.MapChanged += new MapChangedEventHandler<string,object>(
+            propSet.MapChanged += new MapChangedEventHandler<string, object>(
                 (IObservableMap<string, object> sender, IMapChangedEventArgs<string> @event) =>
                 {
                     source = (AudioVisualizer.IVisualizationSource)sender["Source"];
@@ -45,8 +45,8 @@ namespace VisualizerPlayer
                 );
             element.AddAudioEffect("AudioAnalyzer.MftAnalyzer", false, propSet);
 
-            await Task.Run(() => { opComplete.Wait(); }); 
-            return source; 
+            await Task.Run(() => { opComplete.Wait(); });
+            return source;
         }
 
 
@@ -87,7 +87,7 @@ namespace VisualizerPlayer
         {
             if (m_VisualizationSource != null)
             {
-  
+
             }
         }
 
@@ -107,7 +107,7 @@ namespace VisualizerPlayer
         private async void CreateVisualizer()
         {
             m_VisualizationSource = await AudioVisualizer.VisualizationSource.CreateFromMediaElementAsync(mePlayer);
-            m_VisualizationSource.Configure(AnalyzerType.All,60, 4096, 0.5f);
+            m_VisualizationSource.Configure(AnalyzerType.All, 60, 4096, 0.5f);
             visualizer.Source = m_VisualizationSource;
         }
 
@@ -130,25 +130,18 @@ namespace VisualizerPlayer
 
             if (args.Data != null)
             {
-                args.DrawingSession.DrawText(args.Data.Time.ToString(), 10, 10, Colors.Wheat);
+                args.DrawingSession.DrawText("Me", 10, 10, Colors.Wheat);
+                using (var data = args.Data.GetReference())
+                {
+                    previousRMS = data.RMS.ApplyRiseAndFall(previousRMS, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(300), TimeSpan.FromMilliseconds(16.7));
+                    var logRMS = previousRMS.ConvertToLogAmplitude(-100.0f, 0.0f).Values;
+
+                    args.DrawingSession.FillRectangle(10, 10, 20 + (100.0f + (logRMS[0])), 20, Colors.Green);
+                    args.DrawingSession.FillRectangle(10, 40, 20 + (100.0f + (logRMS[1])), 20, Colors.Green);
+
+                }
 
             }
-
-            /*            if (args.Data != null)
-                        {
-                            args.DrawingSession.DrawText("Me", 10, 10, Colors.Wheat);
-                            /*
-                            using (var data = args.Data.GetReference())
-                            {
-                                previousRMS = data.RMS.ApplyRiseAndFall(previousRMS, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(300), TimeSpan.FromMilliseconds(16.7));
-                                var logRMS = previousRMS.ConvertToLogAmplitude(-100.0f, 0.0f).Values;
-
-                                args.DrawingSession.FillRectangle(10, 10, 20 + (100.0f + (logRMS[0])), 20, Colors.Green);
-                                args.DrawingSession.FillRectangle(10, 40, 20 + (100.0f + (logRMS[1])), 20, Colors.Green);
-
-                        }*/
-
-            //}
             traceActivity.StopActivity(traceActivity.Name);
         }
     }

@@ -45,7 +45,6 @@
     <ClInclude Include="LifeSpanTracker.h" />
     <ClInclude Include="VectorData.h" />
     <ClInclude Include="ScalarData.h" />
-    <ClInclude Include="ClosablePtr.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />
