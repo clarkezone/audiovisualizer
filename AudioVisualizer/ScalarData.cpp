@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "ScalarData.h"
 #include <AudioMath.h>
+#include "ErrorHandling.h"
+#include "Utilities.h"
 
 namespace AudioVisualizer
 {
@@ -32,14 +34,12 @@ namespace AudioVisualizer
 		ComPtr<ScalarData> result = Make<ScalarData>(_size, _amplitudeScale);
 
 		size_t vSize = (_size + 3) >> 2;
-		UINT32 cCount;
 		DirectX::XMVECTOR *pLastData = nullptr;
 		if (pPrevious != nullptr)
 		{
-			pPrevious->get_Values(&cCount, (float **)&pLastData);
+			pLastData = reinterpret_cast<ScalarData *>(pPrevious)->GetBuffer();
 		}
-		AudioMath::ApplyRiseAndFall(pLastData, _pData, result->_pData, vSize, (float)timeDelta.Duration / riseTime.Duration, (float)timeDelta.Duration / fallTime.Duration);
-
+		AudioMath::ApplyRiseAndFall(pLastData, GetBuffer(), result->GetBuffer(), vSize, (float)timeDelta.Duration / riseTime.Duration, (float)timeDelta.Duration / fallTime.Duration);
 		return result.CopyTo(ppResult);
 	}
 }

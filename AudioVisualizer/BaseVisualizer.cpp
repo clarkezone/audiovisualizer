@@ -26,24 +26,11 @@ using namespace ABI::Microsoft::Graphics::Canvas;
 using namespace ABI::Microsoft::Graphics::Canvas::UI::Composition;
 using namespace ABI::Windows::System::Threading;
 using namespace std;
+
 namespace AudioVisualizer
 {
-	class BaseVisualizerFactory : public AgileActivationFactory<>
-	{
-	public:
-		IFACEMETHODIMP ActivateInstance(IInspectable** obj) override
-		{
-			return ExceptionBoundary(
-				[&]
-			{
-				CheckAndClearOutPointer(obj);
-				auto control = Make<BaseVisualizer>();
-				CheckMakeResult(control);
-				ThrowIfFailed(control.CopyTo(obj));
-			});
-		}
-	};
 
+/*
 	BaseVisualizer::BaseVisualizer() :
 		_cancelDrawLoop(INVALID_HANDLE_VALUE),
 		_backgroundColor(Color() = { 0, 0, 0, 0 })
@@ -145,7 +132,7 @@ namespace AudioVisualizer
 	}
 	static int ctr = 1;
 
-	HRESULT BaseVisualizer::OnDraw()
+	HRESULT BaseVisualizer::DrawLoop()
 	{
 		auto lock = _csLock.Lock();
 		HRESULT hr = S_OK;
@@ -161,15 +148,9 @@ namespace AudioVisualizer
 				{
 					hr = _source->GetData(&dataFrame);
 				}
-				auto args = Make<VisualizerDrawEventArgs>(drawingSession.Get(), dataFrame.Get());				
-				{
-#ifdef _TRACE
-					ComPtr<ILoggingActivity> activity;
-					Diagnostics::Trace::Log_StartDraw(dataFrame.Get(), &activity);
-					AudioVisualizer::Diagnostics::CLogActivityHelper drawActivity(activity.Get());
-#endif
-					ThrowIfFailed(_drawEventList.InvokeAll(this, args.Get()));
-				}			
+
+				hr = OnDraw(drawingSession.Get(), dataFrame.Get());
+			
 				hr = As<IClosable>(drawingSession)->Close();		
 				_swapChain->Present();
 			}
@@ -242,7 +223,7 @@ namespace AudioVisualizer
 				_mtxSwapChain.lock();
 				if (_swapChain != nullptr)
 				{
-					OnDraw();
+					DrawLoop();
 					auto copy = _swapChain;
 					_mtxSwapChain.unlock();
 					hr = copy->WaitForVerticalBlank();
@@ -259,21 +240,5 @@ namespace AudioVisualizer
 		ComPtr<IAsyncAction> asyncAction;
 		hr = spThreadPool->RunAsync(drawLoop.Get(), &asyncAction);
 		return hr;
-	}
-
-
-
-
-
-	STDMETHODIMP BaseVisualizer::add_Draw(Visualizer_DrawEventHandler * value, EventRegistrationToken * token)
-	{
-		return _drawEventList.Add(value, token);
-	}
-	STDMETHODIMP BaseVisualizer::remove_Draw(EventRegistrationToken token)
-	{
-		return _drawEventList.Remove(token);
-	}
-
-	ActivatableClassWithFactory(BaseVisualizer, BaseVisualizerFactory);
-
+	}*/
 }

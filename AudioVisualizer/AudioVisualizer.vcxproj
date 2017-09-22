@@ -102,31 +102,37 @@
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
+    <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
+    <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
+    <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
+    <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
+    <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
+    <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -156,6 +162,7 @@
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>$(OutDir)AudioVisualizer.winmd;%(Outputs)</Outputs>
+      <Inputs>$(ProjectDir)AudioVisualizer.idl;%(Inputs)</Inputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -187,6 +194,7 @@
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>$(OutDir)AudioVisualizer.winmd;%(Outputs)</Outputs>
+      <Inputs>$(ProjectDir)AudioVisualizer.idl;%(Inputs)</Inputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm'">
@@ -217,6 +225,7 @@
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>$(OutDir)AudioVisualizer.winmd;%(Outputs)</Outputs>
+      <Inputs>$(ProjectDir)AudioVisualizer.idl;%(Inputs)</Inputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm'">
@@ -247,6 +256,7 @@
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>$(OutDir)AudioVisualizer.winmd;%(Outputs)</Outputs>
+      <Inputs>$(ProjectDir)AudioVisualizer.idl;%(Inputs)</Inputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -277,6 +287,7 @@
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>$(OutDir)AudioVisualizer.winmd;%(Outputs)</Outputs>
+      <Inputs>$(ProjectDir)AudioVisualizer.idl;%(Inputs)</Inputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -307,11 +318,14 @@
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>$(OutDir)AudioVisualizer.winmd;%(Outputs)</Outputs>
+      <Inputs>$(ProjectDir)AudioVisualizer.idl;%(Inputs)</Inputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AsyncOperation.h" />
     <ClInclude Include="Canvas.abi.h" />
+    <ClInclude Include="CustomVisualizer.h" />
+    <ClInclude Include="DataBuffer.h" />
     <ClInclude Include="LifeSpanTracker.h" />
     <ClInclude Include="MftAnalyzer.h" />
     <ClInclude Include="ErrorHandling.h" />
@@ -332,6 +346,7 @@
     <ClInclude Include="WinStringWrapper.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CustomVisualizer.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="LifespanTracker.cpp" />
     <ClCompile Include="MftAnalyzer.cpp" />

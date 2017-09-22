@@ -79,28 +79,36 @@ namespace AudioVisualizer
 	[version(1.0)]
 	interface IVisualizer : IInspectable
 	{
-		[eventadd] HRESULT Draw(
-			[in] Windows.Foundation.TypedEventHandler<IVisualizer*, VisualizerDrawEventArgs*>* value,
-			[out, retval] EventRegistrationToken* token);
-		[eventremove] HRESULT Draw([in] EventRegistrationToken token);
-
 		[propget] HRESULT Source([out][retval] IVisualizationSource **pData);
 		[propput] HRESULT Source([in] IVisualizationSource *pData);
+
 		[propget] HRESULT BackgroundColor([out, retval] Windows.UI.Color *color);
 		[propput] HRESULT BackgroundColor([in] Windows.UI.Color color);
 	}
 
+	[uuid(11A7C461-9AFB-4AFB-B2E1-6E587D581139)]
+	[version(1.0)]
+	interface IVisualizerCustomDraw : IInspectable
+	{
+		[eventadd] HRESULT Draw(
+			[in] Windows.Foundation.TypedEventHandler<IVisualizer*, VisualizerDrawEventArgs*>* value,
+			[out, retval] EventRegistrationToken* token);
+		[eventremove] HRESULT Draw([in] EventRegistrationToken token);
+	};
+
 	[uuid(015D3F12-E2EA-441E-BB3C-24DFED1946EF)]
 	[version(1.0)]
-	interface IBaseVisualizerFactory : IInspectable
+	interface ICustomVisualizerFactory : IInspectable
 	{
 	}
 
 	[version(1.0), activatable(1.0), marshaling_behavior(agile), threading(both)]
-	runtimeclass BaseVisualizer : Windows.UI.Xaml.Controls.Control
+	runtimeclass CustomVisualizer : Windows.UI.Xaml.Controls.Control
 	{
 		[default] interface IVisualizer;
+		interface IVisualizerCustomDraw;
 	}
+	
 
 	[uuid(199F41A4-8EF0-4E0B-AAD3-9E0666511F6A),version(1.0)]
 	interface IArrayData : IInspectable
@@ -110,9 +118,10 @@ namespace AudioVisualizer
 		[propget] HRESULT MinFrequency([out, retval] float *value);
 		[propget] HRESULT MaxFrequency([out, retval] float *value);
 		[propget] HRESULT FrequencyStep([out, retval] float *value);
-		[propget] HRESULT Values([out,retval] Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float>*> **data);
-		HRESULT CreateLinearDistribution(UINT32 elementCount, [out, retval] ArrayData **result);
-		HRESULT CreateLogDistribution([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [in] InterpolationType type, [out, retval] ArrayData **result);
+		[propget] HRESULT FrequencyCount([out, retval] UINT32 *value);
+
+		HRESULT TransformLinearFrequency(UINT32 elementCount, [out, retval] ArrayData **result);
+		HRESULT ConvertToLogFrequency([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [in] InterpolationType type, [out, retval] ArrayData **result);
 		HRESULT ApplyRiseAndFall([in] ArrayData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] ArrayData **result);
 		HRESULT ConvertToLogAmplitude([in] float minValue,[in] float maxValue, [out, retval] ArrayData **result );
 	};
@@ -123,20 +132,20 @@ namespace AudioVisualizer
 		HRESULT ConvertToLogAmplitude([in] float minValue, [in] float maxValue, [out, retval] ScalarData **result);
 		HRESULT ApplyRiseAndFall([in] ScalarData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] ScalarData **result);
 		[propget] HRESULT AmplitudeScale([out, retval] AudioVisualizer.ScaleType *scale);
-		[propget] HRESULT Size([out, retval] UINT32 *size);
-		[propget] HRESULT Values([out] UINT32* lsize, [out, retval, size_is(, *lsize)] float **data);
 	};
 
 	[version(1.0), marshaling_behavior(agile), threading(both)]
 	runtimeclass ScalarData
 	{
 		[default] interface IScalarData;
+		interface Windows.Foundation.Collections.IVectorView<float>;
 	}
 
 	[version(1.0), marshaling_behavior(agile), threading(both)]
 	runtimeclass ArrayData
 	{
 		[default]interface IArrayData;
+		interface Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float>*>;
 	}
 
 	[uuid(E4C11BE5-112E-49AD-A565-EE713089C447)]

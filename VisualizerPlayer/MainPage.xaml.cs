@@ -21,6 +21,8 @@ using System.Threading.Tasks;
 using AudioVisualizer;
 using Windows.Media.Core;
 using Windows.Media.Playback;
+using Microsoft.Graphics.Canvas.Text;
+using System.Numerics;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -79,25 +81,8 @@ namespace VisualizerPlayer
             }
         }
 
-        private void CanvasAnimatedControl_CreateResources(Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.CanvasCreateResourcesEventArgs args)
-        {
-        }
 
-        private void CanvasAnimatedControl_Draw(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedDrawEventArgs args)
-        {
-            if (m_VisualizationSource != null)
-            {
-
-            }
-        }
-
-        Size m_VisualizationSize;
         private IVisualizationSource m_VisualizationSource;
-
-        private void CanvasAnimatedControl_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            m_VisualizationSize = e.NewSize;
-        }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
@@ -124,6 +109,8 @@ namespace VisualizerPlayer
 
         ScalarData _previousRMS;
         ScalarData _previousPeak;
+        ArrayData _previousSpectrum;
+        ArrayData _previousPeakSpectrum;
 
         private void visualizer_Draw(AudioVisualizer.IVisualizer sender, AudioVisualizer.VisualizerDrawEventArgs args)
         {
@@ -131,21 +118,66 @@ namespace VisualizerPlayer
 
             if (args.Data != null)
             {
-                _previousRMS = args.Data.RMS.ApplyRiseAndFall(_previousRMS, TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(16.7));
-                _previousPeak = args.Data.Peak.ApplyRiseAndFall(_previousPeak, TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(3000), TimeSpan.FromMilliseconds(16.7));
-                var logRMS = _previousRMS.ConvertToLogAmplitude(-100.0f, 0.0f).Values;
-                var logPeak = _previousPeak.ConvertToLogAmplitude(-100.0f, 0.0f).Values;
+                _previousRMS = args.Data.RMS.ApplyRiseAndFall(_previousRMS, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(50), args.Data.Duration.Value);
+                _previousPeak = args.Data.Peak.ApplyRiseAndFall(_previousPeak, TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(3000), args.Data.Duration.Value);
+                var logRMS = _previousRMS.ConvertToLogAmplitude(-40.0f, 0.0f);
+                var logPeak = _previousPeak.ConvertToLogAmplitude(-40.0f, 0.0f);
 
-                args.DrawingSession.FillRectangle(10, 10, 20 + (100.0f + (logRMS[0])), 20, Colors.Green);
-                args.DrawingSession.FillRectangle(10, 40, 20 + (100.0f + (logRMS[1])), 20, Colors.Green);
+                args.DrawingSession.FillRectangle(10, 10, 20 + 20*(40.0f + (logRMS[0])), 20, Colors.Green);
+                args.DrawingSession.FillRectangle(10, 40, 20 + 20*(40.0f + (logRMS[1])), 20, Colors.Green);
 
-                args.DrawingSession.DrawLine(120.0f + logPeak[0], 10, 120.0f + logPeak[0], 30, Colors.Red, 3);
-                args.DrawingSession.DrawLine(120.0f + logPeak[1], 40, 120.0f + logPeak[1], 60, Colors.Red, 3);
+                CanvasTextFormat textFormat = new CanvasTextFormat();
+                textFormat.VerticalAlignment = CanvasVerticalAlignment.Center;
+                textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Center;
+                textFormat.FontSize = 9;
+
+                for (int i = -40; i <= 0; i+=10)
+                {
+                    args.DrawingSession.DrawLine(810 + 20 * i, 10, 810 + 20 * i, 60,Colors.White);
+                    args.DrawingSession.DrawText($"{i}dB", 810 + 20 * i, 70, Colors.White, textFormat);
+                }
+
+                args.DrawingSession.DrawLine(820.0f + 20 * logPeak[0], 10, 820.0f + 20*logPeak[0], 30, Colors.Red, 3);
+                args.DrawingSession.DrawLine(820.0f + 20 * logPeak[1], 40, 820.0f + 20*logPeak[1], 60, Colors.Red, 3);
+
+                var spectrum = args.Data.Spectrum.TransformLinearFrequency(20);
+
+                _previousSpectrum = spectrum.ApplyRiseAndFall(_previousSpectrum,TimeSpan.FromMilliseconds(100),TimeSpan.FromMilliseconds(100),args.Data.Duration.Value);
+                _previousPeakSpectrum = spectrum.ApplyRiseAndFall(_previousPeakSpectrum, TimeSpan.FromMilliseconds(10), TimeSpan.FromMilliseconds(2000), args.Data.Duration.Value);
+                args.DrawingSession.DrawLine(0, 320, 1000, 320, Colors.WhiteSmoke);
+                args.DrawingSession.DrawLine(0, 340, 1000, 340, Colors.WhiteSmoke);
+
+                var logSpectrum = _previousSpectrum.ConvertToLogAmplitude(-50, 0);
+                var logPeakSpectrum = _previousPeakSpectrum.ConvertToLogAmplitude(-50, 0);
+
+                Vector2 prevPointLeft = new Vector2(),prevPointRight = new Vector2();
+
+                for (int i = 0; i < logSpectrum.FrequencyCount; i++)
+                {
+                    float barHeight0 = 160+3.2f * logSpectrum[0][i];
+                    args.DrawingSession.FillRectangle(i * 50, 320 - barHeight0, 50, barHeight0, Colors.WhiteSmoke);
+                    float barHeight1 = 160+3.2f * logSpectrum[1][i];
+                    args.DrawingSession.FillRectangle(i * 50, 340, 50, barHeight1, Colors.WhiteSmoke);
+
+                    Vector2 leftPoint = new Vector2(i * 50 + 25, 160 - 3.2f * logPeakSpectrum[0][i]);
+                    Vector2 rightPoint = new Vector2(i * 50 + 25, 500 + 3.2f * logPeakSpectrum[1][i]);
+                    if (i != 0)
+                    {
+                        args.DrawingSession.DrawLine(prevPointLeft, leftPoint, Colors.Red, 3);
+                        args.DrawingSession.DrawLine(prevPointRight, rightPoint, Colors.Red, 3);
+                    }
+                    prevPointLeft = leftPoint;
+                    prevPointRight = rightPoint;
+
+                    string freqText = $"{Math.Round(logSpectrum.FrequencyStep * i * 1e-3),2:F0}k";
+                    args.DrawingSession.DrawText(freqText, i * 50 + 25, 330, Colors.White, textFormat);
+                }
             }
             else
             {
                 _previousRMS = null;
                 _previousPeak = null;
+                _previousSpectrum = null;
             }
             traceActivity.StopActivity(traceActivity.Name);
         }

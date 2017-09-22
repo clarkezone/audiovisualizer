@@ -17,7 +17,7 @@
         <CommandBar Grid.Row="0">
             <AppBarButton Icon="OpenFile" Click="OpenFile_Click"></AppBarButton>
         </CommandBar>
-        <a:BaseVisualizer Grid.Row="1" x:Name="visualizer" Draw="visualizer_Draw" BackgroundColor="Blue" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></a:BaseVisualizer>
+        <a:CustomVisualizer Grid.Row="1" x:Name="visualizer" Draw="visualizer_Draw" BackgroundColor="Blue" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></a:CustomVisualizer>
         <MediaElement Grid.Row="2" x:Name="mePlayer"></MediaElement>
 
         <ToggleSwitch IsOn="True" Grid.Row="3" Margin ="20,0"

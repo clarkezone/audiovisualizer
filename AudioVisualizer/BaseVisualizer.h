@@ -3,103 +3,275 @@
 #include <wrl.h>
 #include <windows.ui.composition.h>
 #include <mutex>
+#include "Utilities.h"
+#include <windows.system.threading.h>
+
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
 using namespace ABI::Microsoft::Graphics::Canvas;
 using namespace ABI::Windows::UI::Composition;
 using namespace ABI::Windows::UI;
+using namespace ABI::Windows::UI::Xaml; 
+using namespace ABI::Windows::UI::Xaml::Controls;
+using namespace ABI::Windows::UI::Core;
+using namespace ABI::Windows::UI::Xaml::Hosting;
+using namespace ABI::AudioVisualizer;
+using namespace ABI::Microsoft::Graphics::Canvas::UI::Composition;
+using namespace ABI::Windows::System::Threading;
+using namespace ABI::Windows::Foundation;
 
 namespace AudioVisualizer
 {
-	class BaseVisualizer : public Microsoft::WRL::RuntimeClass<
-		Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::RuntimeClassType::WinRt>,
-		Microsoft::WRL::Implements<ABI::AudioVisualizer::IVisualizer>,
-		Microsoft::WRL::ComposableBase<>>	
+	template<class ControlType>
+	class BaseVisualizer
 	{
-		InspectableClass(RuntimeClass_AudioVisualizer_BaseVisualizer, BaseTrust)
-
-		typedef ABI::Windows::Foundation::ITypedEventHandler<
-					ABI::AudioVisualizer::IVisualizer*, 
-					ABI::AudioVisualizer::VisualizerDrawEventArgs *> Visualizer_DrawEventHandler;
-		
-		Microsoft::WRL::EventSource<Visualizer_DrawEventHandler> _drawEventList;
-
-		Microsoft::WRL::ComPtr<ABI::Microsoft::Graphics::Canvas::ICanvasDeviceStatics> _deviceStatics;
-		Microsoft::WRL::ComPtr<ABI::Microsoft::Graphics::Canvas::UI::Composition::ICanvasCompositionStatics> _canvasCompositionStatics;
-		Microsoft::WRL::ComPtr<ABI::Microsoft::Graphics::Canvas::ICanvasDevice> _device;
-		Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::ICompositionGraphicsDevice> _compositionGraphicsDevice;
-		ComPtr<ICanvasSwapChainFactory> _swapChainFactory;
-		ComPtr<ICanvasSwapChain> _swapChain;
-		ComPtr<ISpriteVisual> _swapChainVisual;
-
-		EventRegistrationToken _deviceLostToken;
-		HANDLE _cancelDrawLoop;
-		Color _backgroundColor;
-
-		std::mutex _mtxSwapChain;
-		CriticalSection _csLock;
-
-	private:
-		HRESULT CreateDevice();
-		HRESULT OnDraw();
-
-	protected:
-		
-		Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::ICompositor> _compositor;
-		Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::IContainerVisual> _rootVisual;
-
-		Microsoft::WRL::ComPtr<ABI::AudioVisualizer::IVisualizationSource> _source;
 
 		Microsoft::WRL::ComPtr<IInspectable> _control;
 		Microsoft::WRL::ComPtr<ABI::Windows::UI::Xaml::IWindow> _window;
 		EventRegistrationToken _sizeChangedToken;
 		EventRegistrationToken _loadedToken;
+		EventRegistrationToken _deviceLostToken;
+		Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::ICompositor> _compositor;
+		Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::IContainerVisual> _rootVisual;
+		ComPtr<ABI::Windows::UI::Composition::ISpriteVisual> _swapChainVisual;
+		ComPtr<ABI::Windows::UI::Composition::ICompositionGraphicsDevice> _compositionGraphicsDevice;
 
-		HRESULT OnSizeChanged(const ABI::Windows::Foundation::Size &size);
-		HRESULT OnLoaded();
-		HRESULT StartDrawLoop();
+		ComPtr<ICanvasCompositionStatics> _canvasCompositionStatics;
+		ComPtr<ICanvasSwapChainFactory> _swapChainFactory;
 
+		CriticalSection _swapChainLock;
+		HANDLE _cancelDrawLoop;
+
+		ControlType *GetControl() { return static_cast<ControlType *>(this); };
+	protected:
+		Microsoft::WRL::ComPtr<ABI::AudioVisualizer::IVisualizationSource> _visualizationSource;
+		ABI::Windows::UI::Color _drawingSessionBackgroundColor;
+
+
+		ComPtr<ICanvasSwapChain> _swapChain;
+		ComPtr<ICanvasDevice> _device;
+
+		HRESULT CreateDevice()
+		{
+			ComPtr<ICanvasDeviceStatics> _deviceStatics;
+			ThrowIfFailed(ABI::Windows::Foundation::GetActivationFactory(HStringReference(RuntimeClass_Microsoft_Graphics_Canvas_CanvasDevice).Get(), &_deviceStatics));
+
+			ThrowIfFailed(_deviceStatics->GetSharedDevice(&_device));
+
+			ThrowIfFailed(_device->add_DeviceLost(
+				Callback<__FITypedEventHandler_2_Microsoft__CGraphics__CCanvas__CCanvasDevice_IInspectable>(
+					[](ABI::Microsoft::Graphics::Canvas::ICanvasDevice*, IInspectable *) -> HRESULT
+			{
+				// TODO: Unregister callback and create a new device on UI thread
+				return E_NOTIMPL;
+			}
+					).Get(),
+				&_deviceLostToken
+				));
+
+			if (_compositionGraphicsDevice == nullptr)
+				ThrowIfFailed(_canvasCompositionStatics->CreateCompositionGraphicsDevice(_compositor.Get(), _device.Get(), &_compositionGraphicsDevice));
+			else
+				ThrowIfFailed(_canvasCompositionStatics->SetCanvasDevice(_compositionGraphicsDevice.Get(), _device.Get()));
+
+			return S_OK;
+
+		}
+
+		HRESULT InitializeSwapChain()
+		{
+			ComPtr<IElementCompositionPreviewStatics> spComp;
+			ThrowIfFailed(ABI::Windows::Foundation::GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Hosting_ElementCompositionPreview).Get(), &spComp));
+			ThrowIfFailed(ABI::Windows::Foundation::GetActivationFactory(HStringReference(RuntimeClass_Microsoft_Graphics_Canvas_CanvasSwapChain).Get(), &_swapChainFactory));
+			ThrowIfFailed(ABI::Windows::Foundation::GetActivationFactory(HStringReference(RuntimeClass_Microsoft_Graphics_Canvas_UI_Composition_CanvasComposition).Get(), &_canvasCompositionStatics));
+
+			ComPtr<IVisual> spElementVisual;
+			ThrowIfFailed(spComp->GetElementVisual(As<IUIElement>(GetControl()).Get(), &spElementVisual));
+
+			ComPtr<ICompositionObject> spCompObj;
+			ThrowIfFailed(spElementVisual.As(&spCompObj));
+
+			ThrowIfFailed(spCompObj->get_Compositor(&_compositor));
+
+			ThrowIfFailed(_compositor->CreateContainerVisual(&_rootVisual));
+			ThrowIfFailed(spComp->SetElementChildVisual(As<IUIElement>(GetControl()).Get(), As<IVisual>(_rootVisual).Get()));
+
+			ThrowIfFailed(CreateDevice());
+
+			ThrowIfFailed(_compositor->CreateSpriteVisual(&_swapChainVisual));
+			ComPtr<IVisualCollection> children;
+			ThrowIfFailed(_rootVisual->get_Children(&children));
+			ThrowIfFailed(children->InsertAtTop(As<IVisual>(_swapChainVisual).Get()));
+			return S_OK;
+		}
+		HRESULT CreateSwapChain(ABI::Windows::Foundation::Size size)
+		{
+			auto _lock = _swapChainLock.Lock();
+
+			HRESULT hr = _swapChainFactory->CreateWithWidthAndHeightAndDpi(
+				As<ICanvasResourceCreator>(_device).Get(), size.Width, size.Height, 96.0f, &_swapChain);
+
+			if (FAILED(hr))
+				return hr;
+
+			ComPtr<ICompositionSurface> spCompSurface;
+			hr = _canvasCompositionStatics->CreateCompositionSurfaceForSwapChain(_compositor.Get(), _swapChain.Get(), &spCompSurface);
+			if (FAILED(hr))
+				return hr;
+			ComPtr<ICompositionSurfaceBrush> spSurfaceBrush;
+			hr = _compositor->CreateSurfaceBrushWithSurface(spCompSurface.Get(), &spSurfaceBrush);
+			if (FAILED(hr))
+				return hr;
+			hr = _swapChainVisual->put_Brush(As<ICompositionBrush>(spSurfaceBrush).Get());
+			if (FAILED(hr))
+				return hr;
+			hr = As<IVisual>(_swapChainVisual)->put_Size(ABI::Windows::Foundation::Numerics::Vector2() = { size.Width, size.Height });
+			if (FAILED(hr))
+				return hr;
+
+			return hr;
+		}
+		HRESULT StartDrawLoop()
+		{
+			ComPtr<ABI::Windows::System::Threading::IThreadPoolStatics> spThreadPool;
+			HRESULT hr = ABI::Windows::Foundation::GetActivationFactory(HStringReference(RuntimeClass_Windows_System_Threading_ThreadPool).Get(), &spThreadPool);
+
+			if (FAILED(hr))
+				return hr;
+
+			typedef AddFtmBase<IWorkItemHandler>::Type CallbackType;
+
+			HANDLE cancelEvent = CreateEventEx(nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_ALL_ACCESS);
+			_cancelDrawLoop = cancelEvent;
+
+			auto drawLoop = Callback<CallbackType>(
+				[=](IAsyncAction *) -> HRESULT
+			{
+				HRESULT hr = S_OK;
+				SetThreadDescription(GetCurrentThread(), L"Visualizer draw loop");
+				while (SUCCEEDED(hr))
+				{
+					DWORD dwWaitResult = WaitForSingleObject(cancelEvent, 0);
+
+					if (dwWaitResult != WAIT_TIMEOUT)
+						break;
+
+					auto lock = _swapChainLock.Lock();
+					if (_swapChain != nullptr)
+					{
+						ComPtr<ICanvasDrawingSession> drawingSession;
+
+						HRESULT hr = _swapChain->CreateDrawingSession(_drawingSessionBackgroundColor, &drawingSession);
+						if (FAILED(hr))
+							continue;
+
+						hr = OnDraw(drawingSession.Get());
+						if (FAILED(hr))
+							continue;
+
+						hr = As<IClosable>(drawingSession)->Close();
+						if (FAILED(hr))
+							continue;
+
+						_swapChain->Present();
+						if (FAILED(hr))
+							continue;
+
+						auto copy = _swapChain;
+						lock.Unlock();
+						hr = copy->WaitForVerticalBlank();
+					}
+					else
+					{
+						lock.Unlock();
+						WaitForSingleObject(cancelEvent, 17);
+					}
+				}
+				return hr;
+			});
+
+			ComPtr<IAsyncAction> asyncAction;
+			hr = spThreadPool->RunAsync(drawLoop.Get(), &asyncAction);
+			return hr;
+		}
+		virtual HRESULT OnDraw(ABI::Microsoft::Graphics::Canvas::ICanvasDrawingSession *pSession) = 0;
 	public:
-		BaseVisualizer();
-		~BaseVisualizer();
-
-		STDMETHODIMP add_Draw(
-			Visualizer_DrawEventHandler* value,
-			EventRegistrationToken *token);
-		STDMETHODIMP remove_Draw(
-			EventRegistrationToken token);
+		BaseVisualizer()
+		{
+#ifdef _TRACE
+			AudioVisualizer::Diagnostics::Trace::Initialize();
+#endif
+			CreateBaseControl();
+			RegisterEventHandlers();
+			InitializeSwapChain();
+		}
+		~BaseVisualizer()
+		{
+			As<IFrameworkElement>(GetControl())->remove_Loaded(_loadedToken);
+			_window->remove_SizeChanged(_sizeChangedToken);
+		}
 		
-		STDMETHODIMP get_Source(ABI::AudioVisualizer::IVisualizationSource **ppSource)
-		{
-			if (ppSource == nullptr)
-				return E_POINTER;
-			*ppSource = _source.Get();
-			return S_OK;
-		}
-
-		STDMETHODIMP put_Source(ABI::AudioVisualizer::IVisualizationSource *pSource)
-		{
-			auto lock = _csLock.Lock();
-			_source = pSource;
-			return S_OK;
-		}
-
-		STDMETHODIMP get_BackgroundColor(Color *pColor)
-		{
-			if (pColor == nullptr)
-				return E_POINTER;
-			*pColor = _backgroundColor;
-			return S_OK;
-		}
-		STDMETHODIMP put_BackgroundColor(Color color)
-		{
-			auto lock = _csLock.Lock();
-			_backgroundColor = color;
-			return S_OK;
-		}
 
 		Microsoft::WRL::ComPtr<IInspectable> GetComposableBase();
+
+	private:
+		HRESULT OnLoaded(IInspectable *pSender, IRoutedEventArgs *pArgs)
+		{
+			StartDrawLoop();
+			
+			ABI::Windows::Foundation::Rect bounds;
+			_window->get_Bounds(&bounds);
+			ABI::Windows::Foundation::Size size = { bounds.Width, bounds.Height };
+			CreateSwapChain(size);
+
+			return S_OK;
+		}
+
+
+ 		HRESULT OnSizeChanged(IInspectable *pSender, IWindowSizeChangedEventArgs *pArgs)
+		{
+			ABI::Windows::Foundation::Size size;
+			pArgs->get_Size(&size);
+			if (size.Width > 0 && size.Height > 0)
+			{
+				CreateSwapChain(size);
+			}
+			return S_OK;
+		}
+
+		void CreateBaseControl()
+		{
+			ComPtr<IControlFactory> spControlFactory;
+			ThrowIfFailed(ABI::Windows::Foundation::GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Controls_Control).Get(), &spControlFactory));
+
+			ComPtr<IInspectable> spControlInspectable;
+			ComPtr<IControl> spControl;
+			HRESULT hr = spControlFactory->CreateInstance(As<IInspectable>(GetControl()).Get(), &spControlInspectable, &spControl);
+
+			ThrowIfFailed(GetControl()->SetComposableBasePointers(spControlInspectable.Get()));
+		}
+		void RegisterEventHandlers()
+		{
+			ComPtr<IWindowStatics> spWindow;
+			ThrowIfFailed(ABI::Windows::Foundation::GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Window).Get(), &spWindow));
+			ThrowIfFailed(spWindow->get_Current(&_window));
+
+			ComPtr<IFrameworkElement> frameworkElement = As<IFrameworkElement>(GetControl());
+			ThrowIfFailed(frameworkElement->add_Loaded(
+				Callback<IRoutedEventHandler>(
+					[=](IInspectable *pSender, IRoutedEventArgs *pArgs)->HRESULT
+			{
+				return OnLoaded(pSender,pArgs);
+			}
+			).Get(),&_loadedToken));
+
+			ThrowIfFailed(_window->add_SizeChanged(Callback<IWindowSizeChangedEventHandler>(
+				[=](IInspectable *pSender, IWindowSizeChangedEventArgs *pArgs) -> HRESULT
+			{
+				return OnSizeChanged(pSender, pArgs);
+			}).Get(),&_sizeChangedToken));
+		}
 	};
 }
 

@@ -906,7 +906,12 @@ namespace AudioVisualizer
 
 			ComPtr<ArrayData> spectrum;
 			if ((int)_analyzisTypes & (int)AnalyzerType::Spectrum)
-				spectrum = Make<ArrayData>(m_nChannels, m_FftLength >> 1);	// Spectrum is half fft length
+				spectrum = Make<ArrayData>(m_nChannels, 
+									m_FftLength >> 1,
+									ScaleType::Linear,
+									ScaleType::Linear,0.0f, 
+									m_FramesPerSecond>>1,
+									(float) m_FramesPerSecond / (float) m_FftLength);	// Spectrum is half fft length
 			long position = -1;
 
 			bool bStepSuccess = _analyzer->Step(&position,rms->GetBuffer(),peak->GetBuffer(),spectrum->GetBuffer());
