@@ -93,7 +93,8 @@ namespace VisualizerPlayer
         {
             m_VisualizationSource = await AudioVisualizer.VisualizationSource.CreateFromMediaElementAsync(mePlayer);
             m_VisualizationSource.Configure(AnalyzerType.All, 60, 4096, 0.5f);
-            visualizer.Source = m_VisualizationSource;
+            //visualizer.Source = m_VisualizationSource;
+            vuBar.Source = m_VisualizationSource;
         }
 
         private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)

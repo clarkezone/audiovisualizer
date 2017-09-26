@@ -5,23 +5,6 @@
 
 namespace AudioVisualizer
 {
-
-	class CustomVisualizerFactory : public AgileActivationFactory<>
-	{
-	public:
-		IFACEMETHODIMP ActivateInstance(IInspectable** obj) override
-		{
-			return ExceptionBoundary(
-				[&]
-			{
-				CheckAndClearOutPointer(obj);
-				auto control = Make<CustomVisualizer>();
-				CheckMakeResult(control);
-				ThrowIfFailed(control.CopyTo(obj));
-			});
-		}
-	};
-
 	CustomVisualizer::CustomVisualizer()
 	{
 	}
@@ -37,21 +20,17 @@ namespace AudioVisualizer
 	{
 		return _drawEventList.Remove(token);
 	}
-	HRESULT CustomVisualizer::OnDraw(ICanvasDrawingSession *pSession)
+	HRESULT CustomVisualizer::OnDraw(ICanvasDrawingSession *pSession, IVisualizationDataFrame *pDataFrame)
 	{
-		ComPtr<IVisualizationDataFrame> dataFrame;
-		if (_visualizationSource != nullptr)
-			_visualizationSource->GetData(&dataFrame);
-
-		auto args = Make<VisualizerDrawEventArgs>(pSession, dataFrame.Get());
+		auto args = Make<VisualizerDrawEventArgs>(pSession, pDataFrame);
 #ifdef _TRACE
 			ComPtr<ILoggingActivity> activity;
-			Diagnostics::Trace::Log_StartDraw(dataFrame.Get(), &activity);
+			Diagnostics::Trace::Log_StartDraw(pDataFrame, &activity);
 			AudioVisualizer::Diagnostics::CLogActivityHelper drawActivity(activity.Get());
 #endif
 		return _drawEventList.InvokeAll(this, args.Get());
 	}
 
-	ActivatableClassWithFactory(CustomVisualizer, CustomVisualizerFactory);
+	ActivatableClass(CustomVisualizer);
 
 }

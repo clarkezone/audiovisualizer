@@ -55,9 +55,12 @@ namespace AudioVisualizer
 	{
 		if (_amplitudeScale != ScaleType::Linear || riseTime.Duration == 0 || fallTime.Duration == 0)
 			return E_INVALIDARG;
-		if (pPrevious != nullptr && 
-				( reinterpret_cast<ArrayData*>(pPrevious)->_size != _size ||
-				  reinterpret_cast<ArrayData*>(pPrevious)->_channels != _channels))
+
+		ArrayData *pPreviousData = dynamic_cast<ArrayData *>(pPrevious);
+
+		if (pPreviousData != nullptr &&
+				( pPreviousData->_size != _size ||
+					pPreviousData->_channels != _channels))
 		{
 			return E_INVALIDARG;
 		}
@@ -75,7 +78,7 @@ namespace AudioVisualizer
 		DirectX::XMVECTOR *pLastData = nullptr;
 		if (pPrevious != nullptr)
 		{
-			pLastData = reinterpret_cast<ArrayData*>(pPrevious)->GetBuffer();
+			pLastData = pPreviousData->GetBuffer();
 		}
 		AudioMath::ApplyRiseAndFall(pLastData, GetBuffer(), result->GetBuffer(), _vElementsCount * _channels, (float)timeDelta.Duration / riseTime.Duration, (float)timeDelta.Duration / fallTime.Duration);
 

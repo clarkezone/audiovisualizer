@@ -5,7 +5,6 @@
 #include <vector>
 #include "LifeSpanTracker.h"
 #include "trace.h"
-#include "DataBuffer.h"
 
 using namespace Microsoft::WRL;
 using namespace ABI::AudioVisualizer;
@@ -48,7 +47,8 @@ namespace AudioVisualizer
 		}
 	};
 
-	class ArrayData : public RuntimeClass<IArrayData,IVectorView<IVectorView<float>*>>, LifespanTracker<ArrayData>
+	class ArrayData : public RuntimeClass<IArrayData,IVectorView<IVectorView<float>*>>, 
+		public Implements<IVectorView<IVectorView<float>*>>, LifespanTracker<ArrayData>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_ArrayData, BaseTrust);
 

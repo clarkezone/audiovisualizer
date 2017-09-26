@@ -9,7 +9,10 @@ using namespace ABI::Microsoft::Graphics::Canvas;
 
 namespace AudioVisualizer
 {
-	class CustomVisualizer :  public RuntimeClass<IVisualizer,IVisualizerCustomDraw,ComposableBase<>>, public MixIn<CustomVisualizer,IVisualizer>, public BaseVisualizer<CustomVisualizer>
+	class CustomVisualizer :  
+		public RuntimeClass<IVisualizer,IVisualizerCustomDraw,ComposableBase<>>, 
+		public MixIn<CustomVisualizer,IVisualizer>, 
+		public BaseVisualizer<CustomVisualizer>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_CustomVisualizer, BaseTrust)
 
@@ -19,7 +22,7 @@ namespace AudioVisualizer
 
 		Microsoft::WRL::EventSource<Visualizer_DrawEventHandler> _drawEventList;
 	protected:
-		virtual HRESULT OnDraw(ICanvasDrawingSession *pSession);
+		virtual HRESULT OnDraw(ICanvasDrawingSession *pSession,IVisualizationDataFrame *pDataFrame);
 
 	public:
 		CustomVisualizer();

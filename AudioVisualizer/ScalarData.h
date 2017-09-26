@@ -6,7 +6,6 @@
 #include <vector>
 #include "LifeSpanTracker.h"
 #include "trace.h"
-#include "databuffer.h"
 
 using namespace Microsoft::WRL;
 using namespace ABI::AudioVisualizer;
@@ -16,7 +15,8 @@ using namespace ABI::Windows::Foundation::Diagnostics;
 
 namespace AudioVisualizer
 {
-	class ScalarData : public RuntimeClass<IScalarData,IVectorView<float>>, LifespanTracker<ScalarData>
+	class ScalarData : public RuntimeClass<IVectorView<float>,IScalarData>,
+						LifespanTracker<ScalarData>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_ScalarData, BaseTrust);
 
@@ -29,13 +29,6 @@ namespace AudioVisualizer
 
 		DirectX::XMVECTOR *GetBuffer() { return _pData; }
 
-		STDMETHODIMP get_AmplitudeScale(ScaleType *pScale)
-		{
-			if (pScale == nullptr)
-				return E_INVALIDARG;
-			*pScale = _amplitudeScale;
-			return S_OK;
-		}
 		STDMETHODIMP GetAt(unsigned int index, float *pValue)
 		{
 			if (pValue == nullptr)
@@ -56,22 +49,14 @@ namespace AudioVisualizer
 		{
 			return E_NOTIMPL;
 		}
-		/*
-		STDMETHODIMP get_Values(UINT32 *pcElements, float **ppValues)
+
+		STDMETHODIMP get_AmplitudeScale(ScaleType *pScale)
 		{
-			if (ppValues == nullptr)
+			if (pScale == nullptr)
 				return E_INVALIDARG;
-			*ppValues = (float *)_pData;
-			*pcElements = _size;
+			*pScale = _amplitudeScale;
 			return S_OK;
 		}
-		STDMETHODIMP get_Size(UINT32 *pSize)
-		{
-			if (pSize == nullptr)
-				return E_INVALIDARG;
-			*pSize = _size;
-			return S_OK;
-		}*/
 		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, IScalarData **ppResult);
 		STDMETHODIMP ApplyRiseAndFall(IScalarData *pPrevious, TimeSpan fallTime, TimeSpan riseTime, TimeSpan timeDelta, IScalarData **ppResult);
 	};

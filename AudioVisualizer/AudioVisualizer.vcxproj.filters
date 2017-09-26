@@ -22,6 +22,7 @@
     <ClCompile Include="ScalarData.cpp" />
     <ClCompile Include="ArrayData.cpp" />
     <ClCompile Include="CustomVisualizer.cpp" />
+    <ClCompile Include="DiscreteVUBar.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -44,8 +45,8 @@
     <ClInclude Include="LifeSpanTracker.h" />
     <ClInclude Include="ScalarData.h" />
     <ClInclude Include="ArrayData.h" />
-    <ClInclude Include="DataBuffer.h" />
     <ClInclude Include="CustomVisualizer.h" />
+    <ClInclude Include="DiscreteVUBar.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

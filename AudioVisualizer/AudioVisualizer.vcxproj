@@ -325,7 +325,7 @@
     <ClInclude Include="AsyncOperation.h" />
     <ClInclude Include="Canvas.abi.h" />
     <ClInclude Include="CustomVisualizer.h" />
-    <ClInclude Include="DataBuffer.h" />
+    <ClInclude Include="DiscreteVUBar.h" />
     <ClInclude Include="LifeSpanTracker.h" />
     <ClInclude Include="MftAnalyzer.h" />
     <ClInclude Include="ErrorHandling.h" />
@@ -347,6 +347,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CustomVisualizer.cpp" />
+    <ClCompile Include="DiscreteVUBar.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="LifespanTracker.cpp" />
     <ClCompile Include="MftAnalyzer.cpp" />

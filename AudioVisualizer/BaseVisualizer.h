@@ -27,8 +27,7 @@ namespace AudioVisualizer
 	class BaseVisualizer
 	{
 
-		Microsoft::WRL::ComPtr<IInspectable> _control;
-		Microsoft::WRL::ComPtr<ABI::Windows::UI::Xaml::IWindow> _window;
+		ComPtr<ABI::Windows::UI::Xaml::IWindow> _window;
 		EventRegistrationToken _sizeChangedToken;
 		EventRegistrationToken _loadedToken;
 		EventRegistrationToken _deviceLostToken;
@@ -43,14 +42,16 @@ namespace AudioVisualizer
 		CriticalSection _swapChainLock;
 		HANDLE _cancelDrawLoop;
 
-		ControlType *GetControl() { return static_cast<ControlType *>(this); };
 	protected:
-		Microsoft::WRL::ComPtr<ABI::AudioVisualizer::IVisualizationSource> _visualizationSource;
+		ComPtr<IVisualizationSource> _visualizationSource;
 		ABI::Windows::UI::Color _drawingSessionBackgroundColor;
+		ComPtr<IInspectable> _composableBase;
 
 
 		ComPtr<ICanvasSwapChain> _swapChain;
 		ComPtr<ICanvasDevice> _device;
+
+		ControlType *GetControl() { return static_cast<ControlType *>(this); };
 
 		HRESULT CreateDevice()
 		{
@@ -161,12 +162,16 @@ namespace AudioVisualizer
 					if (_swapChain != nullptr)
 					{
 						ComPtr<ICanvasDrawingSession> drawingSession;
-
+						
 						HRESULT hr = _swapChain->CreateDrawingSession(_drawingSessionBackgroundColor, &drawingSession);
 						if (FAILED(hr))
 							continue;
 
-						hr = OnDraw(drawingSession.Get());
+						ComPtr<IVisualizationDataFrame> dataFrame;
+						if (_visualizationSource != nullptr)
+							_visualizationSource->GetData(&dataFrame);
+
+						hr = OnDraw(drawingSession.Get(),dataFrame.Get());
 						if (FAILED(hr))
 							continue;
 
@@ -195,21 +200,23 @@ namespace AudioVisualizer
 			hr = spThreadPool->RunAsync(drawLoop.Get(), &asyncAction);
 			return hr;
 		}
-		virtual HRESULT OnDraw(ABI::Microsoft::Graphics::Canvas::ICanvasDrawingSession *pSession) = 0;
+		virtual HRESULT OnDraw(ABI::Microsoft::Graphics::Canvas::ICanvasDrawingSession *pSession,ABI::AudioVisualizer::IVisualizationDataFrame *pDataFrame) = 0;
 	public:
 		BaseVisualizer()
 		{
 #ifdef _TRACE
 			AudioVisualizer::Diagnostics::Trace::Initialize();
 #endif
+			_drawingSessionBackgroundColor = Color() = { 0,0,0,0 };
 			CreateBaseControl();
 			RegisterEventHandlers();
 			InitializeSwapChain();
 		}
 		~BaseVisualizer()
 		{
-			As<IFrameworkElement>(GetControl())->remove_Loaded(_loadedToken);
-			_window->remove_SizeChanged(_sizeChangedToken);
+			auto frameworkElement = As<IFrameworkElement>(GetControl());
+			frameworkElement->remove_Loaded(_loadedToken);
+			frameworkElement->remove_SizeChanged(_sizeChangedToken);
 		}
 		
 
@@ -220,19 +227,19 @@ namespace AudioVisualizer
 		{
 			StartDrawLoop();
 			
-			ABI::Windows::Foundation::Rect bounds;
-			_window->get_Bounds(&bounds);
-			ABI::Windows::Foundation::Size size = { bounds.Width, bounds.Height };
-			CreateSwapChain(size);
-
+			auto element = As<IFrameworkElement>(GetControl());
+			double width = 0, height = 0;
+			element->get_ActualWidth(&width);
+			element->get_ActualHeight(&height);
+			CreateSwapChain(Size() = { (float)width, (float)height });
 			return S_OK;
 		}
 
 
- 		HRESULT OnSizeChanged(IInspectable *pSender, IWindowSizeChangedEventArgs *pArgs)
+ 		HRESULT OnSizeChanged(IInspectable *pSender, ISizeChangedEventArgs *pArgs)
 		{
-			ABI::Windows::Foundation::Size size;
-			pArgs->get_Size(&size);
+			ABI::Windows::Foundation::Size size;		
+			pArgs->get_NewSize(&size);
 			if (size.Width > 0 && size.Height > 0)
 			{
 				CreateSwapChain(size);
@@ -253,10 +260,6 @@ namespace AudioVisualizer
 		}
 		void RegisterEventHandlers()
 		{
-			ComPtr<IWindowStatics> spWindow;
-			ThrowIfFailed(ABI::Windows::Foundation::GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Window).Get(), &spWindow));
-			ThrowIfFailed(spWindow->get_Current(&_window));
-
 			ComPtr<IFrameworkElement> frameworkElement = As<IFrameworkElement>(GetControl());
 			ThrowIfFailed(frameworkElement->add_Loaded(
 				Callback<IRoutedEventHandler>(
@@ -266,8 +269,9 @@ namespace AudioVisualizer
 			}
 			).Get(),&_loadedToken));
 
-			ThrowIfFailed(_window->add_SizeChanged(Callback<IWindowSizeChangedEventHandler>(
-				[=](IInspectable *pSender, IWindowSizeChangedEventArgs *pArgs) -> HRESULT
+
+			ThrowIfFailed(frameworkElement->add_SizeChanged(Callback<ISizeChangedEventHandler>(
+				[=](IInspectable *pSender, ISizeChangedEventArgs *pArgs) -> HRESULT
 			{
 				return OnSizeChanged(pSender, pArgs);
 			}).Get(),&_sizeChangedToken));

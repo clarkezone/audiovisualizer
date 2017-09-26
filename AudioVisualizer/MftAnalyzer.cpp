@@ -909,8 +909,9 @@ namespace AudioVisualizer
 				spectrum = Make<ArrayData>(m_nChannels, 
 									m_FftLength >> 1,
 									ScaleType::Linear,
-									ScaleType::Linear,0.0f, 
-									m_FramesPerSecond>>1,
+									ScaleType::Linear,
+									0.0f, 
+									(float) (m_FramesPerSecond>>1),
 									(float) m_FramesPerSecond / (float) m_FftLength);	// Spectrum is half fft length
 			long position = -1;
 

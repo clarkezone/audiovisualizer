@@ -37,7 +37,8 @@ namespace AudioVisualizer
 		DirectX::XMVECTOR *pLastData = nullptr;
 		if (pPrevious != nullptr)
 		{
-			pLastData = reinterpret_cast<ScalarData *>(pPrevious)->GetBuffer();
+			ScalarData *pPreviousData = dynamic_cast<ScalarData *>(pPrevious);
+			pLastData = pPreviousData->GetBuffer();
 		}
 		AudioMath::ApplyRiseAndFall(pLastData, GetBuffer(), result->GetBuffer(), vSize, (float)timeDelta.Duration / riseTime.Duration, (float)timeDelta.Duration / fallTime.Duration);
 		return result.CopyTo(ppResult);

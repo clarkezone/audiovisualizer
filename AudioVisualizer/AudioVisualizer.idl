@@ -5,13 +5,14 @@ import "Windows.Foundation.idl";
 import "Windows.Media.idl";
 import "Windows.UI.Xaml.Controls.idl";
 import "Windows.Media.Audio.idl";
+import "Windows.UI.Xaml.idl";
 import "Canvas.abi.idl";
 
 
 //#include <sdkddkver.h>
 
 
-namespace AudioVisualizer 
+namespace AudioVisualizer
 {
 	[version(1.0)]
 	typedef enum ScaleType
@@ -96,17 +97,47 @@ namespace AudioVisualizer
 		[eventremove] HRESULT Draw([in] EventRegistrationToken token);
 	};
 
-	[uuid(015D3F12-E2EA-441E-BB3C-24DFED1946EF)]
-	[version(1.0)]
-	interface ICustomVisualizerFactory : IInspectable
-	{
-	}
-
 	[version(1.0), activatable(1.0), marshaling_behavior(agile), threading(both)]
 	runtimeclass CustomVisualizer : Windows.UI.Xaml.Controls.Control
 	{
 		[default] interface IVisualizer;
 		interface IVisualizerCustomDraw;
+	}
+
+	[version(1.0)]
+	typedef struct MeterBarLevel
+	{
+		float Level;
+		Windows.UI.Color Color;
+	} MeterBarLevel;
+
+	[uuid(665C9CD0-6AAE-4AAB-B152-82128615641C)]
+	[version(1.0)]
+	interface IDiscreteVUBar : IInspectable
+	{
+		[propget] HRESULT Levels([out] UINT32* elementCount, [out][retval][size_is(, *elementCount)] MeterBarLevel** levels);
+		[propput] HRESULT Levels([in] UINT32 elementCount, [in][size_is(elementCount)] MeterBarLevel* levels);
+		[propget] HRESULT Orientation([out, retval] Windows.UI.Xaml.Controls.Orientation *orientation);
+		[propput] HRESULT Orientation([in] Windows.UI.Xaml.Controls.Orientation orientation);
+		[propget] HRESULT ChannelCount([out,retval] UINT32* pChannels);
+		[propput] HRESULT ChannelCount([in] UINT32 channels);
+		[propget] HRESULT ElementSize([out,retval] Windows.Foundation.Size *pSize);
+		[propput] HRESULT ElementSize([in] Windows.Foundation.Size size);
+		[propget] HRESULT ElementMargin([out,retval] Windows.UI.Xaml.Thickness *pValue);
+		[propput] HRESULT ElementMargin([in] Windows.UI.Xaml.Thickness value);
+		[propget] HRESULT UnlitElement([out,retval] Windows.UI.Color *pColor);
+		[propput] HRESULT UnlitElement([in] Windows.UI.Color color);
+		[propget] HRESULT RiseTime([out, retval] Windows.Foundation.TimeSpan *time);
+		[propput] HRESULT RiseTime([in] Windows.Foundation.TimeSpan time);
+		[propget] HRESULT FallTime([out, retval] Windows.Foundation.TimeSpan *time);
+		[propput] HRESULT FallTime([in] Windows.Foundation.TimeSpan time);
+	};
+
+	[version(1.0), marshaling_behavior(agile), threading(both),activatable(1.0)]
+	runtimeclass DiscreteVUBar : Windows.UI.Xaml.Controls.Control
+	{
+		[default] interface IVisualizer;
+		interface IDiscreteVUBar;
 	}
 	
 
