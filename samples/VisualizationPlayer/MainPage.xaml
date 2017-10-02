@@ -35,7 +35,7 @@
         <StackPanel Grid.Row="2" Orientation="Horizontal">
             <ToggleSwitch IsOn="True" Grid.Row="2" Margin ="20,0"
                       VerticalAlignment="Center" Toggled="ToggleSwitch_Toggled">Visualization</ToggleSwitch>
-            <Slider Width="300" Orientation="Horizontal" x:Name="seekBar" ValueChanged="seekBar_ValueChanged"></Slider>
+            <Slider BorderBrush="White" BorderThickness="1" Padding="4" Margin="4" Header="Play position:" Width="300" Orientation="Horizontal" x:Name="seekBar" ValueChanged="seekBar_ValueChanged"></Slider>
         </StackPanel>
 
     </Grid>
