@@ -1043,7 +1043,9 @@ namespace AudioVisualizer
 				}
 				// Current position is after the item in the queue - remove and continue searching
 				auto front = m_AnalyzerOutput.front().Get();
+#ifdef _TRACE
 				AudioVisualizer::Diagnostics::Trace::Log_OutputQueuePop(m_AnalyzerOutput.front().Get(),m_AnalyzerOutput.size(), 0);
+#endif
 				m_AnalyzerOutput.pop();
 			}
 		}
