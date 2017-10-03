@@ -167,6 +167,16 @@ namespace AudioVisualizer
 		HRESULT ConvertToLogAmplitude([in] float minValue,[in] float maxValue, [out, retval] ArrayData **result );
 	};
 
+
+	[version(1.0), uuid(EB2CBCA8-2345-4CEE-9CC7-688B66AE76D3), exclusiveto(ScalarData)]
+	interface IScalarDataFactory : IInspectable
+	{
+		HRESULT Create(
+			[in] UINT32 channels,
+			[out, retval] ScalarData** data
+		);
+	};
+
 	[uuid(FA6EDA25-96DC-473E-AA4C-5F67C2307134),version(1.0)]
 	interface IScalarData : IInspectable
 	{
@@ -176,14 +186,25 @@ namespace AudioVisualizer
 	};
 
 	[version(1.0), marshaling_behavior(agile), threading(both)]
+	[activatable(IScalarDataFactory, 1.0)]
 	runtimeclass ScalarData
 	{
 		[default] interface IScalarData;
 		interface Windows.Foundation.Collections.IVectorView<float>;
 	}
 
+	[version(1.0), uuid(D2E78F9C-8EE6-441B-85A6-A87E6DCE2114), exclusiveto(ArrayData)]
+	interface IArrayDataFactory : IInspectable
+	{
+		HRESULT Create(
+			[in] UINT32 channels,
+			[in] UINT32 cElements,
+			[out, retval] ArrayData** data
+		);
+	};
 	[version(1.0), marshaling_behavior(agile), threading(both)]
-	runtimeclass ArrayData
+	[activatable(IArrayDataFactory,1.0)]
+	runtimeclass ArrayData 
 	{
 		[default]interface IArrayData;
 		interface Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float>*>;

@@ -37,7 +37,7 @@
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.14393.0</WindowsTargetPlatformMinVersion>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-    <ProjectName>uwp.lib</ProjectName>
+    <ProjectName>Shared.Library</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -241,8 +241,8 @@
     <ItemGroup>
       <MetaDataDir Include="$(WindowsSDK_UnionMetadataPath)">
       </MetaDataDir>
-      <MetaDataDir Include="$(Win2DWinmdDirectory)">
-      </MetaDataDir>
+      <!--<MetaDataDir Include="$(Win2DWinmdDirectory)">
+      </MetaDataDir>-->
     </ItemGroup>
     <MakeDir Directories="$(MergedWinmdDirectory)" />
     <Exec Command="$(MdMergeExe) -v @(MetaDataDir -> '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(MergedWinmdDirectory)&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial" />

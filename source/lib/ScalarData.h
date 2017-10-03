@@ -15,8 +15,7 @@ using namespace ABI::Windows::Foundation::Diagnostics;
 
 namespace AudioVisualizer
 {
-	class ScalarData : public RuntimeClass<IVectorView<float>,IScalarData>,
-						LifespanTracker<ScalarData>
+	class ScalarData : public RuntimeClass<IVectorView<float>,IScalarData>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_ScalarData, BaseTrust);
 
@@ -24,7 +23,7 @@ namespace AudioVisualizer
 		DirectX::XMVECTOR *_pData;
 		size_t _size;
 	public:
-		ScalarData(size_t cElements, ScaleType scaleType = ScaleType::Linear);
+		ScalarData(size_t cElements, ScaleType scaleType = ScaleType::Linear,bool bInit = false);
 		~ScalarData();
 
 		DirectX::XMVECTOR *GetBuffer() { return _pData; }
@@ -58,6 +57,6 @@ namespace AudioVisualizer
 			return S_OK;
 		}
 		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, IScalarData **ppResult);
-		STDMETHODIMP ApplyRiseAndFall(IScalarData *pPrevious, TimeSpan fallTime, TimeSpan riseTime, TimeSpan timeDelta, IScalarData **ppResult);
+		STDMETHODIMP ApplyRiseAndFall(IScalarData *pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, IScalarData **ppResult);
 	};
 }

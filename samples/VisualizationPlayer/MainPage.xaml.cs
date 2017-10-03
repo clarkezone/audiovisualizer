@@ -42,10 +42,10 @@ namespace VisualizationPlayer
         }
 
         bool _bInsideUpdate = false;
-        private void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)
+        private async void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)
         {
 
-            Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
     () =>
     {
         _bInsideUpdate = true;
@@ -55,9 +55,9 @@ namespace VisualizationPlayer
     );
         }
 
-        private void Player_MediaOpened(MediaPlayer sender, object args)
+        private async void Player_MediaOpened(MediaPlayer sender, object args)
         {
-            Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
                 () =>
                 {
                     seekBar.Maximum = _player.PlaybackSession.NaturalDuration.TotalSeconds;
@@ -104,76 +104,82 @@ namespace VisualizationPlayer
                 m_VisualizationSource.IsSuspended = !sw.IsOn;
         }
 
+        ScalarData _emptyVolumeData = new ScalarData(2);    // Create empty data for volume data
         ScalarData _previousRMS;
         ScalarData _previousPeak;
+
+        ArrayData _emptySpectrum = new ArrayData(2, 20);
         ArrayData _previousSpectrum;
         ArrayData _previousPeakSpectrum;
+
+        TimeSpan _rmsRiseTime = TimeSpan.FromMilliseconds(50);
+        TimeSpan _rmsFallTime = TimeSpan.FromMilliseconds(50);
+        TimeSpan _peakRiseTime = TimeSpan.FromMilliseconds(10);
+        TimeSpan _peakFallTime = TimeSpan.FromMilliseconds(3000);
+        TimeSpan _frameDuration = TimeSpan.FromMilliseconds(16.7);
 
         private void visualizer_Draw(AudioVisualizer.IVisualizer sender, AudioVisualizer.VisualizerDrawEventArgs args)
         {
             var drawingSession = (CanvasDrawingSession)args.DrawingSession;
-            if (args.Data != null)
+
+            CanvasTextFormat textFormat = new CanvasTextFormat();
+            textFormat.VerticalAlignment = CanvasVerticalAlignment.Center;
+            textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Center;
+            textFormat.FontSize = 9;
+
+            for (int i = -40; i <= 0; i += 10)
             {
-                _previousRMS = args.Data.RMS.ApplyRiseAndFall(_previousRMS, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(50), args.Data.Duration.Value);
-                _previousPeak = args.Data.Peak.ApplyRiseAndFall(_previousPeak, TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(3000), args.Data.Duration.Value);
-                var logRMS = _previousRMS.ConvertToLogAmplitude(-40.0f, 0.0f);
-                var logPeak = _previousPeak.ConvertToLogAmplitude(-40.0f, 0.0f);
-
-                drawingSession.FillRectangle(10, 10, 20 + 20 * (40.0f + (logRMS[0])), 20, Colors.Green);
-                drawingSession.FillRectangle(10, 40, 20 + 20 * (40.0f + (logRMS[1])), 20, Colors.Green);
-
-                CanvasTextFormat textFormat = new CanvasTextFormat();
-                textFormat.VerticalAlignment = CanvasVerticalAlignment.Center;
-                textFormat.HorizontalAlignment = CanvasHorizontalAlignment.Center;
-                textFormat.FontSize = 9;
-
-                for (int i = -40; i <= 0; i += 10)
-                {
-                    drawingSession.DrawLine(810 + 20 * i, 10, 810 + 20 * i, 60, Colors.White);
-                    drawingSession.DrawText($"{i}dB", 810 + 20 * i, 70, Colors.White, textFormat);
-                }
-
-                drawingSession.DrawLine(820.0f + 20 * logPeak[0], 10, 820.0f + 20 * logPeak[0], 30, Colors.Red, 3);
-                drawingSession.DrawLine(820.0f + 20 * logPeak[1], 40, 820.0f + 20 * logPeak[1], 60, Colors.Red, 3);
-
-                var spectrum = args.Data.Spectrum.TransformLinearFrequency(20);
-
-                _previousSpectrum = spectrum.ApplyRiseAndFall(_previousSpectrum, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100), args.Data.Duration.Value);
-                _previousPeakSpectrum = spectrum.ApplyRiseAndFall(_previousPeakSpectrum, TimeSpan.FromMilliseconds(10), TimeSpan.FromMilliseconds(2000), args.Data.Duration.Value);
-                drawingSession.DrawLine(0, 320, 1000, 320, Colors.WhiteSmoke);
-                drawingSession.DrawLine(0, 340, 1000, 340, Colors.WhiteSmoke);
-
-                var logSpectrum = _previousSpectrum.ConvertToLogAmplitude(-50, 0);
-                var logPeakSpectrum = _previousPeakSpectrum.ConvertToLogAmplitude(-50, 0);
-
-                Vector2 prevPointLeft = new Vector2(), prevPointRight = new Vector2();
-
-                for (int i = 0; i < logSpectrum.FrequencyCount; i++)
-                {
-                    float barHeight0 = 160 + 3.2f * logSpectrum[0][i];
-                    drawingSession.FillRectangle(i * 50, 320 - barHeight0, 50, barHeight0, Colors.WhiteSmoke);
-                    float barHeight1 = 160 + 3.2f * logSpectrum[1][i];
-                    drawingSession.FillRectangle(i * 50, 340, 50, barHeight1, Colors.WhiteSmoke);
-
-                    Vector2 leftPoint = new Vector2(i * 50 + 25, 160 - 3.2f * logPeakSpectrum[0][i]);
-                    Vector2 rightPoint = new Vector2(i * 50 + 25, 500 + 3.2f * logPeakSpectrum[1][i]);
-                    if (i != 0)
-                    {
-                        drawingSession.DrawLine(prevPointLeft, leftPoint, Colors.Red, 3);
-                        drawingSession.DrawLine(prevPointRight, rightPoint, Colors.Red, 3);
-                    }
-                    prevPointLeft = leftPoint;
-                    prevPointRight = rightPoint;
-
-                    string freqText = $"{Math.Round(logSpectrum.FrequencyStep * i * 1e-3),2:F0}k";
-                    drawingSession.DrawText(freqText, i * 50 + 25, 330, Colors.White, textFormat);
-                }
+                drawingSession.DrawLine(810 + 20 * i, 10, 810 + 20 * i, 60, Colors.White);
+                drawingSession.DrawText($"{i}dB", 810 + 20 * i, 70, Colors.White, textFormat);
             }
-            else
+
+            drawingSession.DrawLine(0, 320, 1000, 320, Colors.WhiteSmoke);
+            drawingSession.DrawLine(0, 340, 1000, 340, Colors.WhiteSmoke);
+
+            var rmsData = args.Data != null ? args.Data.RMS : _emptyVolumeData;
+            var peakData = args.Data != null ? args.Data.Peak : _emptyVolumeData;
+
+            _previousRMS = rmsData.ApplyRiseAndFall(_previousRMS, _rmsRiseTime, _rmsFallTime, _frameDuration);
+            _previousPeak = peakData.ApplyRiseAndFall(_previousPeak, _peakRiseTime, _peakFallTime, _frameDuration);
+
+            var logRMS = _previousRMS.ConvertToLogAmplitude(-40.0f, 0.0f);
+            var logPeak = _previousPeak.ConvertToLogAmplitude(-40.0f, 0.0f);
+
+            drawingSession.FillRectangle(10, 10, 20 + 20 * (40.0f + (logRMS[0])), 20, Colors.Green);
+            drawingSession.FillRectangle(10, 40, 20 + 20 * (40.0f + (logRMS[1])), 20, Colors.Green);
+
+            drawingSession.DrawLine(820.0f + 20 * logPeak[0], 10, 820.0f + 20 * logPeak[0], 30, Colors.Red, 3);
+            drawingSession.DrawLine(820.0f + 20 * logPeak[1], 40, 820.0f + 20 * logPeak[1], 60, Colors.Red, 3);
+
+            var spectrum = args.Data != null ? args.Data.Spectrum.TransformLinearFrequency(20) : _emptySpectrum;
+
+            _previousSpectrum = spectrum.ApplyRiseAndFall(_previousSpectrum, _rmsRiseTime, _rmsFallTime, _frameDuration);
+            _previousPeakSpectrum = spectrum.ApplyRiseAndFall(_previousPeakSpectrum, _peakRiseTime, _peakFallTime, _frameDuration);
+
+            var logSpectrum = _previousSpectrum.ConvertToLogAmplitude(-50, 0);
+            var logPeakSpectrum = _previousPeakSpectrum.ConvertToLogAmplitude(-50, 0);
+
+            Vector2 prevPointLeft = new Vector2(), prevPointRight = new Vector2();
+
+            for (int i = 0; i < logSpectrum.FrequencyCount; i++)
             {
-                _previousRMS = null;
-                _previousPeak = null;
-                _previousSpectrum = null;
+                float barHeight0 = 160 + 3.2f * logSpectrum[0][i];
+                drawingSession.FillRectangle(i * 50, 320 - barHeight0, 50, barHeight0, Colors.WhiteSmoke);
+                float barHeight1 = 160 + 3.2f * logSpectrum[1][i];
+                drawingSession.FillRectangle(i * 50, 340, 50, barHeight1, Colors.WhiteSmoke);
+
+                Vector2 leftPoint = new Vector2(i * 50 + 25, 160 - 3.2f * logPeakSpectrum[0][i]);
+                Vector2 rightPoint = new Vector2(i * 50 + 25, 500 + 3.2f * logPeakSpectrum[1][i]);
+                if (i != 0)
+                {
+                    drawingSession.DrawLine(prevPointLeft, leftPoint, Colors.Red, 3);
+                    drawingSession.DrawLine(prevPointRight, rightPoint, Colors.Red, 3);
+                }
+                prevPointLeft = leftPoint;
+                prevPointRight = rightPoint;
+
+                string freqText = $"{Math.Round(logSpectrum.FrequencyStep * i * 1e-3),2:F0}k";
+                drawingSession.DrawText(freqText, i * 50 + 25, 330, Colors.White, textFormat);
             }
         }
 

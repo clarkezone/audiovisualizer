@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "DiscreteVUBar.h"
 #include <wrl.h>
+#include "ScalarData.h"
 #include <Microsoft.Graphics.Canvas.h>
 
 namespace AudioVisualizer
@@ -60,26 +61,28 @@ namespace AudioVisualizer
 		ComPtr<ABI::Windows::Foundation::Collections::IVectorView<float>> rmsValues;
 		UINT32 valueCount = 0;
 
-		if (pDataFrame != nullptr)
-		{
 			ComPtr<IScalarData> rms;
-			pDataFrame->get_RMS(&rms);
+			if (pDataFrame != nullptr)
+				pDataFrame->get_RMS(&rms);
+			else
+				rms = Make<ScalarData>(_channelCount,ScaleType::Linear,true);
+
 			ComPtr<IReference<TimeSpan>> ref_duration;
-			pDataFrame->get_Duration(&ref_duration);
 			TimeSpan duration = { 166667 };
-			ref_duration->get_Value(&duration);
+
+			if (pDataFrame != nullptr)
+			{
+				pDataFrame->get_Duration(&ref_duration);
+				ref_duration->get_Value(&duration);
+			}
 			ComPtr<IScalarData> prevValue;
 			rms->ApplyRiseAndFall(_previousValues.Get(), _riseTime, _fallTime, duration, &prevValue);
 			_previousValues = prevValue;
 			_previousValues->ConvertToLogAmplitude(-100, 0, &logRms);
 			logRms.As(&rmsValues);
 			rmsValues->get_Size(&valueCount);
-		}
-		else
-		{
-			_previousValues = nullptr;
-		}
-		for (size_t levelIndex = 0; levelIndex < _levels.size(); levelIndex++)
+
+			for (size_t levelIndex = 0; levelIndex < _levels.size(); levelIndex++)
 		{
 			for (size_t channelIndex = 0; channelIndex < _channelCount; channelIndex++)
 			{

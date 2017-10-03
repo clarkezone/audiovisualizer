@@ -39,6 +39,15 @@
       </uap:VisualElements>
     </Application>
   </Applications>
+  <Extensions>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>AudioVisualizer.dll</Path>
+        <ActivatableClass ActivatableClassId="AudioVisualizer.MftAnalyzer" ThreadingModel="both" />
+      </InProcessServer>
+    </Extension>
+  </Extensions>
+
   <Capabilities>
     <Capability Name="internetClientServer" />
   </Capabilities>

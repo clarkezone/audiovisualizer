@@ -6,11 +6,25 @@
 
 namespace AudioVisualizer
 {
-	ScalarData::ScalarData(size_t cElements, ScaleType scaleType)
+	class ScalarDataFactory : public AgileActivationFactory<IScalarDataFactory>
+	{
+	public:
+		IFACEMETHODIMP Create(UINT32 channels,IScalarData **ppResult)
+		{
+			ComPtr<ScalarData> data = Make<ScalarData>(channels, ScaleType::Linear,true);
+			return data.CopyTo(ppResult);
+		}
+	};
+
+	ScalarData::ScalarData(size_t cElements, ScaleType scaleType,bool bInit)
 	{
 		_amplitudeScale = scaleType;
 		size_t vLength = (cElements + 3) >> 2;	// Vector size of the allocated buffer
 		_pData = reinterpret_cast<DirectX::XMVECTOR *>(_aligned_malloc_dbg(vLength * sizeof(DirectX::XMVECTOR), 16, __FILE__, __LINE__));
+		if (bInit)
+		{
+			memset(_pData, 0, vLength * sizeof(DirectX::XMVECTOR));
+		}
 		_size = cElements;
 	}
 	ScalarData::~ScalarData()
@@ -26,9 +40,9 @@ namespace AudioVisualizer
 		return returnValue.CopyTo(ppResult);
 	}
 
-	STDMETHODIMP ScalarData::ApplyRiseAndFall(IScalarData * pPrevious, TimeSpan fallTime, TimeSpan riseTime, TimeSpan timeDelta, IScalarData ** ppResult)
+	STDMETHODIMP ScalarData::ApplyRiseAndFall(IScalarData * pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, IScalarData ** ppResult)
 	{
-		if (_amplitudeScale != ScaleType::Linear || riseTime.Duration == 0 || fallTime.Duration == 0)
+		if (_amplitudeScale != ScaleType::Linear || timeDelta.Duration == 0)
 			return E_INVALIDARG;
 
 		ComPtr<ScalarData> result = Make<ScalarData>(_size, _amplitudeScale);
@@ -40,7 +54,13 @@ namespace AudioVisualizer
 			ScalarData *pPreviousData = dynamic_cast<ScalarData *>(pPrevious);
 			pLastData = pPreviousData->GetBuffer();
 		}
-		Math::ApplyRiseAndFall(pLastData, GetBuffer(), result->GetBuffer(), vSize, (float)timeDelta.Duration / riseTime.Duration, (float)timeDelta.Duration / fallTime.Duration);
+		float riseT = riseTime.Duration != 0 ? (float)timeDelta.Duration / riseTime.Duration : std::numeric_limits<float>::infinity();
+		float fallT = fallTime.Duration != 0 ? (float)timeDelta.Duration / fallTime.Duration : std::numeric_limits<float>::infinity();
+
+		Math::ApplyRiseAndFall(pLastData, GetBuffer(), result->GetBuffer(), vSize, riseT, fallT);
 		return result.CopyTo(ppResult);
 	}
+
+	ActivatableClassWithFactory(ScalarData, ScalarDataFactory);
+
 }

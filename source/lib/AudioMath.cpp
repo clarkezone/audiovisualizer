@@ -49,7 +49,7 @@ namespace AudioVisualizer
 				XMVECTOR vPrevious = pPrevious != nullptr ? pPrevious[vIndex] : g_XMZero;
 				XMVECTOR vDelta = pCurrent[vIndex] - vPrevious;
 				XMVECTOR vSelector = XMVectorLess(DirectX::g_XMZero, vDelta);
-				XMVECTOR vFactors = XMVectorSelect(vRiseExp, vFallExp, vSelector);
+				XMVECTOR vFactors = XMVectorSelect(vFallExp, vRiseExp, vSelector);
 				pResult[vIndex] = vPrevious + vFactors * vDelta;
 			}
 		}
@@ -87,6 +87,41 @@ namespace AudioVisualizer
 				nextInIndex = inIndex + inStep;
 			}
 
+		}
+		void SpectrumLogTransform(const float * pSource, size_t inputSize, float fromIndex, float toIndex, float * pDest, size_t outputSize)
+		{
+			float inStep = powf(toIndex / fromIndex, 1 / ((float)outputSize - 1));
+
+			float inIndex = 0;
+			float nextInIndex = inIndex * inStep;
+
+			/*
+			for (size_t outIndex = 0; outIndex < outputSize; outIndex++)
+			{
+				if (nextInIndex - inIndex > 1)
+				{
+					int inValueIntIndex = (int)floor(inIndex);
+					int inValueIntNextIndex = (int)floor(nextInIndex);
+
+					float sum = 0;
+					for (int index = inValueIntIndex + 1; index < inValueIntNextIndex && index < (int)inputSize; index++)
+					{
+						sum += pInput[index];
+					}
+					sum += pInput[inValueIntIndex] * (1 - inIndex + (float)inValueIntIndex);
+					if (inValueIntNextIndex < (int)inputSize)
+						sum += pInput[inValueIntNextIndex] * (nextInIndex - (float)inValueIntNextIndex);
+
+					pOutput[outIndex] = sum;
+
+					inIndex = nextInIndex;
+					nextInIndex = inIndex + inStep;
+				}
+				else
+				{
+					// TODO:
+				}
+			}*/
 		}
 	}
 }

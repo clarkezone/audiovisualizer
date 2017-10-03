@@ -93,6 +93,7 @@ namespace AudioVisualizer
 		HRESULT Trace::Initialize()
 		{
 			HRESULT hr = S_OK;
+#ifdef _TRACE
 			if (g_pLoggingChannel == nullptr)
 			{
 				ComPtr<ILoggingChannelFactory2> spLogChannelFactory;
@@ -117,6 +118,7 @@ namespace AudioVisualizer
 			{
 				g_pLoggingChannel->AddRef();
 			}
+#endif
 			return hr;
 		}
 

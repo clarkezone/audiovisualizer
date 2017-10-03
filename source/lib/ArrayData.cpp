@@ -7,9 +7,18 @@
 
 namespace AudioVisualizer
 {
+	class ArrayDataFactory : public AgileActivationFactory<IArrayDataFactory>
+	{
+	public:
+		IFACEMETHODIMP Create(UINT32 channels, UINT32 cElements,IArrayData **ppResult)
+		{
+			ComPtr<ArrayData> data = Make<ArrayData>(channels, cElements, ScaleType::Linear,ScaleType::Linear,0,22100,22100.0f/cElements,true);
+			return data.CopyTo(ppResult);
+		}
+	};
 
 
-	ArrayData::ArrayData(size_t cChannels, size_t cElements, ScaleType ampScaleType, ScaleType fScaleType, float minFrequency, float maxFrequency, float frequencyStep) :
+	ArrayData::ArrayData(size_t cChannels, size_t cElements, ScaleType ampScaleType, ScaleType fScaleType, float minFrequency, float maxFrequency, float frequencyStep,bool bInit) :
 		_amplitudeScale(ampScaleType),
 		_frequencyScale(fScaleType),
 		_minFrequency(minFrequency),
@@ -24,6 +33,10 @@ namespace AudioVisualizer
 		_size = cElements;
 		_channels = cChannels;
 		_pData = reinterpret_cast<DirectX::XMVECTOR *>(_aligned_malloc_dbg(_vElementsCount * cChannels * sizeof(DirectX::XMVECTOR), 16, __FILE__, __LINE__));
+		if (bInit)
+		{
+			memset(_pData, 0, _vElementsCount * cChannels * sizeof(DirectX::XMVECTOR));
+		}
 		_values.resize(_channels);
 		for (size_t index = 0,vIndex = 0; index < _channels; index++,vIndex += _vElementsCount)
 		{
@@ -52,9 +65,9 @@ namespace AudioVisualizer
 		return result.CopyTo(ppResult);
 	}
 
-	STDMETHODIMP ArrayData::ApplyRiseAndFall(IArrayData * pPrevious, TimeSpan fallTime, TimeSpan riseTime, TimeSpan timeDelta, IArrayData ** ppResult)
+	STDMETHODIMP ArrayData::ApplyRiseAndFall(IArrayData * pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, IArrayData ** ppResult)
 	{
-		if (_amplitudeScale != ScaleType::Linear || riseTime.Duration == 0 || fallTime.Duration == 0)
+		if (_amplitudeScale != ScaleType::Linear || timeDelta.Duration == 0)
 			return E_INVALIDARG;
 
 		ArrayData *pPreviousData = dynamic_cast<ArrayData *>(pPrevious);
@@ -81,7 +94,10 @@ namespace AudioVisualizer
 		{
 			pLastData = pPreviousData->GetBuffer();
 		}
-		Math::ApplyRiseAndFall(pLastData, GetBuffer(), result->GetBuffer(), _vElementsCount * _channels, (float)timeDelta.Duration / riseTime.Duration, (float)timeDelta.Duration / fallTime.Duration);
+		float riseT = riseTime.Duration != 0 ? (float)timeDelta.Duration / riseTime.Duration : std::numeric_limits<float>::infinity();
+		float fallT = fallTime.Duration != 0 ? (float)timeDelta.Duration / fallTime.Duration : std::numeric_limits<float>::infinity();
+
+		Math::ApplyRiseAndFall(pLastData, GetBuffer(), result->GetBuffer(), _vElementsCount * _channels, riseT, fallT);
 
 		return result.CopyTo(ppResult);
 	}
@@ -126,6 +142,8 @@ namespace AudioVisualizer
 
 		return E_NOTIMPL;
 	}
+
+	ActivatableClassWithFactory(ArrayData, ArrayDataFactory);
 
 }
 
