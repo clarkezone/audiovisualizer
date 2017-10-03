@@ -255,12 +255,12 @@
     <ClInclude Include="AudioMath.h" />
     <ClInclude Include="AudioVisualizer.abi.h" />
     <ClInclude Include="BaseVisualizer.h" />
-    <ClInclude Include="Canvas.abi.h" />
     <ClInclude Include="CustomVisualizer.h" />
     <ClInclude Include="DiscreteVUBar.h" />
     <ClInclude Include="ErrorHandling.h" />
     <ClInclude Include="LifespanTracker.h" />
     <ClInclude Include="MftAnalyzer.h" />
+    <ClInclude Include="Microsoft.Graphics.Canvas.h" />
     <ClInclude Include="Nullable.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ScalarData.h" />
