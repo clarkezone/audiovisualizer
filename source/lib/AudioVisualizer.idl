@@ -239,17 +239,31 @@ namespace AudioVisualizer
 	[uuid(B74989FE-1436-4179-92B6-E06B540E0C7E)]
 	[version(1.0)]
 	interface IVisualizationSource : IInspectable {
-		HRESULT Configure([in] AnalyzerType analyzersToRun, [in] float outSampleRate, [in] UINT32 fftLength, [in] float overlapPercent);
+		//HRESULT Configure([in] AnalyzerType analyzersToRun, [in] float outSampleRate, [in] UINT32 fftLength, [in] float overlapPercent);
 		HRESULT GetData([out][retval] IVisualizationDataFrame **result);
 		[propget] HRESULT IsSuspended([out][retval] boolean *bIsSuspended);
 		[propput] HRESULT IsSuspended(boolean bIsSuspended);
+		[propget] HRESULT Fps([out, retval] float *pFramesPerSecond);
+		[propput] HRESULT Fps([in] float framesPerSecond);
+		[propget] HRESULT AnalyzerTypes([out,retval] AnalyzerType *pResult);
+		[propput] HRESULT AnalyzerTypes([in] AnalyzerType types);
+	};
+
+	[uuid(722B9116-78B8-40BD-9840-84B59CAC6E84)]
+	[version(1.0)]
+	interface ISpectralAnalyzerSettings : IInspectable
+	{
+		[propget] HRESULT FftLength([out,retval] UINT32 *pResult);
+		[propput] HRESULT FftLength([in] UINT32 result);
+		[propget] HRESULT Overlap([out,retval] float *pResult);
+		[propput] HRESULT Overlap([in] float result);
 	};
 
 	[version(1.0)]
 	[static(AudioVisualizer.IVisualizationSourceStatics, 1.0)]
 	runtimeclass VisualizationSource 
 	{
-		//[default] interface IVisualizationSource;
+		// [default] interface IVisualizationSource;
 	};
 
 	[version(1.0)]
@@ -257,6 +271,7 @@ namespace AudioVisualizer
 	{
 		[default]interface Windows.Media.IMediaExtension;
 		interface IVisualizationSource;
+		interface ISpectralAnalyzerSettings;
 	}
 }
 

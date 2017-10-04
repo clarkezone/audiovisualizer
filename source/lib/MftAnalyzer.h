@@ -62,7 +62,7 @@ namespace AudioVisualizer
 		float m_fOutputFps;
 		float m_fInputOverlap;
 
-		ABI::AudioVisualizer::AnalyzerType  _analyzisTypes;
+		ABI::AudioVisualizer::AnalyzerType  _analyzerTypes;
 
 		HRESULT Analyzer_TestInputType(IMFMediaType *pType);
 		HRESULT Analyzer_SetMediaType(IMFMediaType *pType);
@@ -155,12 +155,21 @@ namespace AudioVisualizer
 		CAnalyzerEffect();
 		~CAnalyzerEffect();
 		HRESULT RuntimeClassInitialize();
-#pragma region IAudioVisualizer
-		STDMETHODIMP Configure(ABI::AudioVisualizer::AnalyzerType types, float outputFps,unsigned fftLength,  float inputOverlap);
+#pragma region IVisualizationSource
+
+		//STDMETHODIMP Configure(ABI::AudioVisualizer::AnalyzerType types, float outputFps,unsigned fftLength,  float inputOverlap);
 		STDMETHODIMP GetData(ABI::AudioVisualizer::IVisualizationDataFrame **pData);
 		STDMETHODIMP get_IsSuspended(boolean *pbIsSuspended);
 		STDMETHODIMP put_IsSuspended(boolean bIsSuspended);
-
+		STDMETHODIMP get_Fps(float *pFrameRate);
+		STDMETHODIMP put_Fps(float frameRate);
+		STDMETHODIMP get_AnalyzerTypes(AnalyzerType *pResult);
+		STDMETHODIMP put_AnalyzerTypes(AnalyzerType result);
 #pragma endregion
+		
+		STDMETHODIMP get_FftLength(UINT32 *pLength);
+		STDMETHODIMP put_FftLength(UINT32 length);
+		STDMETHODIMP get_Overlap(float *pResult);
+		STDMETHODIMP put_Overlap(float overlap);
 	};
 }

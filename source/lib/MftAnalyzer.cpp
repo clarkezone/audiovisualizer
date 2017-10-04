@@ -30,11 +30,12 @@ namespace AudioVisualizer
 		m_StepFrameCount(0),
 		m_StepFrameOverlap(0),
 		m_StepTotalFrames(0),
-		m_FftLength(0),
-		m_FftLengthLog2(0),
-		m_fOutputFps(0.0f),
-		m_fInputOverlap(0.0f),
-		m_bIsSuspended(false)
+		m_FftLength(2048),
+		m_FftLengthLog2(11),
+		m_fOutputFps(60.0f),
+		m_fInputOverlap(0.5f),
+		m_bIsSuspended(false),
+		_analyzerTypes(AnalyzerType::All)
 	{
 		_analyzer = std::make_shared<Math::CAudioAnalyzer>(CircleBufferSize);
 #ifdef _TRACE
@@ -65,33 +66,6 @@ namespace AudioVisualizer
 		if (_threadPoolSemaphore == NULL)
 			return E_FAIL;
 	
-		return S_OK;
-	}
-
-	STDMETHODIMP CAnalyzerEffect::Configure(ABI::AudioVisualizer::AnalyzerType types, float outputFps, unsigned fftLength,  float inputOverlap)
-	{
-		if ((fftLength & fftLength - 1) != 0)	// FFT length needs to be power of 2
-			return E_INVALIDARG;
-
-		if (outputFps < 1.0f || outputFps > 120.0f)	// Set some reasonable limitations
-			return E_INVALIDARG;
-		// Make sure that the length of output frame does not contain more input frames than fft length.
-		// If input sample rate is not set then use 48k
-		UINT32 framesPerSecond = m_FramesPerSecond != 0 ? m_FramesPerSecond : 48000;
-		if (framesPerSecond / outputFps > fftLength)
-			return E_INVALIDARG;
-		if (inputOverlap < 0.0f || inputOverlap > 1.0f)	// Set some sensible overlap limits
-			return E_INVALIDARG;
-
-		_analyzisTypes = types;
-		m_FftLength = fftLength;
-		m_fOutputFps = outputFps;
-		m_fInputOverlap = inputOverlap;
-
-		// If input type is set then calculate the necessary variables and initialize
-		if (m_FramesPerSecond != 0)
-			return Analyzer_Initialize();
-
 		return S_OK;
 	}
 
@@ -149,6 +123,57 @@ namespace AudioVisualizer
 				return Analyzer_Resume();
 		}
 		return S_OK;
+	}
+
+	STDMETHODIMP CAnalyzerEffect::get_Fps(float *pFps)
+	{
+		if (pFps == nullptr)
+			return E_POINTER;
+		*pFps = m_fOutputFps;
+		return S_OK;
+	}
+
+	STDMETHODIMP CAnalyzerEffect::put_Fps(float fps)
+	{
+		return E_NOTIMPL;
+	}
+
+	STDMETHODIMP CAnalyzerEffect::get_AnalyzerTypes(AnalyzerType *pResult)
+	{
+		if (pResult == nullptr)
+			return E_POINTER;
+		*pResult = _analyzerTypes;
+		return S_OK;
+	}
+
+
+	STDMETHODIMP CAnalyzerEffect::put_AnalyzerTypes(AnalyzerType result)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHODIMP CAnalyzerEffect::get_FftLength(UINT32 * pLength)
+	{
+		if (pLength == nullptr)
+			return E_POINTER;
+		*pLength = m_FftLength;
+		return S_OK;
+	}
+	STDMETHODIMP CAnalyzerEffect::put_FftLength(UINT32 length)
+	{
+		return E_NOTIMPL;
+	}
+
+	STDMETHODIMP CAnalyzerEffect::get_Overlap(float *pResult)
+	{
+		if (pResult == nullptr)
+			return E_POINTER;
+		*pResult = m_fInputOverlap;
+		return S_OK;
+	}
+
+	STDMETHODIMP CAnalyzerEffect::put_Overlap(float result)
+	{
+		return E_NOTIMPL;
 	}
 
 	//-------------------------------------------------------------------
@@ -898,15 +923,15 @@ namespace AudioVisualizer
 		while (!m_bIsSuspended && !_bResetAnalyzer && _analyzer->IsOutputAvailable())
 		{
 			ComPtr<ScalarData> rms;
-			if ((int)_analyzisTypes & (int)AnalyzerType::RMS)
+			if ((int)_analyzerTypes & (int)AnalyzerType::RMS)
 				rms = Make<ScalarData>(m_nChannels);
 
 			ComPtr<ScalarData> peak;
-			if ((int)_analyzisTypes & (int)AnalyzerType::Peak)
+			if ((int)_analyzerTypes & (int)AnalyzerType::Peak)
 				peak = Make<ScalarData>(m_nChannels);
 
 			ComPtr<ArrayData> spectrum;
-			if ((int)_analyzisTypes & (int)AnalyzerType::Spectrum)
+			if ((int)_analyzerTypes & (int)AnalyzerType::Spectrum)
 				spectrum = Make<ArrayData>(m_nChannels, 
 									m_FftLength >> 1,
 									ScaleType::Linear,

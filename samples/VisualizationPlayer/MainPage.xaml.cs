@@ -92,7 +92,6 @@ namespace VisualizationPlayer
         {
 
             m_VisualizationSource = await AudioVisualizer.VisualizationSource.CreateFromMediaPlayerAsync(_player);
-            m_VisualizationSource.Configure(AnalyzerType.All, 60, 4096, 0.5f);
             visualizer.Source = m_VisualizationSource;
             vuBar.Source = m_VisualizationSource;
         }

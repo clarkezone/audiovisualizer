@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0622 */
 /* at Tue Jan 19 05:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-2f7c0ac8:
+/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-d79f7014:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -286,6 +286,22 @@ namespace ABI {
 #endif /* __cplusplus */
 
 #endif 	/* ____x_ABI_CAudioVisualizer_CIVisualizationSource_FWD_DEFINED__ */
+
+
+#ifndef ____x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_FWD_DEFINED__
+#define ____x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_FWD_DEFINED__
+typedef interface __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings;
+
+#ifdef __cplusplus
+namespace ABI {
+    namespace AudioVisualizer {
+        interface ISpectralAnalyzerSettings;
+    } /* end namespace */
+} /* end namespace */
+
+#endif /* __cplusplus */
+
+#endif 	/* ____x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -3989,12 +4005,6 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSource;
             IVisualizationSource : public IInspectable
             {
             public:
-                virtual HRESULT STDMETHODCALLTYPE Configure( 
-                    /* [in] */ ABI::AudioVisualizer::AnalyzerType analyzersToRun,
-                    /* [in] */ float outSampleRate,
-                    /* [in] */ UINT32 fftLength,
-                    /* [in] */ float overlapPercent) = 0;
-                
                 virtual HRESULT STDMETHODCALLTYPE GetData( 
                     /* [out][retval] */ ABI::AudioVisualizer::IVisualizationDataFrame **result) = 0;
                 
@@ -4003,6 +4013,18 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSource;
                 
                 virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_IsSuspended( 
                     boolean bIsSuspended) = 0;
+                
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Fps( 
+                    /* [out][retval] */ float *pFramesPerSecond) = 0;
+                
+                virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_Fps( 
+                    /* [in] */ float framesPerSecond) = 0;
+                
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_AnalyzerTypes( 
+                    /* [out][retval] */ ABI::AudioVisualizer::AnalyzerType *pResult) = 0;
+                
+                virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_AnalyzerTypes( 
+                    /* [in] */ ABI::AudioVisualizer::AnalyzerType types) = 0;
                 
             };
 
@@ -4044,13 +4066,6 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSource;
             __x_ABI_CAudioVisualizer_CIVisualizationSource * This,
             /* [out] */ TrustLevel *trustLevel);
         
-        HRESULT ( STDMETHODCALLTYPE *Configure )( 
-            __x_ABI_CAudioVisualizer_CIVisualizationSource * This,
-            /* [in] */ __x_ABI_CAudioVisualizer_CAnalyzerType analyzersToRun,
-            /* [in] */ float outSampleRate,
-            /* [in] */ UINT32 fftLength,
-            /* [in] */ float overlapPercent);
-        
         HRESULT ( STDMETHODCALLTYPE *GetData )( 
             __x_ABI_CAudioVisualizer_CIVisualizationSource * This,
             /* [out][retval] */ __x_ABI_CAudioVisualizer_CIVisualizationDataFrame **result);
@@ -4062,6 +4077,22 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSource;
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_IsSuspended )( 
             __x_ABI_CAudioVisualizer_CIVisualizationSource * This,
             boolean bIsSuspended);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Fps )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationSource * This,
+            /* [out][retval] */ float *pFramesPerSecond);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_Fps )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationSource * This,
+            /* [in] */ float framesPerSecond);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AnalyzerTypes )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationSource * This,
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CAnalyzerType *pResult);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_AnalyzerTypes )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationSource * This,
+            /* [in] */ __x_ABI_CAudioVisualizer_CAnalyzerType types);
         
         END_INTERFACE
     } __x_ABI_CAudioVisualizer_CIVisualizationSourceVtbl;
@@ -4096,9 +4127,6 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSource;
     ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
 
 
-#define __x_ABI_CAudioVisualizer_CIVisualizationSource_Configure(This,analyzersToRun,outSampleRate,fftLength,overlapPercent)	\
-    ( (This)->lpVtbl -> Configure(This,analyzersToRun,outSampleRate,fftLength,overlapPercent) ) 
-
 #define __x_ABI_CAudioVisualizer_CIVisualizationSource_GetData(This,result)	\
     ( (This)->lpVtbl -> GetData(This,result) ) 
 
@@ -4107,6 +4135,18 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSource;
 
 #define __x_ABI_CAudioVisualizer_CIVisualizationSource_put_IsSuspended(This,bIsSuspended)	\
     ( (This)->lpVtbl -> put_IsSuspended(This,bIsSuspended) ) 
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationSource_get_Fps(This,pFramesPerSecond)	\
+    ( (This)->lpVtbl -> get_Fps(This,pFramesPerSecond) ) 
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationSource_put_Fps(This,framesPerSecond)	\
+    ( (This)->lpVtbl -> put_Fps(This,framesPerSecond) ) 
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationSource_get_AnalyzerTypes(This,pResult)	\
+    ( (This)->lpVtbl -> get_AnalyzerTypes(This,pResult) ) 
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationSource_put_AnalyzerTypes(This,types)	\
+    ( (This)->lpVtbl -> put_AnalyzerTypes(This,types) ) 
 
 #endif /* COBJMACROS */
 
@@ -4120,6 +4160,169 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSource;
 
 
 /* interface __MIDL_itf_AudioVisualizer_0000_0034 */
+/* [local] */ 
+
+#if !defined(____x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_INTERFACE_DEFINED__)
+extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_AudioVisualizer_ISpectralAnalyzerSettings[] = L"AudioVisualizer.ISpectralAnalyzerSettings";
+#endif /* !defined(____x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_INTERFACE_DEFINED__) */
+
+
+/* interface __MIDL_itf_AudioVisualizer_0000_0034 */
+/* [local] */ 
+
+
+
+extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0034_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0034_v0_0_s_ifspec;
+
+#ifndef ____x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_INTERFACE_DEFINED__
+#define ____x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_INTERFACE_DEFINED__
+
+/* interface __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings */
+/* [uuid][object] */ 
+
+
+
+/* interface ABI::AudioVisualizer::ISpectralAnalyzerSettings */
+/* [uuid][object] */ 
+
+
+EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    } /* end extern "C" */
+    namespace ABI {
+        namespace AudioVisualizer {
+            
+            MIDL_INTERFACE("722B9116-78B8-40BD-9840-84B59CAC6E84")
+            ISpectralAnalyzerSettings : public IInspectable
+            {
+            public:
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_FftLength( 
+                    /* [out][retval] */ UINT32 *pResult) = 0;
+                
+                virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_FftLength( 
+                    /* [in] */ UINT32 result) = 0;
+                
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Overlap( 
+                    /* [out][retval] */ float *pResult) = 0;
+                
+                virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_Overlap( 
+                    /* [in] */ float result) = 0;
+                
+            };
+
+            extern const __declspec(selectany) IID & IID_ISpectralAnalyzerSettings = __uuidof(ISpectralAnalyzerSettings);
+
+            
+        }  /* end namespace */
+    }  /* end namespace */
+    extern "C" { 
+    
+#else 	/* C style interface */
+
+    typedef struct __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettingsVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetIids )( 
+            __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
+            /* [out] */ ULONG *iidCount,
+            /* [size_is][size_is][out] */ IID **iids);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetRuntimeClassName )( 
+            __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
+            /* [out] */ HSTRING *className);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetTrustLevel )( 
+            __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
+            /* [out] */ TrustLevel *trustLevel);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_FftLength )( 
+            __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
+            /* [out][retval] */ UINT32 *pResult);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_FftLength )( 
+            __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
+            /* [in] */ UINT32 result);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Overlap )( 
+            __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
+            /* [out][retval] */ float *pResult);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_Overlap )( 
+            __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
+            /* [in] */ float result);
+        
+        END_INTERFACE
+    } __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettingsVtbl;
+
+    interface __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings
+    {
+        CONST_VTBL struct __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettingsVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_GetIids(This,iidCount,iids)	\
+    ( (This)->lpVtbl -> GetIids(This,iidCount,iids) ) 
+
+#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_GetRuntimeClassName(This,className)	\
+    ( (This)->lpVtbl -> GetRuntimeClassName(This,className) ) 
+
+#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_GetTrustLevel(This,trustLevel)	\
+    ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
+
+
+#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_get_FftLength(This,pResult)	\
+    ( (This)->lpVtbl -> get_FftLength(This,pResult) ) 
+
+#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_put_FftLength(This,result)	\
+    ( (This)->lpVtbl -> put_FftLength(This,result) ) 
+
+#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_get_Overlap(This,pResult)	\
+    ( (This)->lpVtbl -> get_Overlap(This,pResult) ) 
+
+#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_put_Overlap(This,result)	\
+    ( (This)->lpVtbl -> put_Overlap(This,result) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* ____x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_INTERFACE_DEFINED__ */
+
+
+/* interface __MIDL_itf_AudioVisualizer_0000_0035 */
 /* [local] */ 
 
 #ifndef RUNTIMECLASS_AudioVisualizer_VisualizationSource_DEFINED
@@ -4140,14 +4343,14 @@ extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_AudioVis
 #endif
 
 
-/* interface __MIDL_itf_AudioVisualizer_0000_0034 */
+/* interface __MIDL_itf_AudioVisualizer_0000_0035 */
 /* [local] */ 
 
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0034_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0034_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0035_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_AudioVisualizer_0000_0035_v0_0_s_ifspec;
 
 /* Additional Prototypes for ALL interfaces */
 
