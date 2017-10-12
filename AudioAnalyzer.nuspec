@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>UWPAudioAnalyzer</id>
-    <version>0.0.3</version>
+    <id>UWPAudioVisualizer</id>
+    <version>0.0.0</version>
     <title>UWP Audio Spectrum Analyzer</title>
     <authors>Tonu Vanatalu and James Clarke</authors>
     <owners>Tonu Vanatalu and James Clarke</owners>
