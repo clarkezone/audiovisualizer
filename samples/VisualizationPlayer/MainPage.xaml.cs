@@ -72,6 +72,7 @@ namespace VisualizationPlayer
             picker.FileTypeFilter.Add(".mp3");
             picker.FileTypeFilter.Add(".wmv");
             picker.FileTypeFilter.Add(".mp4");
+            picker.FileTypeFilter.Add(".flac");
             var file = await picker.PickSingleFileAsync();
             if (file != null)
             {
