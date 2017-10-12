@@ -1,5 +1,0 @@
-LIBRARY AudioAnalyzer.dll
-EXPORTS
-DllGetActivationFactory PRIVATE
-DllCanUnloadNow PRIVATE
-DllGetClassObject PRIVATE

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+<PropertyGroup>
+    <CpuPlatform Condition="'$(Platform)' == 'Win32'">x86</CpuPlatform>
+    <CpuPlatform Condition="'$(Platform)' != 'Win32'">$(Platform)</CpuPlatform>
+</PropertyGroup>
+<PropertyGroup>
+    <FullPlatform>uap$(CpuPlatform)</FullPlatform>
+</PropertyGroup>
+
+<PropertyGroup>
+    <BinariesDirectory>$(MSBuildThisFileDirectory)..\bin</BinariesDirectory>
+</PropertyGroup>
+
+<PropertyGroup>
+    <__OutputPath>$(BinariesDirectory)\$(FullPlatform)\$(Configuration)\$(MSBuildProjectName)</__OutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\obj\$(MSBuildProjectName)\$(FullPlatform)\$(Configuration)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+</PropertyGroup>
+</Project>
