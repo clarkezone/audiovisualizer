@@ -1,1 +1,1 @@
-Tools\nuget.exe pack AudioAnalyzer\AudioAnalyzer.nuspec -o .\package
+Tools\nuget.exe pack AudioAnalyzer.nuspec -o .\package
