@@ -7,13 +7,13 @@
     xmlns:a="using:AudioVisualizer"
     mc:Ignorable="d" Loaded="Page_Loaded">
 
-    <Grid Background="Black">
+    <Grid Background="Black" Padding="40,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="1*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <CommandBar Grid.Row="0">
+        <CommandBar Grid.Row="0" Background="Transparent" RequestedTheme="Dark">
             <AppBarButton Icon="OpenFile" Click="OpenFile_Click"></AppBarButton>
         </CommandBar>
         <Grid Grid.Row="1">
