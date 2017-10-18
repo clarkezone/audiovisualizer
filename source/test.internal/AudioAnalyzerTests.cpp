@@ -38,10 +38,10 @@ namespace AnalyzerTest
 			analyzer.Step(&position, &rms, &peak, spectrum);
 
 			Assert::AreEqual(0L, position, L"position");
-			Assert::AreEqual(0.707107067f, rms.m128_f32[0], L"RMS[0]", LINE_INFO());
-			Assert::AreEqual(0.0597614311f, rms.m128_f32[1], L"RMS[1]", LINE_INFO());
-			Assert::AreEqual(1.0f, peak.m128_f32[0], L"Peak[0]", LINE_INFO());
-			Assert::AreEqual(0.1f, peak.m128_f32[1], L"Peak[1]", LINE_INFO());
+			Assert::AreEqual(0.707107067f, XMVectorGetByIndex(rms,0), L"RMS[0]", LINE_INFO());
+			Assert::AreEqual(0.0597614311f, XMVectorGetByIndex(rms, 1), L"RMS[1]", LINE_INFO());
+			Assert::AreEqual(1.0f, XMVectorGetByIndex(peak, 0), L"Peak[0]", LINE_INFO());
+			Assert::AreEqual(0.1f, XMVectorGetByIndex(peak, 1), L"Peak[1]", LINE_INFO());
 
 			for (size_t channel = 0; channel < 2; channel++)
 			{

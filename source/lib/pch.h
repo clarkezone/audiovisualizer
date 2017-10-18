@@ -1,7 +1,8 @@
 ﻿#pragma once
 
+#define _TRACE // Enable ETW tracing
+
 #ifdef _DEBUG
-	#define _TRACE
 	#define ENABLE_LIFESPAN_TRACKER
 	#define _CRTDBG_MAP_ALLOC 
 #endif

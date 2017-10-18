@@ -144,11 +144,11 @@ namespace AudioVisualizer
 					if (pRms != nullptr)
 					{
 						XMVECTOR vRMS = XMVectorSqrt(XMVectorScale(XMVectorSum(vRMSSum), rmsScaler));
-						((float *)pRms)[channelIndex] = vRMS.m128_f32[0];
+						((float *)pRms)[channelIndex] = XMVectorGetX(vRMS);
 					}
 					if (pPeak != nullptr)
 					{
-						float peakValue = std::max(std::max(std::max(vPeak.m128_f32[0], vPeak.m128_f32[1]), vPeak.m128_f32[2]), vPeak.m128_f32[3]);
+						float peakValue = std::max(std::max(std::max(XMVectorGetByIndex(vPeak,0), XMVectorGetByIndex(vPeak,1)),XMVectorGetByIndex(vPeak, 2)),XMVectorGetByIndex(vPeak, 3));
 						((float*)pPeak)[channelIndex] = peakValue;
 					}
 				}

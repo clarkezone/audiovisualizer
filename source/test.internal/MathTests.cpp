@@ -21,18 +21,18 @@ namespace AnalyzerTest
 			XMVECTOR vResult = XMVectorReplicate(std::numeric_limits<float>::quiet_NaN());
 			ApplyRiseAndFall(&vPrevious, &vCurrent, &vResult, 1, 1, 3);
 
-			Assert::AreEqual(1, vResult.m128_f32[0], 0.001f, L"1->1");
-			Assert::AreEqual(1.63212055f, vResult.m128_f32[1], 0.001f, L"1->2");
-			Assert::AreEqual(1.04978707f, vResult.m128_f32[2], 0.001f, L"2->1");
-			Assert::AreEqual(7.3212055f, vResult.m128_f32[3], 0.001f, L"1->11");
+			Assert::AreEqual(1, XMVectorGetByIndex(vResult,0), 0.001f, L"1->1");
+			Assert::AreEqual(1.63212055f, XMVectorGetByIndex(vResult, 1), 0.001f, L"1->2");
+			Assert::AreEqual(1.04978707f, XMVectorGetByIndex(vResult, 2), 0.001f, L"2->1");
+			Assert::AreEqual(7.3212055f, XMVectorGetByIndex(vResult, 3), 0.001f, L"1->11");
 
 			XMVECTOR vResult2 = XMVectorReplicate(std::numeric_limits<float>::quiet_NaN());
 			ApplyRiseAndFall(nullptr, &vResult, &vResult2, 1, 1, 3);
 
-			Assert::AreEqual(0.63212049f, vResult2.m128_f32[0], 0.001f);
-			Assert::AreEqual(1.0316968f, vResult2.m128_f32[1], 0.001f);
-			Assert::AreEqual(0.663591921f, vResult2.m128_f32[2], 0.001f);
-			Assert::AreEqual(4.62788391f, vResult2.m128_f32[3], 0.001f);
+			Assert::AreEqual(0.63212049f, XMVectorGetByIndex(vResult2, 0), 0.001f);
+			Assert::AreEqual(1.0316968f, XMVectorGetByIndex(vResult2, 1), 0.001f);
+			Assert::AreEqual(0.663591921f, XMVectorGetByIndex(vResult2, 2), 0.001f);
+			Assert::AreEqual(4.62788391f, XMVectorGetByIndex(vResult2, 3), 0.001f);
 		}
 		TEST_METHOD(Math_ConvertToLog)
 		{

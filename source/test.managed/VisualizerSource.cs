@@ -39,6 +39,7 @@ namespace test.managed
             var mediaElement = new MediaElement();
             var createTask = AudioVisualizer.VisualizationSource.CreateFromMediaElementAsync(mediaElement);
             mediaElement.Source = new Uri("ms-appx:///TestContent/test_signal.mp3");
+            mediaElement.Play();
             
             if (createTask.AsTask().Wait(1000))
             {
