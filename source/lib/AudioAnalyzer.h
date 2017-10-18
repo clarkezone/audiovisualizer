@@ -12,48 +12,6 @@ namespace AudioVisualizer
 {
 	namespace Math
 	{
-
-		/*class AnalyzerFrame : public RuntimeClass<RuntimeClassFlags<RuntimeClassType::ClassicCom>,IUnknown>
-		{
-			XMVECTOR *_pRms;
-			XMVECTOR *_pPeak;
-			XMVECTOR *_pData;
-			long _position;
-			long _duration;
-		public:
-			XMVECTOR *GetRMS() { return _pRms; }
-			XMVECTOR *GetPeak() { return _pPeak; }
-			XMVECTOR *GetSpectrum() { return _pData; }
-			long GetPosition() const { return  _position; }
-			long GetDuration() const { return _duration; }
-
-			AnalyzerFrame(size_t channels, size_t spectrumBins,long position,long duration) :
-				_pData(nullptr),
-				_pRms(nullptr),
-				_pPeak(nullptr),
-				_position(position),
-				_duration(duration)
-			{
-				size_t vScalarElements = (channels + 3) >> 2;
-				size_t vSpectrumElements = (spectrumBins + 3) >> 2;
-				// Allocate one buffer as |--- spectrum --- | rms | peak |
-				size_t vMallocSize = vSpectrumElements * channels + 2 * vScalarElements;
-
-				_pData = static_cast<DirectX::XMVECTOR *>(_aligned_malloc(vMallocSize*sizeof(DirectX::XMVECTOR),16));
-				_pRms = _pData + vSpectrumElements * channels;
-				_pPeak = _pRms + vScalarElements;
-			}
-
-			~AnalyzerFrame()
-			{
-				if (_pData != nullptr)
-					_aligned_free(_pData);
-				_pData = nullptr;
-				_pRms = nullptr;
-				_pPeak = nullptr;
-			}
-		};*/
-
 		class CAudioAnalyzer
 		{
 			UINT32 _inputChannels;
@@ -98,6 +56,8 @@ namespace AudioVisualizer
 			void Flush();
 
 			long GetPosition() const { return _spInputBuffer->GetPosition(); }
+
+			UINT32 GetDownsampleRate() const { return _spInputBuffer->GetDownsampleFactor(); }
 		};
 	}
 }

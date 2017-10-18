@@ -14,6 +14,8 @@ namespace AudioVisualizer
 			_writeIndex(0),
 			_stepLength(0),
 			_stepOverlap(0),
+			_downsampleFactor(1),
+			_downsampleCounter(0),
 			_frameSize(2)	// Default value is stereo
 		{
 			_pData = (float *)malloc(buffer_size * sizeof(float));
@@ -33,22 +35,31 @@ namespace AudioVisualizer
 
 		HRESULT CAudioBuffer::Add(const float * pFrames, size_t sampleCount)
 		{
-			if (sampleCount > (_size - _frameSize))
+			if (sampleCount > _downsampleFactor * (_size - _frameSize))
 				return E_INVALIDARG;
 
 			size_t currentLength = GetLength() * _frameSize;	// Record current samples in buffer
 
-																// Copy sampleCount number of samples to the buffer, validate _writeIndex against _size 
+			// Copy sampleCount number of samples to the buffer, validate _writeIndex against _size 
 			// To avoid copying when size is zero (uninitialized buffer)
 			for (size_t index = 0; index < sampleCount; index++)
 			{
-				_pData[_writeIndex++] = pFrames[index];
-				if (_writeIndex >= (int)_size)	// Wrap pointer over end
-					_writeIndex = 0;
+				if (_downsampleFactor == 1 || _downsampleCounter <  _frameSize)
+				{
+					_pData[_writeIndex++] = pFrames[index];
+					if (_writeIndex >= (int)_size)	// Wrap pointer over end
+						_writeIndex = 0;
+				}
+				if (_downsampleFactor != 1)
+				{
+					_downsampleCounter++;
+					if (_downsampleCounter >= _downsampleFactor * _frameSize)
+						_downsampleCounter = 0;
+				}
 			}
 			// Are we going to overflow?If overflow happened, 
 			// advance read pointer so _size - _frameSize samples are available
-			if (currentLength + sampleCount >= _size)
+			if (currentLength + (sampleCount / _downsampleFactor) >= _size)
 			{
 				_readIndex = _writeIndex + (int)_frameSize;
 				if (_readIndex >= (int)_size)
@@ -103,7 +114,7 @@ namespace AudioVisualizer
 			_readIndex = srcIndex;
 			if (_position != -1)
 			{
-				_position += (long)(_stepLength - _stepOverlap);
+				_position += (long)_downsampleFactor * (_stepLength - _stepOverlap);
 			}
 			return S_OK;
 		}

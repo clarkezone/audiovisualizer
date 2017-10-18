@@ -175,7 +175,7 @@ namespace AudioVisualizer
 
 			return hr;
 		}
-		HRESULT Trace::Log_Initialize(size_t fftLength, size_t stepLen, size_t overlap)
+		HRESULT Trace::Log_Initialize(size_t fftLength, size_t stepLen, size_t overlap,size_t downsampleRate)
 		{
 			HRESULT hr = S_OK;
 			ComPtr<ILoggingFields> spFields;
@@ -185,6 +185,7 @@ namespace AudioVisualizer
 			spFields->AddUInt32(HStringReference(L"FftLength").Get(), (UINT32) fftLength);
 			spFields->AddUInt32(HStringReference(L"Step").Get(), (UINT32)stepLen);
 			spFields->AddUInt32(HStringReference(L"Overlap").Get(), (UINT32)overlap);
+			spFields->AddUInt32(HStringReference(L"Downsample").Get(), (UINT32)downsampleRate);
 			hr = g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_INITIALIZE).Get(), spFields.Get());
 			return hr;
 		}

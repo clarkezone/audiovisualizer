@@ -253,10 +253,7 @@ namespace AudioVisualizer
 	[version(1.0)]
 	interface ISpectralAnalyzerSettings : IInspectable
 	{
-		[propget] HRESULT FftLength([out,retval] UINT32 *pResult);
-		[propput] HRESULT FftLength([in] UINT32 result);
-		[propget] HRESULT Overlap([out,retval] float *pResult);
-		[propput] HRESULT Overlap([in] float result);
+		HRESULT ConfigureSpectrum([in] UINT32 fftLength, [in] float overlap);
 	};
 
 	[version(1.0)]
