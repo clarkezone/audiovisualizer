@@ -13,16 +13,6 @@
     <tags>Audio Spectrum UWP</tags>
   </metadata>
  <files>
-<!--
-   <file src="..\Release\AudioAnalyzer\AudioAnalyzer.winmd" target="lib\uap10.0"/>
-   <file src="..\Release\AudioAnalyzer\AudioAnalyzer.xml" target="lib\uap10.0"/>
-
-   <file src="..\x64\Release\AudioAnalyzer\AudioAnalyzer.dll"  target="runtimes\win10-x64\native"/>
-   <file src="..\x64\Release\AudioAnalyzer\AudioAnalyzer.pri" target="runtimes\win10-x64\native"/>
-
-   <file src="..\Release\AudioAnalyzer\AudioAnalyzer.dll"  target="runtimes\win10-x86\native"/>
-   <file src="..\Release\AudioAnalyzer\AudioAnalyzer.pri" target="runtimes\win10-x86\native"/>
--->
    <file src="bin\uapx86\Release\MergedWinMD\AudioVisualizer.winmd" target="lib\uap10.0"/>
 
    <file src="bin\uapx86\Release\uwp.dll\AudioVisualizer.dll"  target="runtimes\win10-x86\native"/>
