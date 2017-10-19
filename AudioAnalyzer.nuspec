@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>UWPAudioAnalyzer</id>
-    <version>0.0.3</version>
+    <id>UWPAudioVisualizer</id>
+    <version>0.0.0</version>
     <title>UWP Audio Spectrum Analyzer</title>
     <authors>Tonu Vanatalu and James Clarke</authors>
     <owners>Tonu Vanatalu and James Clarke</owners>
@@ -13,23 +13,13 @@
     <tags>Audio Spectrum UWP</tags>
   </metadata>
  <files>
-<!--
-   <file src="..\Release\AudioAnalyzer\AudioAnalyzer.winmd" target="lib\uap10.0"/>
-   <file src="..\Release\AudioAnalyzer\AudioAnalyzer.xml" target="lib\uap10.0"/>
+   <file src="bin\uapx86\CIBUILD\MergedWinMD\AudioVisualizer.winmd" target="lib\uap10.0"/>
 
-   <file src="..\x64\Release\AudioAnalyzer\AudioAnalyzer.dll"  target="runtimes\win10-x64\native"/>
-   <file src="..\x64\Release\AudioAnalyzer\AudioAnalyzer.pri" target="runtimes\win10-x64\native"/>
+   <file src="bin\uapx86\CIBUILD\uwp.dll\AudioVisualizer.dll"  target="runtimes\win10-x86\native"/>
+   <file src="bin\uapx86\CIBUILD\uwp.dll\AudioVisualizer.pri" target="runtimes\win10-x86\native"/>
 
-   <file src="..\Release\AudioAnalyzer\AudioAnalyzer.dll"  target="runtimes\win10-x86\native"/>
-   <file src="..\Release\AudioAnalyzer\AudioAnalyzer.pri" target="runtimes\win10-x86\native"/>
--->
-   <file src="bin\uapx86\Release\MergedWinMD\AudioVisualizer.winmd" target="lib\uap10.0"/>
-
-   <file src="bin\uapx86\Release\uwp.dll\AudioVisualizer.dll"  target="runtimes\win10-x86\native"/>
-   <file src="bin\uapx86\Release\uwp.dll\AudioVisualizer.pri" target="runtimes\win10-x86\native"/>
-
-   <file src="bin\uapx64\Release\uwp.dll\AudioVisualizer.dll"  target="runtimes\win10-x64\native"/>
-   <file src="bin\uapx64\Release\uwp.dll\AudioVisualizer.pri" target="runtimes\win10-x64\native"/>
+   <file src="bin\uapx64\CIBUILD\uwp.dll\AudioVisualizer.dll"  target="runtimes\win10-x64\native"/>
+   <file src="bin\uapx64\CIBUILD\uwp.dll\AudioVisualizer.pri" target="runtimes\win10-x64\native"/>
  </files>
 </package>
 

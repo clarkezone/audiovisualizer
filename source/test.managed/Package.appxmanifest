@@ -5,9 +5,10 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   IgnorableNamespaces="uap mp">
 
-  <Identity Name="25b634e9-2678-4f63-8c82-99d28c049498"
-            Publisher="CN=tonuv"
-            Version="1.0.0.0" />
+  <Identity
+     Name="c6f61bc7-e094-45b6-9ea9-bf45518e5d82"
+     Publisher="CN=james"
+     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="25b634e9-2678-4f63-8c82-99d28c049498" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
