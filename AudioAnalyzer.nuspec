@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>UWPAudioVisualizer</id>
+    <version>0.0.0</version>
+    <title>UWP Audio Spectrum Analyzer</title>
+    <authors>Tonu Vanatalu and James Clarke</authors>
+    <owners>Tonu Vanatalu and James Clarke</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>UWP Audio Spectrum Analyzer Preview</description>
+    <releaseNotes>First working version</releaseNotes>
+    <copyright>Copyright 2017 Tonu Vanatalu and James Clarke</copyright>
+    <tags>Audio Spectrum UWP</tags>
+  </metadata>
+ <files>
+   <file src="bin\uapx86\CIBUILD\MergedWinMD\AudioVisualizer.winmd" target="lib\uap10.0"/>
+
+   <file src="bin\uapx86\CIBUILD\uwp.dll\AudioVisualizer.dll"  target="runtimes\win10-x86\native"/>
+   <file src="bin\uapx86\CIBUILD\uwp.dll\AudioVisualizer.pri" target="runtimes\win10-x86\native"/>
+
+   <file src="bin\uapx64\CIBUILD\uwp.dll\AudioVisualizer.dll"  target="runtimes\win10-x64\native"/>
+   <file src="bin\uapx64\CIBUILD\uwp.dll\AudioVisualizer.pri" target="runtimes\win10-x64\native"/>
+ </files>
+</package>
+
+<!-- 
+when rebuilding nuke this: C:\Users\<you>\.nuget\packages\audio
+-->
