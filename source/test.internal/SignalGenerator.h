@@ -27,6 +27,11 @@ namespace AnalyzerTest
 			return S_OK;
 		}
 
+		MFTIME GetPosition() const
+		{
+			return (10000000L * (long long) m_SampleOffset) / m_SampleRate;
+		}
+
 		template<class Func> inline
 		HRESULT GetSample(IMFSample **ppSample, size_t samplesRequested,Func f)
 		{

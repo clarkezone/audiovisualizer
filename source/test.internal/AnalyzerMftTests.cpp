@@ -179,7 +179,7 @@ namespace AnalyzerTest
 		{
 			using namespace ABI::Windows::Foundation;
 			ComPtr<IActivationFactory> spFactory;
-			HRESULT hr = GetActivationFactory(HStringReference(L"AudioVisualizer.AnalyzerEffect").Get(), &spFactory);
+			HRESULT hr = GetActivationFactory(HStringReference(RuntimeClass_AudioVisualizer_MftAnalyzer).Get(), &spFactory);
 			if (FAILED(hr))
 				return hr;
 			ComPtr<IInspectable> spObject;
@@ -234,7 +234,7 @@ namespace AnalyzerTest
 			Assert::AreEqual(MF_E_NO_MORE_TYPES, hr, L"", LINE_INFO());
 
 		}
-		void Test_SetTypes(IMFTransform *pMft,unsigned sampleRate)
+		void Test_SetTypes(IMFTransform *pMft,unsigned sampleRate,unsigned channels)
 		{
 			ComPtr<IMFMediaType> mp3Type;
 			HRESULT hr = MFCreateMediaType(&mp3Type);
@@ -242,7 +242,7 @@ namespace AnalyzerTest
 			mp3Type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
 			mp3Type->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_MP3);
 			mp3Type->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, sampleRate);
-			mp3Type->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, 2);
+			mp3Type->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, channels);
 
 			hr = pMft->SetOutputType(0, mp3Type.Get(), 0);
 			Assert::AreEqual(MF_E_TRANSFORM_TYPE_NOT_SET, hr, L"Setting output type before input type is set", LINE_INFO());
@@ -253,7 +253,7 @@ namespace AnalyzerTest
 			Assert::AreEqual(MF_E_INVALIDMEDIATYPE, hr, L"Set input type with MP3", LINE_INFO());
 
 			ComPtr<IMFMediaType> pcmType;
-			hr = Create_FloatMediaType(sampleRate, 2, &pcmType);
+			hr = Create_FloatMediaType(sampleRate, channels, &pcmType);
 			AssertHR::HasSucceeded(hr, L"CreateMediaType", LINE_INFO());
 
 			hr = pMft->SetInputType(0, pcmType.Get(), _MFT_SET_TYPE_FLAGS::MFT_SET_TYPE_TEST_ONLY);
@@ -276,7 +276,7 @@ namespace AnalyzerTest
 			AssertHR::HasSucceeded(hr, L"GetOutputStreamInfo", LINE_INFO());
 		}
 
-		
+		/*
 		HRESULT Configure_Mft(IMFTransform *pMft, IMFMediaType *pType)
 		{
 			HRESULT hr = pMft->SetInputType(0, pType, 0);	// Set input type
@@ -288,22 +288,10 @@ namespace AnalyzerTest
 
 			return hr;
 		}
-		void Start_Streaming(IMFTransform *pMft)
-		{
-			HRESULT hr = pMft->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, 0);
-			AssertHR::HasSucceeded(hr, L"StartOfStream", LINE_INFO());
-			hr = pMft->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, 0);
-			AssertHR::HasSucceeded(hr, L"StartOfStream", LINE_INFO());
-		}
-		void Stop_Streaming(IMFTransform *pMft)
-		{
-			HRESULT hr = pMft->ProcessMessage(MFT_MESSAGE_NOTIFY_END_STREAMING, 0);
-			AssertHR::HasSucceeded(hr, L"StartOfStream", LINE_INFO());
-		}
 		void Test_ConfigureAnalyzer(ABI::AudioVisualizer::IVisualizationSource *pSource,unsigned sampleRate)
 		{
 			// Test first argument validation
-			/*
+			
 			HRESULT hr = pSource->Configure(4000, 60.0f, 0.5f);	// FFT length not 2^n
 			Assert::AreEqual(E_INVALIDARG, hr, L"2^n FFT length argument test failed", LINE_INFO());
 
@@ -332,13 +320,9 @@ namespace AnalyzerTest
 			hr = pSource->get_FrequencyStep(&fStep);
 			AssertHR::HasSucceeded(hr, L"FStep", LINE_INFO());
 			Assert::AreEqual(float(sampleRate)/200.0f, fStep, L"FStep value", LINE_INFO());
-			*/
+			
 		}
-
-		HRESULT Test_AnalyzerTimings(IMFTransform *pMft, CFakeClock *pClock)
-		{
-			return S_OK;
-		}
+		*/
 
 		void Get_Analyzer(IMFTransform *pMft,ABI::AudioVisualizer::IVisualizationSource **ppSource)
 		{
@@ -382,27 +366,20 @@ namespace AnalyzerTest
 			AssertHR::HasSucceeded(hr, L"Setting presentation clock", LINE_INFO());
 			spClock.CopyTo(ppClock);
 		}
-
-		void Test_Analyzer_Stereo(UINT32 samplesPerSecond)
+		void Start_Streaming(IMFTransform *pMft)
 		{
-			// Create object
-			ComPtr<IMFTransform> spTransform;
-			HRESULT hr = Create_MftObject(&spTransform);
-			AssertHR::HasSucceeded(hr, L"Create MFT", LINE_INFO());
-
-			ComPtr<IMFMediaType> spMediaType;
-			hr = Create_FloatMediaType(samplesPerSecond, 2, &spMediaType);
-			AssertHR::HasSucceeded(hr, L"Creating media type", LINE_INFO());
-
-			hr = Configure_Mft(spTransform.Get(), spMediaType.Get());
-			AssertHR::HasSucceeded(hr, L"Configure Mft", LINE_INFO());
-
-			ComPtr<CFakeClock> spClock;
-			Create_And_Set_Clock(spTransform.Get(), &spClock);
-
-			Test_AnalyzerTimings(spTransform.Get(),spClock.Get());
+			HRESULT hr = pMft->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, 0);
+			AssertHR::HasSucceeded(hr, L"StartOfStream", LINE_INFO());
+			hr = pMft->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, 0);
+			AssertHR::HasSucceeded(hr, L"StartOfStream", LINE_INFO());
+		}
+		void Stop_Streaming(IMFTransform *pMft)
+		{
+			HRESULT hr = pMft->ProcessMessage(MFT_MESSAGE_NOTIFY_END_STREAMING, 0);
+			AssertHR::HasSucceeded(hr, L"StartOfStream", LINE_INFO());
 		}
 
+/*
 		void Test_Processing(IMFTransform *pMft,CFakeClock *pClock,ABI::AudioVisualizer::IVisualizationSource *pSource,unsigned sampleRate)
 		{
 			// pSource->SetLinearFScale(100);
@@ -418,7 +395,7 @@ namespace AnalyzerTest
 				g.GetSample(&spSample, 8000, 
 					[=](unsigned long offset, unsigned channel) 
 				{ 
-					return channel == 0 ? (2.0f * float(offset % sawToothPeriod) / float(sawToothPeriod))-1 /*sinf(offset*3.14f/32.0f)*/ : 0.0f; 
+					return channel == 0 ? (2.0f * float(offset % sawToothPeriod) / float(sawToothPeriod))-1 /*sinf(offset*3.14f/32.0f) : 0.0f; 
 				}
 				);
 				HRESULT hr = pMft->ProcessInput(0, spSample.Get(), 0);
@@ -533,34 +510,96 @@ namespace AnalyzerTest
 			hr = S_OK; //  pSource->GetFrame(&spFrame);
 			AssertHR::HasSucceeded(hr, L"GetFrame", LINE_INFO());
 			Assert::IsNull(spFrame.Get(), L"GetFrame", LINE_INFO());
+		} */
+
+		void Test_Setup_Mft(IMFTransform *pMft,unsigned sampleRate,unsigned channels)
+		{
+			Test_GetStreamLimits(pMft);
+			Test_GetStreamCount(pMft);
+			Test_GetStreamIDs(pMft);
+			Test_GetInputAvailableType(pMft);
+			Test_SetTypes(pMft, sampleRate,channels);
+			Test_BufferRequirements(pMft);
+		}
+		void Test_PumpSample(IMFTransform *pMft, IMFSample *pSample)
+		{
+			HRESULT hr = pMft->ProcessInput(0, pSample, 0);
+			AssertHR::HasSucceeded(hr, L"ProcessInput", LINE_INFO());
+
+			DWORD dwStatus = 0;
+			MFT_OUTPUT_DATA_BUFFER outData;
+			outData.dwStatus = 0;
+			outData.dwStreamID = 0;
+			outData.pEvents = nullptr;
+			outData.pSample = nullptr;
+
+			hr = pMft->ProcessOutput(0, 1, &outData, &dwStatus);
+			AssertHR::HasSucceeded(hr, L"ProcessOutput", LINE_INFO());
+
+			Assert::IsTrue(pSample == outData.pSample, L"MFT output sample not copied on ProcessOutput");
+			if (outData.pSample != nullptr)
+			{
+				ULONG refCount = outData.pSample->Release();
+				Assert::AreEqual(1uL, refCount, L"Process sample ref count", LINE_INFO());
+			}
 		}
 
-		void Test_Pipeline(unsigned sampleRate)
+		void Test_Processing(IMFTransform *pMft)
+		{
+			ComPtr<CFakeClock> spClock;
+			Create_And_Set_Clock(pMft, &spClock);
+			ComPtr<ABI::AudioVisualizer::IVisualizationSource> spSource;
+			Get_Analyzer(pMft, &spSource);
+			
+			Start_Streaming(pMft);
+			// Simulate the player by buffering some samples and then staring "play" by advancing the clock
+			MFTIME clockTime = 0;
+			MFTIME runStreamUntil = 60 * 10000000L;	// 60sec
+			MFTIME preBuffer = 5 * 10000000L;	// Prebuffer 5sec worth of samples
+			MFTIME sampleLength = 3000000L;	// Generate approximately 300ms samples
+
+			ComPtr<IMFMediaType> mediaType;
+			pMft->GetInputCurrentType(0, &mediaType);
+			UINT32 sampleRate = 0, channels = 0;
+			mediaType->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, &sampleRate);
+			mediaType->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &channels);
+
+			size_t sampleCount = sampleLength * sampleRate / 10000000L;
+
+			CGenerator g(sampleRate, channels);
+			HRESULT hr = S_OK;
+			// Preroll
+			while (g.GetPosition() < preBuffer)
+			{
+				ComPtr<IMFSample> sample;
+				g.GetSample(&sample,sampleCount, [=](unsigned long offset, unsigned channel)
+				{
+					return (1.0 / (channel+1)) * sinf(offset*3.14f/(4.0 * channel));
+				});
+				Sleep(10);
+				Test_PumpSample(pMft, sample.Get());
+			}
+
+			Sleep(100);
+			while (clockTime < runStreamUntil)
+			{
+				
+
+			}
+
+			Stop_Streaming(pMft);
+
+		}
+
+		void Test_Mft_Pipeline(unsigned sampleRate,unsigned channels)
 		{
 			ComPtr<IMFTransform> spTransform;
 			HRESULT hr = Create_MftObject(&spTransform);
 			AssertHR::HasSucceeded(hr, L"Create MFT object", LINE_INFO());
-			Test_GetStreamLimits(spTransform.Get());
-			Test_GetStreamCount(spTransform.Get());
-			Test_GetStreamIDs(spTransform.Get());
-			Test_GetInputAvailableType(spTransform.Get());
-			Test_SetTypes(spTransform.Get(),sampleRate);
-			Test_BufferRequirements(spTransform.Get());
-			ComPtr<CFakeClock> spClock;
-			Create_And_Set_Clock(spTransform.Get(), &spClock);
-			ComPtr<ABI::AudioVisualizer::IVisualizationSource> spSource;
-			Get_Analyzer(spTransform.Get(), &spSource);
-			
-			Test_ConfigureAnalyzer(spSource.Get(), sampleRate);
 
-			ComPtr<ABI::Windows::Media::IAudioFrame> spFrame;
-			hr = S_OK; // spSource->GetFrame(&spFrame);
-			AssertHR::HasSucceeded(hr, L"GetFrame", LINE_INFO());	// This should succeed
-			Assert::IsNull(spFrame.Get(), L"GetFrame before", LINE_INFO());
+			Test_Setup_Mft(spTransform.Get(),sampleRate, channels);
 
-			Start_Streaming(spTransform.Get());
-			Test_Processing(spTransform.Get(), spClock.Get(), spSource.Get(), sampleRate);
-			Stop_Streaming(spTransform.Get());
+			Test_Processing(spTransform.Get());		
 		}
 
     public:
@@ -574,13 +613,13 @@ namespace AnalyzerTest
 			HRESULT hr = MFShutdown();
 		}
 
-		TEST_METHOD(Mft_Analyzer_44100)
+		TEST_METHOD(Mft_Analyzer_44100_2)
 		{
-			Test_Pipeline(44100);
+			Test_Mft_Pipeline(44100,2);
 		}
-		TEST_METHOD(Mft_Analyzer_48000)
+		TEST_METHOD(Mft_Analyzer_48000_2)
 		{
-			Test_Pipeline(48000);
+			Test_Mft_Pipeline(48000,2);
 		}
 	};
 } 
