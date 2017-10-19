@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="CIBUILD|ARM">
+      <Configuration>CIBUILD</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="CIBUILD|Win32">
+      <Configuration>CIBUILD</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="CIBUILD|x64">
+      <Configuration>CIBUILD</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|ARM">
       <Configuration>Debug</Configuration>
       <Platform>ARM</Platform>
@@ -61,13 +73,31 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CIBUILD|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CIBUILD|ARM'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CIBUILD|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -85,16 +115,25 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='CIBUILD|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='CIBUILD|ARM'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='CIBUILD|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -107,6 +146,13 @@
     <IncludePath>$(Win2DIncludeDirectory);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(__OutputPath)\</OutDir>
+    <IntDir>$(IntermediateOutputPath)</IntDir>
+    <TargetName>AudioVisualizer</TargetName>
+    <IncludePath>$(Win2DIncludeDirectory);$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CIBUILD|Win32'">
     <GenerateManifest>false</GenerateManifest>
     <OutDir>$(__OutputPath)\</OutDir>
     <IntDir>$(IntermediateOutputPath)</IntDir>
@@ -127,6 +173,13 @@
     <TargetName>AudioVisualizer</TargetName>
     <IncludePath>$(Win2DIncludeDirectory);$(IncludePath)</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CIBUILD|ARM'">
+    <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(__OutputPath)\</OutDir>
+    <IntDir>$(IntermediateOutputPath)</IntDir>
+    <TargetName>AudioVisualizer</TargetName>
+    <IncludePath>$(Win2DIncludeDirectory);$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
     <OutDir>$(__OutputPath)\</OutDir>
@@ -135,6 +188,13 @@
     <IncludePath>$(Win2DIncludeDirectory);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <GenerateManifest>false</GenerateManifest>
+    <OutDir>$(__OutputPath)\</OutDir>
+    <IntDir>$(IntermediateOutputPath)</IntDir>
+    <TargetName>AudioVisualizer</TargetName>
+    <IncludePath>$(Win2DIncludeDirectory);$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CIBUILD|x64'">
     <GenerateManifest>false</GenerateManifest>
     <OutDir>$(__OutputPath)\</OutDir>
     <IntDir>$(IntermediateOutputPath)</IntDir>
@@ -157,6 +217,21 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+    </Link>
+    <Lib>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='CIBUILD|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
@@ -201,6 +276,21 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='CIBUILD|arm'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+    </Link>
+    <Lib>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -217,6 +307,24 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+    </Link>
+    <Midl>
+      <MetadataFileName>$(UnmergedWinmdDirectory)%(Filename).winmd</MetadataFileName>
+    </Midl>
+    <Lib>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='CIBUILD|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
@@ -284,10 +392,13 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='CIBUILD|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='CIBUILD|ARM'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='CIBUILD|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ScalarData.cpp" />
     <ClCompile Include="Trace.cpp" />
@@ -304,22 +415,31 @@
       <InterfaceIdentifierFileName>$(IntDir)%(FileName)_p.c</InterfaceIdentifierFileName>
       <ProxyFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)_p.c</ProxyFileName>
       <ProxyFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)_p.c</ProxyFileName>
+      <ProxyFileName Condition="'$(Configuration)|$(Platform)'=='CIBUILD|Win32'">$(IntDir)%(Filename)_p.c</ProxyFileName>
       <ProxyFileName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">$(IntDir)%(Filename)_p.c</ProxyFileName>
       <ProxyFileName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">$(IntDir)%(Filename)_p.c</ProxyFileName>
+      <ProxyFileName Condition="'$(Configuration)|$(Platform)'=='CIBUILD|ARM'">$(IntDir)%(Filename)_p.c</ProxyFileName>
       <ProxyFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)_p.c</ProxyFileName>
       <ProxyFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)_p.c</ProxyFileName>
+      <ProxyFileName Condition="'$(Configuration)|$(Platform)'=='CIBUILD|x64'">$(IntDir)%(Filename)_p.c</ProxyFileName>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Win2DIncludeDirectory);C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Win2DIncludeDirectory);C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='CIBUILD|Win32'">$(Win2DIncludeDirectory);C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">$(Win2DIncludeDirectory);C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">$(Win2DIncludeDirectory);C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='CIBUILD|ARM'">$(Win2DIncludeDirectory);C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Win2DIncludeDirectory);C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Win2DIncludeDirectory);C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='CIBUILD|x64'">$(Win2DIncludeDirectory);C:\Users\tonuv\Source\Win2D-master\winrt\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalMetadataDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalMetadataDirectories)</AdditionalMetadataDirectories>
       <AdditionalMetadataDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalMetadataDirectories)</AdditionalMetadataDirectories>
+      <AdditionalMetadataDirectories Condition="'$(Configuration)|$(Platform)'=='CIBUILD|Win32'">%(AdditionalMetadataDirectories)</AdditionalMetadataDirectories>
       <AdditionalMetadataDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">%(AdditionalMetadataDirectories)</AdditionalMetadataDirectories>
       <AdditionalMetadataDirectories Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">%(AdditionalMetadataDirectories)</AdditionalMetadataDirectories>
+      <AdditionalMetadataDirectories Condition="'$(Configuration)|$(Platform)'=='CIBUILD|ARM'">%(AdditionalMetadataDirectories)</AdditionalMetadataDirectories>
       <AdditionalMetadataDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalMetadataDirectories)</AdditionalMetadataDirectories>
       <AdditionalMetadataDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalMetadataDirectories)</AdditionalMetadataDirectories>
+      <AdditionalMetadataDirectories Condition="'$(Configuration)|$(Platform)'=='CIBUILD|x64'">%(AdditionalMetadataDirectories)</AdditionalMetadataDirectories>
     </Midl>
   </ItemGroup>
   <ItemGroup>

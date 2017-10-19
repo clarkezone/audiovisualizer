@@ -1,6 +1,6 @@
 @echo off
-msbuild AudioVisualizer.sln /t:build /p:Configuration=Release;Platform=x86 && (
-	msbuild AudioVisualizer.sln /t:build /p:Configuration=Release;Platform=x64 && (
+msbuild AudioVisualizer.sln /t:build /p:Configuration=CIBUILD;Platform=x86 && (
+	msbuild AudioVisualizer.sln /t:build /p:Configuration=CIBUILD;Platform=x64 && (
 		Tools\nuget.exe pack AudioAnalyzer.nuspec -o .\package -Version %1 && (
 			echo "Package created"
 		) || ( 
