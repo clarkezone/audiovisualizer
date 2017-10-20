@@ -138,19 +138,6 @@ namespace AudioVisualizer
 		}
 #pragma endregion
 
-#pragma region IMFAsyncCallback implementation
-		/*STDMETHODIMP GetParameters(DWORD*, DWORD*)
-		{
-			// Implementation of this method is optional.
-			return E_NOTIMPL;
-		}
-
-		STDMETHODIMP Invoke(IMFAsyncResult* pAsyncResult)
-		{
-			return Analyzer_Step(pAsyncResult);
-		}*/
-#pragma endregion
-
 	public:
 		CAnalyzerEffect();
 		~CAnalyzerEffect();
@@ -167,9 +154,6 @@ namespace AudioVisualizer
 		STDMETHODIMP put_AnalyzerTypes(AnalyzerType result);
 #pragma endregion
 		
-		STDMETHODIMP get_FftLength(UINT32 *pLength);
-		STDMETHODIMP put_FftLength(UINT32 length);
-		STDMETHODIMP get_Overlap(float *pResult);
-		STDMETHODIMP put_Overlap(float overlap);
+		STDMETHODIMP ConfigureSpectrum(UINT32 fftLength, float overlap);
 	};
 }

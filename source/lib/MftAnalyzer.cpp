@@ -151,29 +151,23 @@ namespace AudioVisualizer
 	{
 		return E_NOTIMPL;
 	}
-	STDMETHODIMP CAnalyzerEffect::get_FftLength(UINT32 * pLength)
-	{
-		if (pLength == nullptr)
-			return E_POINTER;
-		*pLength = m_FftLength;
-		return S_OK;
-	}
-	STDMETHODIMP CAnalyzerEffect::put_FftLength(UINT32 length)
-	{
-		return E_NOTIMPL;
-	}
 
-	STDMETHODIMP CAnalyzerEffect::get_Overlap(float *pResult)
+	STDMETHODIMP CAnalyzerEffect::ConfigureSpectrum(UINT32 fftLength, float inputOverlap)
 	{
-		if (pResult == nullptr)
-			return E_POINTER;
-		*pResult = m_fInputOverlap;
-		return S_OK;
-	}
+		if ((fftLength & fftLength - 1) != 0)	// FFT length needs to be power of 2
+			return E_INVALIDARG;
 
-	STDMETHODIMP CAnalyzerEffect::put_Overlap(float result)
-	{
-		return E_NOTIMPL;
+		if (inputOverlap < 0.0f || inputOverlap > 1.0f)	// Set some sensible overlap limits
+			return E_INVALIDARG;
+
+		m_FftLength = fftLength;
+		m_fInputOverlap = inputOverlap;
+
+		// If input type is set then calculate the necessary variables and initialize
+		if (m_spInputType != nullptr)
+			return Analyzer_Initialize();
+
+		return S_OK;
 	}
 
 	//-------------------------------------------------------------------
@@ -829,7 +823,7 @@ namespace AudioVisualizer
 		_analyzer->ConfigureAnalyzer(m_FftLength, m_StepTotalFrames, m_StepFrameOverlap);
 
 #ifdef _TRACE
-		Diagnostics::Trace::Log_Initialize(m_FftLength,m_StepTotalFrames,m_StepFrameOverlap);
+		Diagnostics::Trace::Log_Initialize(m_FftLength,m_StepTotalFrames,m_StepFrameOverlap,_analyzer->GetDownsampleRate());
 #endif
 		return S_OK;
 	}
@@ -932,13 +926,16 @@ namespace AudioVisualizer
 
 			ComPtr<ArrayData> spectrum;
 			if ((int)_analyzerTypes & (int)AnalyzerType::Spectrum)
-				spectrum = Make<ArrayData>(m_nChannels, 
-									m_FftLength >> 1,
-									ScaleType::Linear,
-									ScaleType::Linear,
-									0.0f, 
-									(float) (m_FramesPerSecond>>1),
-									(float) m_FramesPerSecond / (float) m_FftLength);	// Spectrum is half fft length
+			{
+				float maxFreq = (m_FramesPerSecond >> 1) / _analyzer->GetDownsampleRate();
+				spectrum = Make<ArrayData>(m_nChannels,
+					m_FftLength >> 1,
+					ScaleType::Linear,
+					ScaleType::Linear,
+					0.0f,
+					maxFreq,
+					maxFreq / (float)(m_FftLength >> 1));	// Spectrum is half fft length
+			}
 			long position = -1;
 
 			bool bStepSuccess = _analyzer->Step(&position,rms->GetBuffer(),peak->GetBuffer(),spectrum->GetBuffer());

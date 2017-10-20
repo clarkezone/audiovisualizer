@@ -239,7 +239,6 @@ namespace AudioVisualizer
 	[uuid(B74989FE-1436-4179-92B6-E06B540E0C7E)]
 	[version(1.0)]
 	interface IVisualizationSource : IInspectable {
-		//HRESULT Configure([in] AnalyzerType analyzersToRun, [in] float outSampleRate, [in] UINT32 fftLength, [in] float overlapPercent);
 		HRESULT GetData([out][retval] IVisualizationDataFrame **result);
 		[propget] HRESULT IsSuspended([out][retval] boolean *bIsSuspended);
 		[propput] HRESULT IsSuspended(boolean bIsSuspended);
@@ -253,10 +252,7 @@ namespace AudioVisualizer
 	[version(1.0)]
 	interface ISpectralAnalyzerSettings : IInspectable
 	{
-		[propget] HRESULT FftLength([out,retval] UINT32 *pResult);
-		[propput] HRESULT FftLength([in] UINT32 result);
-		[propget] HRESULT Overlap([out,retval] float *pResult);
-		[propput] HRESULT Overlap([in] float result);
+		HRESULT ConfigureSpectrum([in] UINT32 fftLength, [in] float overlap);
 	};
 
 	[version(1.0)]

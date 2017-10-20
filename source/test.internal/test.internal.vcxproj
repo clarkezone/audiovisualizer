@@ -225,7 +225,10 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FakeClock.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="SignalGenerator.h" />
+
     <ClInclude Include="UnitTestApp.xaml.h">
       <DependentUpon>UnitTestApp.xaml</DependentUpon>
     </ClInclude>
@@ -251,6 +254,9 @@
     <Image Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnalyzerMftTests.cpp" />
+    <ClCompile Include="AudioAnalyzerTests.cpp" />
+
     <ClCompile Include="AudioBufferTests.cpp" />
     <ClCompile Include="UnitTestApp.xaml.cpp">
       <DependentUpon>UnitTestApp.xaml</DependentUpon>
@@ -276,6 +282,9 @@
     <Xml Include="UnitTestApp.rd.xml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\dll\uwp.dll.vcxproj">
+      <Project>{c33b9eba-20ba-4a00-a88d-94b5287b4600}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\lib\uwp.lib.vcxproj">
       <Project>{eacdc44d-d859-46ed-934f-932cd50e507a}</Project>
     </ProjectReference>

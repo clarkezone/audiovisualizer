@@ -48,7 +48,7 @@ namespace AudioVisualizer
 			static HRESULT Initialize();
 			static HRESULT Shutdown();
 			static HRESULT Log_SetMediaType(IMFMediaType *pType,HRESULT result);
-			static HRESULT Log_Initialize(size_t fftLength, size_t stepLen, size_t overlap);
+			static HRESULT Log_Initialize(size_t fftLength, size_t stepLen, size_t overlap,size_t downsampleRate);
 			static HRESULT Log_SetInputPosition(long frameIndex);
 			static HRESULT Log_ProcessSample(IMFSample *pSample);
 			static HRESULT Log_StartCalculate(ABI::Windows::Foundation::Diagnostics::ILoggingActivity **ppActivity, long position, size_t bufferLength);

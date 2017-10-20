@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0622 */
 /* at Tue Jan 19 05:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-d79f7014:
+
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -4198,18 +4198,10 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings;
             ISpectralAnalyzerSettings : public IInspectable
             {
             public:
-                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_FftLength( 
-                    /* [out][retval] */ UINT32 *pResult) = 0;
-                
-                virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_FftLength( 
-                    /* [in] */ UINT32 result) = 0;
-                
-                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Overlap( 
-                    /* [out][retval] */ float *pResult) = 0;
-                
-                virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_Overlap( 
-                    /* [in] */ float result) = 0;
-                
+                virtual HRESULT STDMETHODCALLTYPE ConfigureSpectrum( 
+                    /* [in] */ UINT32 fftLength,
+                    /* [in] */ float overlap) = 0;
+               
             };
 
             extern const __declspec(selectany) IID & IID_ISpectralAnalyzerSettings = __uuidof(ISpectralAnalyzerSettings);
@@ -4250,21 +4242,11 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings;
             __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
             /* [out] */ TrustLevel *trustLevel);
         
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_FftLength )( 
+
+        HRESULT ( STDMETHODCALLTYPE *ConfigureSpectrum )( 
             __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
-            /* [out][retval] */ UINT32 *pResult);
-        
-        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_FftLength )( 
-            __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
-            /* [in] */ UINT32 result);
-        
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Overlap )( 
-            __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
-            /* [out][retval] */ float *pResult);
-        
-        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_Overlap )( 
-            __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
-            /* [in] */ float result);
+            /* [in] */ UINT32 fftLength,
+            /* [in] */ float overlap);
         
         END_INTERFACE
     } __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettingsVtbl;
@@ -4299,17 +4281,9 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings;
     ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
 
 
-#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_get_FftLength(This,pResult)	\
-    ( (This)->lpVtbl -> get_FftLength(This,pResult) ) 
 
-#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_put_FftLength(This,result)	\
-    ( (This)->lpVtbl -> put_FftLength(This,result) ) 
-
-#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_get_Overlap(This,pResult)	\
-    ( (This)->lpVtbl -> get_Overlap(This,pResult) ) 
-
-#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_put_Overlap(This,result)	\
-    ( (This)->lpVtbl -> put_Overlap(This,result) ) 
+#define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_ConfigureSpectrum(This,fftLength,overlap)	\
+    ( (This)->lpVtbl -> ConfigureSpectrum(This,fftLength,overlap) ) 
 
 #endif /* COBJMACROS */
 

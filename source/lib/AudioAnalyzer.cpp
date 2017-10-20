@@ -65,13 +65,21 @@ namespace AudioVisualizer
 			using namespace DirectX;
 			_fftLength = fftLength;
 			_fFftScale = 2.0f / _fftLength;
-			_stepFrames = stepFrames;
-			_overlapFrames = overlapFrames;
-			AllocateBuffers();
 
 			_fftLengthLog2 = 1;
 			while (1U << _fftLengthLog2 != _fftLength)
 				_fftLengthLog2++;
+
+			// Calculate downsample factor, if FFT length is too short for step+overlap then downsample input
+			UINT32 downsampleFactor = 1;
+			while ((stepFrames + overlapFrames) / downsampleFactor > fftLength)
+				downsampleFactor++;
+
+			_stepFrames = stepFrames / downsampleFactor;
+			_overlapFrames = overlapFrames / downsampleFactor;
+
+			AllocateBuffers();
+
 
 			// Initialize window, use Blackman-Nuttall window for low sidelobes
 			float a0 = 0.3635819f, a1 = 0.4891775f, a2 = 0.1365995f, a3 = 0.0106411f;
@@ -88,7 +96,7 @@ namespace AudioVisualizer
 					XMVectorScale(XMVectorCos(XMVectorScale(vCosArg, 3)), a3);
 			}
 			FFTInitializeUnityTable(_pFftUnityTable, _fftLength);
-			_spInputBuffer->Configure(_stepFrames, _overlapFrames);
+			_spInputBuffer->Configure(_stepFrames, _overlapFrames, downsampleFactor);
 		}
 
 		bool CAudioAnalyzer::IsOutputAvailable()
@@ -136,11 +144,11 @@ namespace AudioVisualizer
 					if (pRms != nullptr)
 					{
 						XMVECTOR vRMS = XMVectorSqrt(XMVectorScale(XMVectorSum(vRMSSum), rmsScaler));
-						((float *)pRms)[channelIndex] = vRMS.m128_f32[0];
+						((float *)pRms)[channelIndex] = XMVectorGetX(vRMS);
 					}
 					if (pPeak != nullptr)
 					{
-						float peakValue = std::max(std::max(std::max(vPeak.m128_f32[0], vPeak.m128_f32[1]), vPeak.m128_f32[2]), vPeak.m128_f32[3]);
+						float peakValue = std::max(std::max(std::max(XMVectorGetByIndex(vPeak,0), XMVectorGetByIndex(vPeak,1)),XMVectorGetByIndex(vPeak, 2)),XMVectorGetByIndex(vPeak, 3));
 						((float*)pPeak)[channelIndex] = peakValue;
 					}
 				}

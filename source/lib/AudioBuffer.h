@@ -12,6 +12,9 @@ namespace AudioVisualizer
 			size_t _stepLength;
 			size_t _stepOverlap;
 			size_t _frameSize;
+			size_t _downsampleFactor;
+			size_t _downsampleCounter;
+
 			long _position;
 
 			void FreeBuffer();
@@ -28,14 +31,19 @@ namespace AudioVisualizer
 			size_t GetStepOverlap() const { return _stepOverlap; }
 			size_t GetFrameSize() const { return _frameSize; }
 			void SetFrameSize(size_t frameSize) { _frameSize = frameSize; }
+			size_t GetDownsampleFactor() const { return _downsampleFactor; }
 
-			HRESULT Configure(size_t outputStepFrameCount, size_t overlap) // Set output and overlap length in frames
+			HRESULT Configure(size_t outputStepFrameCount, size_t overlap,size_t downsampleFactor) // Set output and overlap length in frames
+
 			{
 				if (overlap >= outputStepFrameCount)
 					return E_INVALIDARG;
 
 				_stepLength = outputStepFrameCount;
 				_stepOverlap = overlap;
+				_downsampleFactor = downsampleFactor;
+				_downsampleCounter = 0;
+
 				return S_OK;
 			}
 
@@ -44,9 +52,9 @@ namespace AudioVisualizer
 				return GetLength() >= (_stepLength - _stepOverlap);
 			}
 
-			size_t GetLength()	// Returns available data length in buffer in frames
+			size_t GetLength() const // Returns available data length in buffer in frames
 			{
-				size_t samplesAvailable = _readIndex <= _writeIndex ? (size_t)(_writeIndex - _readIndex) : _size + _writeIndex - _readIndex + 1;
+				size_t samplesAvailable = _readIndex <= _writeIndex ? (size_t)(_writeIndex - _readIndex) : _size + _writeIndex - _readIndex;
 				return samplesAvailable / _frameSize;
 			}
 
