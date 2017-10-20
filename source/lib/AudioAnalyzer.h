@@ -56,7 +56,6 @@ namespace AudioVisualizer
 			void Flush();
 
 			long GetPosition() const { return _spInputBuffer->GetPosition(); }
-
 			UINT32 GetDownsampleRate() const { return _spInputBuffer->GetDownsampleFactor(); }
 		};
 	}

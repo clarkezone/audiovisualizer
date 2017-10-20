@@ -26,6 +26,7 @@ namespace AnalyzerTest
 			Assert::AreEqual(1.04978707f, XMVectorGetByIndex(vResult, 2), 0.001f, L"2->1");
 			Assert::AreEqual(7.3212055f, XMVectorGetByIndex(vResult, 3), 0.001f, L"1->11");
 
+
 			XMVECTOR vResult2 = XMVectorReplicate(std::numeric_limits<float>::quiet_NaN());
 			ApplyRiseAndFall(nullptr, &vResult, &vResult2, 1, 1, 3);
 

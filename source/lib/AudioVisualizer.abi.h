@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0622 */
 /* at Tue Jan 19 05:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-9fb6c49c:
+
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -4201,7 +4201,7 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings;
                 virtual HRESULT STDMETHODCALLTYPE ConfigureSpectrum( 
                     /* [in] */ UINT32 fftLength,
                     /* [in] */ float overlap) = 0;
-                
+               
             };
 
             extern const __declspec(selectany) IID & IID_ISpectralAnalyzerSettings = __uuidof(ISpectralAnalyzerSettings);
@@ -4242,6 +4242,7 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings;
             __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
             /* [out] */ TrustLevel *trustLevel);
         
+
         HRESULT ( STDMETHODCALLTYPE *ConfigureSpectrum )( 
             __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings * This,
             /* [in] */ UINT32 fftLength,
@@ -4278,6 +4279,7 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings;
 
 #define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_GetTrustLevel(This,trustLevel)	\
     ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
+
 
 
 #define __x_ABI_CAudioVisualizer_CISpectralAnalyzerSettings_ConfigureSpectrum(This,fftLength,overlap)	\

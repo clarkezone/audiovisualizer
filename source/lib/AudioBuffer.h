@@ -14,6 +14,7 @@ namespace AudioVisualizer
 			size_t _frameSize;
 			size_t _downsampleFactor;
 			size_t _downsampleCounter;
+
 			long _position;
 
 			void FreeBuffer();
@@ -33,6 +34,7 @@ namespace AudioVisualizer
 			size_t GetDownsampleFactor() const { return _downsampleFactor; }
 
 			HRESULT Configure(size_t outputStepFrameCount, size_t overlap,size_t downsampleFactor) // Set output and overlap length in frames
+
 			{
 				if (overlap >= outputStepFrameCount)
 					return E_INVALIDARG;
@@ -41,6 +43,7 @@ namespace AudioVisualizer
 				_stepOverlap = overlap;
 				_downsampleFactor = downsampleFactor;
 				_downsampleCounter = 0;
+
 				return S_OK;
 			}
 

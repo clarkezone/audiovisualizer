@@ -138,7 +138,6 @@ namespace AudioVisualizer
 		}
 #pragma endregion
 
-
 	public:
 		CAnalyzerEffect();
 		~CAnalyzerEffect();
