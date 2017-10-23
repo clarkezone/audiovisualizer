@@ -38,6 +38,7 @@ namespace test.managed
             player.Play();
 
             if (Task.Run(() => { ev.Wait(); }).Wait(1000))
+
             {
                 Assert.IsTrue(sources.Count == 1);
                 Assert.IsNotNull(sources[0]);
