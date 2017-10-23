@@ -21,6 +21,7 @@ using namespace Microsoft::WRL;
 #define EVT_START_CALCULATE L"Calculate"
 #define EVT_FLUSH L"Flush"
 #define EVT_GET_DATA L"GetData"
+#define EVT_CLEAR_OUTPUT L"ClearOutput"
 #define EVT_OUTPUT_PUSH L"OutputPush"
 #define EVT_OUTPUT_POP L"OutputPop"
 #define EVT_GET_FROM_BUFFER L"GetFromBuffer"
@@ -31,6 +32,9 @@ using namespace Microsoft::WRL;
 #define EVT_LOCK L"Lock"
 #define EVT_LOCK_AQUIRED L"Aquired"
 #define EVT_REF_COUNT L"RefCount"
+#define EVT_MFT_PROCESSMSG L"ProcessMessage"
+#define EVT_GET_PRESENTATION_TIME L"GetTime"
+#define EVT_SET_PRESENTATION_CLOCK L"SetClock"
 
 namespace AudioVisualizer
 {
@@ -235,7 +239,7 @@ namespace AudioVisualizer
 			return g_pLoggingChannel->StartActivityWithFields(HStringReference(EVT_START_CALCULATE).Get(), spFields.Get(), ppActivity);
 		}
 
-		HRESULT Trace::Log_GetData(REFERENCE_TIME currentPosition, AudioVisualizer::IAnalyzerFrame *pFrame, AudioVisualizer::IAnalyzerFrame *pQueueFront, size_t queueSize, HRESULT result)
+		HRESULT Trace::Log_GetData(REFERENCE_TIME currentPosition, IVisualizationDataFrame *pFrame, AudioVisualizer::IAnalyzerFrame *pQueueFront, size_t queueSize, HRESULT result)
 		{
 			using namespace Windows::Foundation;
 			HRESULT hr = S_OK;
@@ -245,10 +249,9 @@ namespace AudioVisualizer
 				return hr;
 			spFields->AddTimeSpan(HStringReference(L"Position").Get(), ABI::Windows::Foundation::TimeSpan() = { currentPosition });
 
-			ComPtr<IVisualizationDataFrame> dataFrame = As<IVisualizationDataFrame>(pFrame);
-			AddVisualizationFrameProperties(dataFrame.Get(), spFields.Get(), L"Time", L"Duration");
+			AddVisualizationFrameProperties(pFrame, spFields.Get(), L"Time", L"Duration");
 
-			ComPtr<IVisualizationDataFrame> dataFrameQF = As<IVisualizationDataFrame>(pQueueFront);;
+			ComPtr<IVisualizationDataFrame> dataFrameQF = dynamic_cast<IVisualizationDataFrame *>(pQueueFront);;
 			AddVisualizationFrameProperties(dataFrameQF.Get(), spFields.Get(), L"QFTime", L"QFDuration");
 
 
@@ -361,7 +364,7 @@ namespace AudioVisualizer
 			ComPtr<ILoggingFields> spFields;
 			hr = CreateLoggingFields(&spFields);
 			spFields->AddString(HStringReference(L"Type").Get(), HStringReference(pTypeName).Get());
-			spFields->AddUInt32(HStringReference(L"Count").Get(), objectCount);
+			spFields->AddUInt32(HStringReference(L"Count").Get(), (UINT32) objectCount);
 			return g_pLoggingChannel->StartActivityWithFields(HStringReference(EVT_LIFESPAN).Get(), spFields.Get(), ppActivity);
 		}
 
@@ -371,7 +374,7 @@ namespace AudioVisualizer
 			ComPtr<ILoggingFields> spFields;
 			hr = CreateLoggingFields(&spFields);
 			spFields->AddString(HStringReference(L"Type").Get(), HStringReference(pTypeName).Get());
-			spFields->AddUInt32(HStringReference(L"Count").Get(), objectCount);
+			spFields->AddUInt32(HStringReference(L"Count").Get(), (UINT32) objectCount);
 
 			ComPtr<ILoggingActivity2> activity2;
 			ComPtr<ILoggingActivity>(pActivity).As(&activity2);
@@ -384,7 +387,7 @@ namespace AudioVisualizer
 			ComPtr<ILoggingFields> spFields;
 			hr = CreateLoggingFields(&spFields);
 			spFields->AddString(HStringReference(L"Type").Get(), HStringReference(pTypeName).Get());
-			spFields->AddUInt32(HStringReference(L"Count").Get(), objCount);
+			spFields->AddUInt32(HStringReference(L"Count").Get(), (UINT32) objCount);
 			ComPtr<ILoggingTarget> logTarget;
 			ComPtr<ILoggingActivity>(pActivity).As(&logTarget);
 			return logTarget->LogEventWithFields(HStringReference(EVT_CLOSE_OBJECT).Get(), spFields.Get());
@@ -400,7 +403,7 @@ namespace AudioVisualizer
 			pObject->AddRef();
 			size_t refCount = pObject->Release();
 
-			spFields->AddUInt32(HStringReference(L"RefCount").Get(), refCount);
+			spFields->AddUInt32(HStringReference(L"RefCount").Get(), (UINT32) refCount);
 
 			if (pActivity != nullptr)
 			{
@@ -439,9 +442,56 @@ namespace AudioVisualizer
 			return g_pLoggingChannel->StartActivity(HStringReference(szName).Get(),ppActivity);
 		}
 
-		HRESULT Trace::Log_Flush()
+		HRESULT Trace::Log_ClearOutputQueue(AudioVisualizer::IAnalyzerFrame *pFrame, size_t queueSize)
 		{
-			return g_pLoggingChannel->LogEvent(HStringReference(EVT_FLUSH).Get());
+			HRESULT hr = S_OK;
+			ComPtr<ILoggingFields> spFields;
+			hr = CreateLoggingFields(&spFields);
+			if (FAILED(hr))
+				return hr;
+
+			ComPtr<IVisualizationDataFrame> dataFrame = dynamic_cast<IVisualizationDataFrame *>(pFrame);
+			AddVisualizationFrameProperties(dataFrame.Get(), spFields.Get(), L"Time", L"Duration");
+
+			spFields->AddUInt32(HStringReference(L"QueueSize").Get(), (UINT32)queueSize);
+			hr = g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_CLEAR_OUTPUT).Get(), spFields.Get());
+			return hr;
 		}
+		HRESULT Trace::Log_MftProcessMessage(MFT_MESSAGE_TYPE msg)
+		{
+			ComPtr<ILoggingFields> spFields;
+			HRESULT hr = CreateLoggingFields(&spFields);
+			spFields->AddInt32(HStringReference(L"MessageId").Get(),(INT32) msg);
+			return g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_MFT_PROCESSMSG).Get(), spFields.Get());
+		}
+		HRESULT Trace::Log_GetPresentationTime(IMFPresentationClock *pClock, REFERENCE_TIME time, HRESULT hr)
+		{
+			ComPtr<ILoggingFields> spFields;
+			CreateLoggingFields(&spFields);
+			spFields->AddTimeSpan(HStringReference(L"Time").Get(), TimeSpan() = { time });
+			spFields->AddUInt32WithFormat(HStringReference(L"pClock").Get(), (UINT32)pClock, LoggingFieldFormat::LoggingFieldFormat_Hexadecimal);
+			spFields->AddInt32WithFormat(HStringReference(L"HR").Get(), hr, LoggingFieldFormat::LoggingFieldFormat_HResult);
+			return g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_GET_PRESENTATION_TIME).Get(), spFields.Get());
+		}
+
+		HRESULT Trace::Log_SetPresentationClock(IMFPresentationClock * pClock)
+		{
+			ComPtr<ILoggingFields> spFields;
+			HRESULT hr = CreateLoggingFields(&spFields);
+			if (pClock != nullptr)
+			{
+				MFCLOCK_STATE clockState;
+				pClock->GetState(0, &clockState);
+				spFields->AddInt32(HStringReference(L"Clock").Get(), clockState);
+			}
+			else
+			{
+				spFields->AddEmpty(HStringReference(L"Clock").Get());
+
+			}
+			return g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_SET_PRESENTATION_CLOCK).Get(), spFields.Get());
+		}
+
+
 	}
 }

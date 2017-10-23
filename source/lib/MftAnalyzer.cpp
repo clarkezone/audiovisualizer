@@ -75,15 +75,14 @@ namespace AudioVisualizer
 			return E_POINTER;
 		*ppData = nullptr;
 
-		MFTIME currentPosition = -1;
+		MFTIME currentPosition = GetPresentationTime();
+
 		HRESULT hr = S_OK;
-		if (m_spPresentationClock != nullptr) {
-			m_spPresentationClock->GetTime(&currentPosition);
-		}
+
 		if (currentPosition != -1)	// If no presentation position then return nullptr
 		{
 			ComPtr<IVisualizationDataFrame> spFrameFound;
-#ifdef _TRACE
+#ifdef _TRACE_LOCKS
 			AudioVisualizer::Diagnostics::Trace::Trace_Lock(&m_csOutputQueueAccess,L"OutputQueue",
 				[&hr,this,currentPosition,&spFrameFound]
 			{
@@ -101,7 +100,7 @@ namespace AudioVisualizer
 		}
 
 #ifdef _TRACE
-		//AudioVisualizer::Diagnostics::Trace::Log_GetData(currentPosition, *ppData,m_AnalyzerOutput.empty() ? nullptr : m_AnalyzerOutput.front().Get(), m_AnalyzerOutput.size(),hr);
+		AudioVisualizer::Diagnostics::Trace::Log_GetData(currentPosition, *ppData,m_AnalyzerOutput.empty() ? nullptr : m_AnalyzerOutput.front().Get(), m_AnalyzerOutput.size(),hr);
 #endif
 		return hr;
 	}
@@ -648,6 +647,8 @@ namespace AudioVisualizer
 
 		HRESULT hr = S_OK;
 
+		Diagnostics::Trace::Log_MftProcessMessage(eMessage);
+
 		switch (eMessage)
 		{
 		case MFT_MESSAGE_COMMAND_FLUSH:
@@ -678,6 +679,7 @@ namespace AudioVisualizer
 			break;
 
 		case MFT_MESSAGE_NOTIFY_BEGIN_STREAMING:
+			hr = Analyzer_Flush();	// New stream starts, flush any state
 			break;
 
 		case MFT_MESSAGE_NOTIFY_END_STREAMING:
@@ -689,7 +691,6 @@ namespace AudioVisualizer
 			break;
 
 		case MFT_MESSAGE_NOTIFY_START_OF_STREAM:
-			hr = Analyzer_Reset();
 			break;
 		}
 
@@ -769,6 +770,13 @@ namespace AudioVisualizer
 		return hr;
 	}
 
+	HRESULT CAnalyzerEffect::SetPresentationClock(IMFPresentationClock * pPresentationClock)
+	{
+		m_spPresentationClock = pPresentationClock;
+		Diagnostics::Trace::Log_SetPresentationClock(pPresentationClock);
+		return S_OK;
+	}
+
 	HRESULT CAnalyzerEffect::Analyzer_TestInputType(IMFMediaType * pMediaType)
 	{
 		if (pMediaType == nullptr)	// Allow nullptr
@@ -842,6 +850,7 @@ namespace AudioVisualizer
 		// Allow processing after a reset event.
 		_bResetAnalyzer = false;
 
+		auto lock = m_csAnalyzerAccess.Lock();
 		HRESULT hr = S_OK;
 		long position = -1;
 		if (_analyzer->GetPosition() == -1)	// Sample index not set, get time from sample
@@ -916,6 +925,7 @@ namespace AudioVisualizer
 		// Process data until not suspended, not in a reset and output is available
 		while (!m_bIsSuspended && !_bResetAnalyzer && _analyzer->IsOutputAvailable())
 		{
+			auto lock = m_csAnalyzerAccess.Lock();
 			ComPtr<ScalarData> rms;
 			if ((int)_analyzerTypes & (int)AnalyzerType::RMS)
 				rms = Make<ScalarData>(m_nChannels);
@@ -927,7 +937,7 @@ namespace AudioVisualizer
 			ComPtr<ArrayData> spectrum;
 			if ((int)_analyzerTypes & (int)AnalyzerType::Spectrum)
 			{
-				float maxFreq = (m_FramesPerSecond >> 1) / _analyzer->GetDownsampleRate();
+				float maxFreq = (float)(m_FramesPerSecond >> 1) / (float)_analyzer->GetDownsampleRate();
 				spectrum = Make<ArrayData>(m_nChannels,
 					m_FftLength >> 1,
 					ScaleType::Linear,
@@ -940,6 +950,8 @@ namespace AudioVisualizer
 
 			bool bStepSuccess = _analyzer->Step(&position,rms->GetBuffer(),peak->GetBuffer(),spectrum->GetBuffer());
 
+			lock.Unlock();
+
 			ComPtr<VisualizationDataFrame> dataFrame = Make<VisualizationDataFrame>(
 				frames_to_time(position),
 				(REFERENCE_TIME)(1e7 / m_fOutputFps),
@@ -948,11 +960,10 @@ namespace AudioVisualizer
 				spectrum.Get()
 				);
 			
-
 			// Only push the result if reset is not pending
 			if (!_bResetAnalyzer && bStepSuccess)
 			{
-#ifdef _TRACE
+#ifdef _TRACE_LOCKS
 				AudioVisualizer::Diagnostics::Trace::Trace_Lock(&m_csOutputQueueAccess,L"OutputQueue",
 					[=] {
 					Analyzer_CompactOutputQueue();
@@ -964,15 +975,8 @@ namespace AudioVisualizer
 				Analyzer_CompactOutputQueue();
 				m_AnalyzerOutput.push(dataFrame);
 #endif
-			
 			}
 		}
-	}
-
-	HRESULT CAnalyzerEffect::Analyzer_Reset()
-	{
-		_analyzer->Flush();
-		return S_OK;
 	}
 
 	HRESULT CAnalyzerEffect::Analyzer_Flush()
@@ -981,13 +985,10 @@ namespace AudioVisualizer
 		_bResetAnalyzer = true;
 		// Release input sample and reset the analyzer and queues
 		// Clean up any state from buffer copying
-		Analyzer_Reset();
-		Analyzer_FlushOutputQueue();
+		auto analyzerLock = m_csAnalyzerAccess.Lock();
+		_analyzer->Flush();
+		Analyzer_ClearOutputQueue();	// This call locks the output queue
 		m_spSample.Reset();
-
-#ifdef _TRACE
-		Diagnostics::Trace::Log_Flush();
-#endif
 		return S_OK;
 	}
 
@@ -1000,13 +1001,13 @@ namespace AudioVisualizer
 #ifdef _TRACE
 			AudioVisualizer::Diagnostics::Trace::Log_OutputQueuePop(m_AnalyzerOutput.front().Get(),m_AnalyzerOutput.size(), 1);
 #endif
-			//m_AnalyzerOutput.front() = nullptr;
+			m_AnalyzerOutput.front() = nullptr;
 			m_AnalyzerOutput.pop();
 		}
 		return S_OK;
 	}
 
-	HRESULT CAnalyzerEffect::Analyzer_FlushOutputQueue()
+	HRESULT CAnalyzerEffect::Analyzer_ClearOutputQueue()
 	{
 		auto lock = m_csOutputQueueAccess.Lock();
 
@@ -1015,9 +1016,14 @@ namespace AudioVisualizer
 #ifdef _TRACE
 			AudioVisualizer::Diagnostics::Trace::Log_OutputQueuePop(m_AnalyzerOutput.front().Get(),m_AnalyzerOutput.size(), 2);
 #endif
-			//m_AnalyzerOutput.front() = nullptr;
+			m_AnalyzerOutput.front() = nullptr;
 			m_AnalyzerOutput.pop();
 		}
+#ifdef _TRACE
+		AudioVisualizer::Diagnostics::Trace::Log_ClearOutputQueue(
+			!m_AnalyzerOutput.empty() ? m_AnalyzerOutput.front().Get() : nullptr, 
+			m_AnalyzerOutput.size());
+#endif
 		return S_OK;
 	}
 
@@ -1064,14 +1070,28 @@ namespace AudioVisualizer
 					return S_FALSE;
 				}
 				// Current position is after the item in the queue - remove and continue searching
-				auto front = m_AnalyzerOutput.front().Get();
 #ifdef _TRACE
 				AudioVisualizer::Diagnostics::Trace::Log_OutputQueuePop(m_AnalyzerOutput.front().Get(),m_AnalyzerOutput.size(), 0);
 #endif
+				m_AnalyzerOutput.front() = nullptr;
 				m_AnalyzerOutput.pop();
 			}
 		}
 		return S_FALSE;
+	}
+
+	REFERENCE_TIME CAnalyzerEffect::GetPresentationTime()
+	{
+		MFTIME presentationTime = -1;
+		HRESULT hr = S_OK;
+		if (m_spPresentationClock != nullptr)
+		{
+			hr = m_spPresentationClock->GetTime(&presentationTime);
+		}
+#ifdef _TRACE
+		Diagnostics::Trace::Log_GetPresentationTime(m_spPresentationClock.Get(),presentationTime, hr);
+#endif
+		return presentationTime;
 	}
 
 	STDMETHODIMP CAnalyzerEffect::SetProperties(ABI::Windows::Foundation::Collections::IPropertySet * pConfiguration)

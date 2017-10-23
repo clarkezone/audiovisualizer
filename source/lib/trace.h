@@ -52,7 +52,7 @@ namespace AudioVisualizer
 			static HRESULT Log_SetInputPosition(long frameIndex);
 			static HRESULT Log_ProcessSample(IMFSample *pSample);
 			static HRESULT Log_StartCalculate(ABI::Windows::Foundation::Diagnostics::ILoggingActivity **ppActivity, long position, size_t bufferLength);
-			static HRESULT Log_GetData(REFERENCE_TIME currentPosition, AudioVisualizer::IAnalyzerFrame *pFrame, AudioVisualizer::IAnalyzerFrame *pQueueFront, size_t queueSize, HRESULT result);
+			static HRESULT Log_GetData(REFERENCE_TIME currentPosition, IVisualizationDataFrame *pFrame, AudioVisualizer::IAnalyzerFrame *pQueueFront, size_t queueSize, HRESULT result);
 			static HRESULT Log_OutputQueuePush(AudioVisualizer::IAnalyzerFrame *pFrame,size_t queueSize);
 			static HRESULT Log_OutputQueuePop(AudioVisualizer::IAnalyzerFrame *pFrame, size_t queueSize, int reason);
 
@@ -64,7 +64,11 @@ namespace AudioVisualizer
 			static HRESULT Log_dtor(const wchar_t *pTypeName,const void *ptr,size_t objCount,ILoggingActivity *pActivity);
 			static HRESULT Log_CloseObject(const wchar_t *pTypeName,const void *ptr,size_t objCount, ILoggingActivity *pActivity);
 			static HRESULT Log_RefCount_Impl(const wchar_t *pContext, IUnknown *pObject,ILoggingActivity *pActivity);
-			static HRESULT Log_Flush();
+
+			static HRESULT Log_ClearOutputQueue(AudioVisualizer::IAnalyzerFrame *pFrame, size_t queueSize);
+			static HRESULT Log_MftProcessMessage(MFT_MESSAGE_TYPE msg);
+			static HRESULT Log_GetPresentationTime(IMFPresentationClock *pClock,REFERENCE_TIME time, HRESULT hr);
+			static HRESULT Log_SetPresentationClock(IMFPresentationClock *pClock);
 
 			template<class T> static void Trace_Log_RefCount1(const wchar_t *szContext, T *pObject, ILoggingActivity *pActivity)
 			{

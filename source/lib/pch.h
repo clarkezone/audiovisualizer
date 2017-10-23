@@ -3,6 +3,7 @@
 #define _TRACE // Enable ETW tracing
 
 #ifdef _DEBUG
+	//#define _TRACE_LOCKS	// Trace locking
 	#define ENABLE_LIFESPAN_TRACKER
 	#define _CRTDBG_MAP_ALLOC 
 #endif

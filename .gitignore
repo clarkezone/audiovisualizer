@@ -262,3 +262,6 @@ __pycache__/
 
 #Test generated files
 Generated Files/
+
+#MIDL generated header files
+AudioVisualizer.abi.h

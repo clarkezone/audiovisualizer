@@ -227,15 +227,6 @@ namespace AudioVisualizer
 		[default] interface IVisualizationDataFrame; 
 	}
 
-	[uuid(B7589126-33C4-43E8-9D8E-BCF3F3DCE802)]
-	[version(1.0)]
-	interface IVisualizationSourceStatics : IInspectable
-	{
-		HRESULT CreateFromMediaElementAsync([in] Windows.UI.Xaml.Controls.MediaElement *pObject, [out, retval] Windows.Foundation.IAsyncOperation<IVisualizationSource *> **ppAsyncOp);
-		HRESULT CreateFromMediaPlayerAsync([in] Windows.Media.Playback.MediaPlayer *pObject, [out, retval] Windows.Foundation.IAsyncOperation<IVisualizationSource *> **ppAsyncOp);
-		HRESULT CreateFromAudioNode([in] Windows.Media.Audio.IAudioNode *pObject, [out, retval] IVisualizationSource **ppSource);
-	}
-
 	[uuid(B74989FE-1436-4179-92B6-E06B540E0C7E)]
 	[version(1.0)]
 	interface IVisualizationSource : IInspectable {
@@ -255,12 +246,33 @@ namespace AudioVisualizer
 		HRESULT ConfigureSpectrum([in] UINT32 fftLength, [in] float overlap);
 	};
 
-	[version(1.0)]
-	[static(AudioVisualizer.IVisualizationSourceStatics, 1.0)]
-	runtimeclass VisualizationSource 
+	runtimeclass PlaybackSource;
+
+	[uuid(086BA13A-7883-4747-A944-4782DFE1ED23)]
+	[version(1.0),exclusiveto(PlaybackSource)]
+	interface IPlaybackSourceFactory : IInspectable
 	{
-		// [default] interface IVisualizationSource;
+		HRESULT Create([in] Windows.Media.Playback.MediaPlayer *mediaPlayer,[out,retval] PlaybackSource **result);
+	}
+
+	[uuid(84181045-1CC8-44A0-98E7-1EF8DE86F14F)]
+	[version(1.0)]
+	interface IPlaybackSource : IInspectable
+	{
+		[propget] HRESULT Source([out, retval] IVisualizationSource **result);
+		[eventadd] HRESULT SourceChanged(
+			[in] Windows.Foundation.TypedEventHandler<IInspectable*, IVisualizationSource *>* value,
+			[out, retval] EventRegistrationToken* token);
+		[eventremove] HRESULT SourceChanged([in] EventRegistrationToken token);
 	};
+
+	[version(1.0), marshaling_behavior(agile), threading(both)]
+	[activatable(IPlaybackSourceFactory, 1.0)]
+	runtimeclass PlaybackSource
+	{
+		[default] interface IPlaybackSource;
+	}
+
 
 	[version(1.0)]
 	runtimeclass MftAnalyzer

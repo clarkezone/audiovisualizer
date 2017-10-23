@@ -6,13 +6,57 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:a="using:AudioVisualizer"
     mc:Ignorable="d" Loaded="Page_Loaded">
-
-    <Grid Background="Black" Padding="40,0,0,0">
+    <NavigationView IsPaneOpen="True" ItemInvoked="NavigationView_ItemInvoked">
+        <NavigationView.HeaderTemplate>
+            <DataTemplate>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center">Now playing</TextBlock>
+                    <CommandBar Grid.Column="1">
+                        <AppBarButton Icon="OpenFile" Click="OpenFile_Click"></AppBarButton>
+                    </CommandBar>
+                </Grid>
+            </DataTemplate>
+        </NavigationView.HeaderTemplate>
+        <NavigationView.MenuItems>
+            <NavigationViewItem Content="Player">
+            </NavigationViewItem>
+            <NavigationViewItem Content="Information">
+            </NavigationViewItem>
+        </NavigationView.MenuItems>
+        <NavigationView.Content>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Frame Grid.Row="0" x:Name="ContentFrame">
+                </Frame>
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Slider x:Name="seekSlider" Grid.Row="0" Orientation="Horizontal" Margin="20,5"></Slider>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
+                        <a:CustomVisualizer x:Name="PositionDisplay" Height="50" Width="250" Draw="PositionDisplay_Draw"></a:CustomVisualizer>
+                        <AppBarButton Icon="Play"></AppBarButton>
+                        <AppBarButton Icon="Stop"></AppBarButton>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </NavigationView.Content>
+    </NavigationView>
+    <!--<Grid Background="Black" Padding="40,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="1*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
+
         <CommandBar Grid.Row="0" Background="Transparent" RequestedTheme="Dark">
             <AppBarButton Icon="OpenFile" Click="OpenFile_Click"></AppBarButton>
         </CommandBar>
@@ -31,12 +75,11 @@
             <a:DiscreteVUBar x:Name="vuBar" Grid.Column="0" Grid.Row="1" Margin="10" Padding="10" BorderBrush="Black" BorderThickness="1"></a:DiscreteVUBar>
             <a:CustomVisualizer Grid.Column="1" Grid.Row="1" x:Name="visualizer" Draw="visualizer_Draw" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></a:CustomVisualizer>
         </Grid>
-        <!--<MediaElement Grid.Row="2" x:Name="mePlayer"></MediaElement>-->
         <StackPanel Grid.Row="2" Orientation="Horizontal">
             <ToggleSwitch IsOn="True" Grid.Row="2" Margin ="20,0"
                       VerticalAlignment="Center" Toggled="ToggleSwitch_Toggled">Visualization</ToggleSwitch>
             <Slider BorderBrush="White" BorderThickness="1" Padding="4" Margin="4" Header="Play position:" Width="300" Orientation="Horizontal" x:Name="seekBar" ValueChanged="seekBar_ValueChanged"></Slider>
         </StackPanel>
-
-    </Grid>
+        
+    </Grid>-->
 </Page>

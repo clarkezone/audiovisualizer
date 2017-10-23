@@ -106,7 +106,7 @@ namespace AudioVisualizer
 		{
 			if (pCount == nullptr)
 				return E_INVALIDARG;
-			*pCount = _size;
+			*pCount = (UINT32) _size;
 			return S_OK;
 		}
 
@@ -123,7 +123,7 @@ namespace AudioVisualizer
 		{
 			if (pSize == nullptr)
 				return E_INVALIDARG;
-			*pSize = _channels;
+			*pSize = (UINT32) _channels;
 			return S_OK;
 		}
 		STDMETHODIMP IndexOf(IVectorView<float> * value, unsigned int *, boolean *)

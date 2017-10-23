@@ -41,7 +41,7 @@ namespace AudioVisualizer
 		{
 			if (pSize == nullptr)
 				return E_INVALIDARG;
-			*pSize = _size;
+			*pSize = (UINT32) _size;
 			return S_OK;
 		}
 		STDMETHODIMP IndexOf(float value, unsigned int *, boolean *)

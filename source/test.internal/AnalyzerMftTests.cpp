@@ -564,7 +564,7 @@ namespace AnalyzerTest
 			mediaType->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, &sampleRate);
 			mediaType->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &channels);
 
-			size_t sampleCount = sampleLength * sampleRate / 10000000L;
+			size_t sampleCount = (size_t)(sampleLength * sampleRate / 10000000L);
 
 			CGenerator g(sampleRate, channels);
 			HRESULT hr = S_OK;
@@ -574,7 +574,7 @@ namespace AnalyzerTest
 				ComPtr<IMFSample> sample;
 				g.GetSample(&sample,sampleCount, [=](unsigned long offset, unsigned channel)
 				{
-					return (1.0 / (channel+1)) * sinf(offset*3.14f/(4.0 * channel));
+					return (1.0f / (channel+1)) * sinf(offset*3.14f/(4.0f * channel));
 				});
 				Sleep(10);
 				Test_PumpSample(pMft, sample.Get());
