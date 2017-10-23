@@ -16,6 +16,7 @@ namespace AudioVisualizer
 			_stepOverlap(0),
 			_downsampleFactor(1),
 			_downsampleCounter(0),
+
 			_frameSize(2)	// Default value is stereo
 		{
 			_pData = (float *)malloc(buffer_size * sizeof(float));
