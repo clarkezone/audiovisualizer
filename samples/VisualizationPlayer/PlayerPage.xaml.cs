@@ -26,5 +26,31 @@ namespace VisualizationPlayer
         {
             this.InitializeComponent();
         }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            if (App.Player.VisualizationSource != null)
+            {
+                App.Player.VisualizationSource.IsSuspended = false;
+                ledbar.Source = App.Player.VisualizationSource;
+                App.Player.VisualizationSourceChanged += Player_VisualizationSourceChanged;
+            }
+
+        }
+
+        private void Player_VisualizationSourceChanged(object sender, AudioVisualizer.IVisualizationSource source)
+        {
+            ledbar.Source = source;
+        }
+
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        {
+            base.OnNavigatingFrom(e);
+            if (App.Player.VisualizationSource != null)
+            {
+                App.Player.VisualizationSource.IsSuspended = true;
+            }
+        }
     }
 }
