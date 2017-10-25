@@ -30,8 +30,7 @@ namespace AudioVisualizer
 		{
 			if (ppSource == nullptr)
 				return E_POINTER;
-			*ppSource = _visualizationSource.Get();
-			return S_OK;
+			return _visualizationSource.CopyTo(ppSource);
 		}
 
 		STDMETHODIMP put_Source(ABI::AudioVisualizer::IVisualizationSource *pSource)

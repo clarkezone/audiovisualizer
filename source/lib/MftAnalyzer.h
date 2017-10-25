@@ -49,7 +49,7 @@ namespace AudioVisualizer
 
 		std::shared_ptr<Math::CAudioAnalyzer> _analyzer;
 	
-		Microsoft::WRL::Wrappers::CriticalSection m_csAnalyzerConfig;	// Critical section to lock analyzer configuration changing
+		Microsoft::WRL::Wrappers::CriticalSection m_csAnalyzerAccess;	// Critical section to lock analyzer configuration changing
 		Microsoft::WRL::Wrappers::CriticalSection m_csOutputQueueAccess;
 		std::queue<ComPtr<IAnalyzerFrame>> m_AnalyzerOutput;
 
@@ -70,10 +70,9 @@ namespace AudioVisualizer
 		HRESULT Analyzer_ProcessSample(IMFSample *pSample);
 		HRESULT Analyzer_ScheduleProcessing();
 		void Analyzer_ProcessData();
-		HRESULT Analyzer_Reset();
 		HRESULT Analyzer_Flush(); 
 		HRESULT Analyzer_CompactOutputQueue();
-		HRESULT Analyzer_FlushOutputQueue();
+		HRESULT Analyzer_ClearOutputQueue();
 		HRESULT Analyzer_Resume();
 		HRESULT Analyzer_Suspend();
 		HRESULT Analyzer_FFwdQueueTo(REFERENCE_TIME time, IVisualizationDataFrame **ppFrame);
@@ -85,13 +84,7 @@ namespace AudioVisualizer
 		inline REFERENCE_TIME frames_to_time(long frames) { return 10000000L * (long long)frames / m_FramesPerSecond; }
 		inline REFERENCE_TIME samples_to_time(long samples) { return 10000000L * (long long)(samples / m_nChannels) / m_FramesPerSecond; }
 
-		REFERENCE_TIME GetPresentationTime()
-		{
-			MFTIME presentationTime = -1;
-			if (m_spPresentationClock != nullptr)
-				m_spPresentationClock->GetTime(&presentationTime);
-			return presentationTime;
-		}
+		REFERENCE_TIME GetPresentationTime();
 #pragma endregion
 
 
@@ -127,11 +120,7 @@ namespace AudioVisualizer
 
 #pragma region IMFClockConsumer implementation
 		Microsoft::WRL::ComPtr<IMFPresentationClock> m_spPresentationClock;
-		HRESULT STDMETHODCALLTYPE SetPresentationClock(_In_opt_ IMFPresentationClock *pPresentationClock)
-		{
-			m_spPresentationClock = pPresentationClock;
-			return S_OK;
-		}
+		HRESULT STDMETHODCALLTYPE SetPresentationClock(_In_opt_ IMFPresentationClock *pPresentationClock);
 		HRESULT STDMETHODCALLTYPE GetPresentationClock(_COM_Outptr_opt_result_maybenull_ IMFPresentationClock **pPresentationClock)
 		{
 			return E_NOTIMPL;
@@ -143,8 +132,6 @@ namespace AudioVisualizer
 		~CAnalyzerEffect();
 		HRESULT RuntimeClassInitialize();
 #pragma region IVisualizationSource
-
-		//STDMETHODIMP Configure(ABI::AudioVisualizer::AnalyzerType types, float outputFps,unsigned fftLength,  float inputOverlap);
 		STDMETHODIMP GetData(ABI::AudioVisualizer::IVisualizationDataFrame **pData);
 		STDMETHODIMP get_IsSuspended(boolean *pbIsSuspended);
 		STDMETHODIMP put_IsSuspended(boolean bIsSuspended);

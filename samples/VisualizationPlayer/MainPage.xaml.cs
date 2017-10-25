@@ -31,39 +31,11 @@ namespace VisualizationPlayer
     public sealed partial class MainPage : Page
     {
 
-        MediaPlayer _player;
-
         public MainPage()
         {
             this.InitializeComponent();
-            _player = new MediaPlayer();
-            _player.MediaOpened += Player_MediaOpened;
-            _player.PlaybackSession.PositionChanged += PlaybackSession_PositionChanged;
         }
 
-        bool _bInsideUpdate = false;
-        private async void PlaybackSession_PositionChanged(MediaPlaybackSession sender, object args)
-        {
-
-            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
-    () =>
-    {
-        _bInsideUpdate = true;
-        seekBar.Value = _player.PlaybackSession.Position.TotalSeconds;
-        _bInsideUpdate = false;
-    }
-    );
-        }
-
-        private async void Player_MediaOpened(MediaPlayer sender, object args)
-        {
-            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
-                () =>
-                {
-                    seekBar.Maximum = _player.PlaybackSession.NaturalDuration.TotalSeconds;
-                }
-            );
-        }
 
         private async void OpenFile_Click(object sender, RoutedEventArgs e)
         {
@@ -76,33 +48,48 @@ namespace VisualizationPlayer
             var file = await picker.PickSingleFileAsync();
             if (file != null)
             {
-                _player.Source = MediaSource.CreateFromStorageFile(file);
-                _player.Play();
+                App.Player.OpenFile(file);
+                App.Player.Play();
             }
         }
 
 
-        private IVisualizationSource m_VisualizationSource;
-
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            CreateVisualizer();
+            App.Player.MediaOpened += Player_MediaOpened;
+            App.Player.PositionChanged += Player_PositionChanged;
+            App.Player.VisualizationSourceChanged += Player_VisualizationSourceChanged; 
+            PositionDisplay.Source = App.Player.VisualizationSource;
         }
 
-        private async void CreateVisualizer()
+        private void Player_VisualizationSourceChanged(object sender, IVisualizationSource visualizationSource)
         {
-
-            m_VisualizationSource = await AudioVisualizer.VisualizationSource.CreateFromMediaPlayerAsync(_player);
-            visualizer.Source = m_VisualizationSource;
-            vuBar.Source = m_VisualizationSource;
+            PositionDisplay.Source = visualizationSource;
         }
 
-        private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        private void Player_VisualizationSourceCreated(object sender, IVisualizationSource source)
         {
-            ToggleSwitch sw = (ToggleSwitch)sender;
-            if (m_VisualizationSource != null)
-                m_VisualizationSource.IsSuspended = !sw.IsOn;
+            PositionDisplay.Source = source;
         }
+
+        private async void Player_PositionChanged(object sender, TimeSpan position)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                () =>
+                {
+                    seekSlider.Value = position.TotalSeconds;
+                });
+        }
+
+        private async void Player_MediaOpened(object sender, object e)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                () =>
+                {
+                    seekSlider.Maximum = App.Player.MediaDuration.TotalSeconds;
+                });
+        }
+
 
         ScalarData _emptyVolumeData = new ScalarData(2);    // Create empty data for volume data
         ScalarData _previousRMS;
@@ -183,11 +170,34 @@ namespace VisualizationPlayer
             }
         }
 
-        private void seekBar_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+
+        private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
-            if (!_bInsideUpdate)
+            if (args.IsSettingsInvoked)
             {
-                _player.PlaybackSession.Position = TimeSpan.FromSeconds(e.NewValue);
+                // not implemented
+            }
+            else
+            {
+                switch (args.InvokedItem)
+                {
+                    case "Player":
+                        ContentFrame.Navigate(typeof(PlayerPage));
+                        break;
+                    case "Information":
+                        ContentFrame.Navigate(typeof(InformationPage));
+                        break;
+                }
+            }
+        }
+
+        private void PositionDisplay_Draw(IVisualizer sender, VisualizerDrawEventArgs args)
+        {
+            if (args.Data?.Time != null)
+            {
+                string timeString = args.Data.Time.Value.ToString("mm\\:ss\\.f");
+                var ds = (CanvasDrawingSession)args.DrawingSession;
+                ds.DrawText(timeString, 0, 0, Colors.Gray);
             }
         }
     }
