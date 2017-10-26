@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="AudioVisualizer.common.props"/>
+    <PropertyGroup Label="Configuration">
+        <Win2DPackageDirectory>$(SolutionDir)packages\Win2D.uwp.1.21.0</Win2DPackageDirectory>
+        <UnmergedWinmdDirectory>$(IntermediateOutputPath)UnmergedWinMD</UnmergedWinmdDirectory>
+        <MergedWinmdDirectory>$(SolutionDir)bin\$(FullPlatform)\$(Configuration)\MergedWinMD</MergedWinmdDirectory>
+        <Win2DWinmdDirectory>$(Win2DPackageDirectory)\lib\uap10.0</Win2DWinmdDirectory>
+        <Win2DIncludeDirectory>$(Win2DPackageDirectory)\include</Win2DIncludeDirectory>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <OutDir>$(__OutputPath)\</OutDir>
+        <GeneratedFilesDir>$(BaseIntermediateOutputPath)\Generated Files\</GeneratedFilesDir>
+        <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
+    </PropertyGroup>
+</Project>
