@@ -1,12 +1,16 @@
 # Build status
-[![Build status](https://ci.appveyor.com/api/projects/status/p4a7jmpa9391bxu8?svg=true)](https://ci.appveyor.com/project/clarkezone/audiovisualizer) 
+ 
+
+## Build status
+
+| Target | Branch | Status | Recommended Nuget packages version |
+| ------ | ------ | ------ | ------ |
+| Current Release | master | [![Build status](https://ci.appveyor.com/api/projects/status/p4a7jmpa9391bxu8/branch/master?svg=true)](https://ci.appveyor.com/api/projects/status/p4a7jmpa9391bxu8/branch/master?svg=true) | [![NuGet](https://img.shields.io/nuget/v/UWPAudioVisualizer.svg)](https://www.nuget.org/packages/UWPAudioVisualizer/) |
+| Pre-release | dev | [![Build status](https://ci.appveyor.com/api/projects/status/p4a7jmpa9391bxu8?svg=true)](https://ci.appveyor.com/project/clarkezone/audiovisualizer) | |
 
 # Introduction
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
 
-AudioAnalyzer project contains a Media Foundation Transform object that can be loaded as MediaPlayer effect
-This effect uses overlapped FFT to produce spectrum of the audio data
-
+The AudioAnalyzer UWP extension DLL contains a Media Foundation Transform object that can be loaded as MediaPlayer effect and uses overlapped FFT to produce spectrum of the audio data as well as a prebuilt XAML custom control that renders both stock and custom visulizations.
 
 # Getting Started
 TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
