@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2002
+VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Shared.Library", "source\lib\uwp.lib.vcxproj", "{EACDC44D-D859-46ED-934F-932CD50E507A}"
 EndProject
@@ -19,6 +19,13 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{111A7E4A-BDB2-46CF-9D56-D93D2242FCB6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualizationPlayer", "samples\VisualizationPlayer\VisualizationPlayer.csproj", "{105FCC78-533D-4C38-A302-BB8D63AA1E5F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{648791B2-F68B-4588-B1C5-80E2DBD9699E}"
+	ProjectSection(SolutionItems) = preProject
+		appveyorbuild.bat = appveyorbuild.bat
+		AudioAnalyzer.nuspec = AudioAnalyzer.nuspec
+		buildbinandnuget.bat = buildbinandnuget.bat
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
