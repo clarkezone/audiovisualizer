@@ -357,11 +357,9 @@
   </Target>
   <ItemGroup>
     <ClInclude Include="ArrayData.h" />
-    <ClInclude Include="AsyncOperation.h" />
     <ClInclude Include="AudioAnalyzer.h" />
     <ClInclude Include="AudioBuffer.h" />
     <ClInclude Include="AudioMath.h" />
-    <ClInclude Include="AudioVisualizer.abi.h" />
     <ClInclude Include="BaseVisualizer.h" />
     <ClInclude Include="CustomVisualizer.h" />
     <ClInclude Include="DiscreteVUBar.h" />
@@ -370,7 +368,6 @@
     <ClInclude Include="PlaybackSource.h" />
     <ClInclude Include="MftAnalyzer.h" />
     <ClInclude Include="Microsoft.Graphics.Canvas.h" />
-    <ClInclude Include="Nullable.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ScalarData.h" />
     <ClInclude Include="targetver.h" />

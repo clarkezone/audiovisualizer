@@ -3,7 +3,6 @@
 
 #include "AudioVisualizer.abi.h"
 #include <DirectXMath.h>
-#include <vector>
 #include "LifeSpanTracker.h"
 #include "trace.h"
 
@@ -15,7 +14,7 @@ using namespace ABI::Windows::Foundation::Diagnostics;
 
 namespace AudioVisualizer
 {
-	class ScalarData : public RuntimeClass<IVectorView<float>,IScalarData>
+	class ScalarData : public RuntimeClass<IVectorView<float>,IIterable<float>,IScalarData>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_ScalarData, BaseTrust);
 
@@ -56,6 +55,14 @@ namespace AudioVisualizer
 			*pScale = _amplitudeScale;
 			return S_OK;
 		}
+
+		STDMETHODIMP First(IIterator<float> **ppIterator)
+		{
+			//auto iterator = Make<IteratorImpl<float>>((float *)_pData, _size);
+			//return iterator.CopyTo(ppIterator);
+			return E_NOTIMPL;
+		}
+
 		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, IScalarData **ppResult);
 		STDMETHODIMP ApplyRiseAndFall(IScalarData *pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, IScalarData **ppResult);
 	};

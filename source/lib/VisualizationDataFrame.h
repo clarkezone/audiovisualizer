@@ -19,13 +19,14 @@ using namespace Microsoft::WRL::Wrappers;
 
 namespace AudioVisualizer
 {
+	/*
 	struct IAnalyzerFrame : public IUnknown
 	{
 		virtual bool IsBefore(REFERENCE_TIME time)=0;	// true if time < frame->time
 		virtual bool IsAfter(REFERENCE_TIME time) = 0;	// true is time >= frame->time + 50us
-	};
+	};*/
 
-	class VisualizationDataFrame : public RuntimeClass<IVisualizationDataFrame,FtmBase>, public LifespanTracker<VisualizationDataFrame>, public IAnalyzerFrame
+	class VisualizationDataFrame : public RuntimeClass<IVisualizationDataFrame,FtmBase>, public LifespanTracker<VisualizationDataFrame>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_VisualizationDataFrame, BaseTrust)
 		TimeSpan _time;
@@ -70,8 +71,6 @@ namespace AudioVisualizer
 				return E_INVALIDARG;
 			return _spectrum.CopyTo(ppData);
 		}
-
-		//STDMETHODIMP Close();
 
 		bool IsBefore(REFERENCE_TIME time) { return time < _time.Duration; }
 		bool IsAfter(REFERENCE_TIME time) { return time >= (_time.Duration + _duration.Duration) + 50; }

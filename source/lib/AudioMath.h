@@ -11,6 +11,7 @@ namespace AudioVisualizer
 		void ConvertToLinear(const DirectX::XMVECTOR *pSource, DirectX::XMVECTOR *pResult, size_t count, float scaler = g_fDbInverseScaler /* This is log10(e)/ 20.0f for db conversion */);
 		void ApplyRiseAndFall(const DirectX::XMVECTOR *pPrevious, const DirectX::XMVECTOR *pCurrent, DirectX::XMVECTOR *pResult, size_t count, float riseByT, float fallByT);
 		void SpectrumLinearTransform(const float *pSource, size_t sourceCount, float *pDest, size_t destCount);
+		void SpectrumTransform(const float *pSource, size_t sourceCount, float fromIndex,float toIndex, float *pDest, size_t destCount,bool bLinear);
 		void SpectrumLogTransform(const float *pSource, size_t sourceCount, float fromIndex, float toIndex, float *pDest, size_t destCount);
 
 	}

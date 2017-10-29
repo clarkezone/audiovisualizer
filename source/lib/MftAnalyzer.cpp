@@ -5,7 +5,6 @@
 #include <memory>
 #include <windows.media.core.interop.h>
 #include <trace.h>
-#include "Nullable.h"
 #include <VisualizationDataFrame.h>
 
 #pragma comment(lib, "mf.lib")

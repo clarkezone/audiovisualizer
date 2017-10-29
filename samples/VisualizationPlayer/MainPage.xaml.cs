@@ -30,6 +30,7 @@ namespace VisualizationPlayer
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        public PlayerService Player { get { return App.Player; } }
 
         public MainPage()
         {

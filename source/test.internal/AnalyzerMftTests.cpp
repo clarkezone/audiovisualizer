@@ -12,6 +12,7 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
+using namespace ABI::AudioVisualizer;
 
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "mfuuid.lib")
@@ -115,35 +116,6 @@ namespace AnalyzerTest
     TEST_CLASS(Analyzer)
     {
 	private:
-		/*
-		void IsFailed(HRESULT hr,const wchar_t *message,const __LineInfo *pLineInfo)
-		{
-			if (!FAILED(hr))
-			{
-				wchar_t assertMessage[1024];
-				swprintf_s(assertMessage, L"Operation expected to fail: (%s)", message);
-				Assert::Fail(assertMessage, pLineInfo);
-			}
-		}
-		void AssertHR::HasSucceeded(HRESULT hr, const wchar_t *message, const __LineInfo *pLineInfo)
-		{
-			if (!SUCCEEDED(hr))
-			{
-				wchar_t assertMessage[1024];
-				swprintf_s(assertMessage, L"Operation expected to succeed failed with code(%08X): (%s)", hr,message);
-				Assert::Fail(assertMessage, pLineInfo);
-			}
-		}
-		void IsOk(HRESULT hr, const wchar_t *message, const __LineInfo *pLineInfo)
-		{
-			if (hr != S_OK)
-			{
-				wchar_t assertMessage[1024];
-				swprintf_s(assertMessage, L"Operation expected to succeed with S_OK, failed with code(%08X): (%s)", hr, message);
-				Assert::Fail(assertMessage, pLineInfo);
-			}
-		}
-	*/
 		HRESULT Create_FloatMediaType(UINT32 samplesPerSecond, UINT32 channels, IMFMediaType **ppMediaType)
 		{
 			if (ppMediaType == nullptr)
@@ -276,54 +248,6 @@ namespace AnalyzerTest
 			AssertHR::HasSucceeded(hr, L"GetOutputStreamInfo", LINE_INFO());
 		}
 
-		/*
-		HRESULT Configure_Mft(IMFTransform *pMft, IMFMediaType *pType)
-		{
-			HRESULT hr = pMft->SetInputType(0, pType, 0);	// Set input type
-			if (FAILED(hr))
-				return hr;
-			hr = pMft->SetOutputType(0, pType, 0);
-			if (FAILED(hr))
-				return hr;
-
-			return hr;
-		}
-		void Test_ConfigureAnalyzer(ABI::AudioVisualizer::IVisualizationSource *pSource,unsigned sampleRate)
-		{
-			// Test first argument validation
-			
-			HRESULT hr = pSource->Configure(4000, 60.0f, 0.5f);	// FFT length not 2^n
-			Assert::AreEqual(E_INVALIDARG, hr, L"2^n FFT length argument test failed", LINE_INFO());
-
-			hr = pSource->Configure(4096, 0.9f, 0.5f);
-			Assert::AreEqual(E_INVALIDARG, hr, L"min fps test failed", LINE_INFO());
-			hr = pSource->Configure(4096, 120.1f, 0.5f);
-			Assert::AreEqual(E_INVALIDARG, hr, L"max fps test failed", LINE_INFO());
-			hr = pSource->Configure(4096, 60.0f, -1.0f);
-			Assert::AreEqual(E_INVALIDARG, hr, L"min overlap test failed", LINE_INFO());
-			hr = pSource->Configure(4096, 60.0f, 1.1f);
-			Assert::AreEqual(E_INVALIDARG, hr, L"max overlap test failed", LINE_INFO());
-			hr = pSource->Configure(256, 60.0f, 1.1f);
-			Assert::AreEqual(E_INVALIDARG, hr, L"fft to fps validation failed", LINE_INFO());
-			hr = pSource->Configure(2048, 60.0f, 0.5f);
-			AssertHR::HasSucceeded(hr, L"Configuring analyzer", LINE_INFO());
-			/*
-			hr = pSource->SetLinearFScale(2049);
-			Assert::AreEqual(E_INVALIDARG, hr, L"max output elements test failed", LINE_INFO());
-			hr = pSource->SetLinearFScale(0);
-			Assert::AreEqual(E_INVALIDARG, hr, L"min output elements test failed", LINE_INFO());
-
-			hr = pSource->SetLinearFScale(100);
-			AssertHR::HasSucceeded(hr, L"SetLinearFScale", LINE_INFO());
-
-			float fStep = 0.0f;
-			hr = pSource->get_FrequencyStep(&fStep);
-			AssertHR::HasSucceeded(hr, L"FStep", LINE_INFO());
-			Assert::AreEqual(float(sampleRate)/200.0f, fStep, L"FStep value", LINE_INFO());
-			
-		}
-		*/
-
 		void Get_Analyzer(IMFTransform *pMft,ABI::AudioVisualizer::IVisualizationSource **ppSource)
 		{
 			using namespace ABI::Windows::Foundation::Collections;
@@ -379,139 +303,6 @@ namespace AnalyzerTest
 			AssertHR::HasSucceeded(hr, L"StartOfStream", LINE_INFO());
 		}
 
-/*
-		void Test_Processing(IMFTransform *pMft,CFakeClock *pClock,ABI::AudioVisualizer::IVisualizationSource *pSource,unsigned sampleRate)
-		{
-			// pSource->SetLinearFScale(100);
-
-			using namespace ABI::Windows::Media;
-			using namespace ABI::Windows::Foundation;
-			CGenerator g(sampleRate, 2);
-			unsigned long sawToothPeriod = 100;	// Generate sawtooth for broad spectrum	
-			// Put 3 iterations though 
-			for (size_t i = 0; i < 3; i++)
-			{
-				ComPtr<IMFSample> spSample;
-				g.GetSample(&spSample, 8000, 
-					[=](unsigned long offset, unsigned channel) 
-				{ 
-					return channel == 0 ? (2.0f * float(offset % sawToothPeriod) / float(sawToothPeriod))-1 /*sinf(offset*3.14f/32.0f) : 0.0f; 
-				}
-				);
-				HRESULT hr = pMft->ProcessInput(0, spSample.Get(), 0);
-				AssertHR::HasSucceeded(hr, L"ProcessInput", LINE_INFO());
-
-				DWORD dwStatus = 0;
-				MFT_OUTPUT_DATA_BUFFER outData;
-				outData.dwStatus = 0;
-				outData.dwStreamID = 0;
-				outData.pEvents = nullptr;
-				outData.pSample = nullptr;
-
-				hr = pMft->ProcessOutput(0, 1, &outData, &dwStatus);
-				AssertHR::HasSucceeded(hr, L"ProcessOutput", LINE_INFO());
-
-				Assert::IsTrue(spSample.Get() == outData.pSample, L"MFT output sample not copied on ProcessOutput");
-				if (outData.pSample != nullptr)
-				{
-					ULONG refCount = outData.pSample->Release();
-					Assert::AreEqual(1uL, refCount, L"Process sample ref count", LINE_INFO());
-				}
-			}
-			
-			Sleep(200);	// Wait and allow processing
-			
-						// Test frame properties
-			pClock->SetTime(0);
-			ComPtr<IAudioFrame> spFrame;
-			HRESULT hr = S_OK; // pSource->GetFrame(&spFrame);
-			AssertHR::HasSucceeded(hr, L"GetFrame", LINE_INFO());
-			ComPtr<IMediaFrame> spMediaFrame;
-			hr = spFrame.As(&spMediaFrame);
-			AssertHR::HasSucceeded(hr, L"cast to mediaframe", LINE_INFO());
-			ComPtr<ABI::Windows::Foundation::Collections::IPropertySet> spPropSet;
-			hr = spMediaFrame->get_ExtendedProperties(&spPropSet);
-			AssertHR::HasSucceeded(hr, L"get props", LINE_INFO());
-			ComPtr<ABI::Windows::Foundation::Collections::IMap_impl<HSTRING, IInspectable *>> spFrameProperties;
-			hr = spPropSet.As(&spFrameProperties);
-			AssertHR::HasSucceeded(hr, L"get props interface", LINE_INFO());
-			ComPtr<IInspectable> spValue;
-			// Get RMS data offset
-			hr = spFrameProperties->Lookup(HStringReference(L"{0B82B25D-E6E1-4B6B-92A1-7EEE99D02CFE}").Get(), &spValue);
-			AssertHR::HasSucceeded(hr, L"get RMS data offset property", LINE_INFO());
-			ComPtr<ABI::Windows::Foundation::IReference<UINT32>> spRMSDataOffset;
-			hr = spValue.As(&spRMSDataOffset);
-			AssertHR::HasSucceeded(hr, L"get RMS data offset property", LINE_INFO());
-			UINT32 dataOffset;
-			hr = spRMSDataOffset->get_Value(&dataOffset);
-			AssertHR::HasSucceeded(hr, L"get value", LINE_INFO());
-			Assert::AreEqual(200u, dataOffset, L"RMS data offset", LINE_INFO());
-
-			hr = spFrameProperties->Lookup(HStringReference(L"{F4D65F78-CF5A-4949-88C1-76DAD605C313}").Get(), &spValue);
-			AssertHR::HasSucceeded(hr, L"get data step property", LINE_INFO());
-			ComPtr<ABI::Windows::Foundation::IReference<UINT32>> spDataStep;
-			hr = spValue.As(&spDataStep);
-			AssertHR::HasSucceeded(hr, L"get data step property", LINE_INFO());
-			UINT32 dataStep;
-			hr = spDataStep->get_Value(&dataStep);
-			AssertHR::HasSucceeded(hr, L"get value", LINE_INFO());
-			Assert::AreEqual(100u, dataStep, L"data step offset", LINE_INFO());
-
-
-			// Now try to get output samples
-			REFERENCE_TIME setTime[] = { 0,166666,200000,334000,510000 };
-			REFERENCE_TIME expectedTimes[] = { 0,0,166666,333333,500000 };
-			size_t testCount = sizeof(setTime) / sizeof(REFERENCE_TIME);
-			for (size_t testIndex = 0; testIndex < testCount; testIndex++)
-			{
-				pClock->SetTime(setTime[testIndex]);
-				HRESULT hr = S_OK; // pSource->GetFrame(&spFrame);
-				AssertHR::HasSucceeded(hr, L"GetFrame", LINE_INFO());
-				Assert::IsNotNull(spFrame.Get(), L"GetFrame", LINE_INFO());
-				
-				ComPtr<IMediaFrame> spMediaFrame;
-				hr = spFrame.As(&spMediaFrame);
-				AssertHR::HasSucceeded(hr, L"Failed to cast to IMediaFrame",LINE_INFO());
-				ComPtr<IReference<TimeSpan>> spTime;
-				hr = spMediaFrame->get_RelativeTime(&spTime);
-				AssertHR::HasSucceeded(hr, L"Failed to get time from output frame",LINE_INFO());
-				Assert::IsNotNull(spTime.Get(), L"RelativeTime property is null");
-				ComPtr<IReference<TimeSpan>> spDuration;
-				hr = spMediaFrame->get_Duration(&spDuration);
-				AssertHR::HasSucceeded(hr, L"Failed to get duration from output frame",LINE_INFO());
-				Assert::IsNotNull(spDuration.Get(), L"Duration property is null");
-				TimeSpan time, duration;
-				spTime->get_Value(&time);
-				spDuration->get_Value(&duration);
-				Assert::AreEqual((REFERENCE_TIME)166666, duration.Duration, L"frame duration", LINE_INFO());
-				Assert::AreEqual(expectedTimes[testIndex], time.Duration, L"frame time", LINE_INFO());
-
-				CAudioBufferHelper buffer(spFrame.Get());
-
-				UINT32 length = buffer.GetLength();
-				Assert::AreEqual(832u, length,L"AudioFrame length",LINE_INFO());
-
-				float *pBuffer = buffer.GetBuffer();
-			
-				for (size_t valueIndex = 0; valueIndex < 100; valueIndex++)
-				{
-					wchar_t msg[1000];
-					swprintf_s(msg, L"Pass %d Value[%d] = (%f,%f)", (int) testIndex, (int) valueIndex, pBuffer[valueIndex],pBuffer[valueIndex+100]);
-					// Channel 1 has to be silence and 0 not a silence
-					Assert::AreNotEqual(-100.0f, pBuffer[valueIndex], msg, LINE_INFO());
-					Assert::AreEqual(-100.0f, pBuffer[valueIndex + 100], msg, LINE_INFO());
-				}
-				OutputDebugString(L"\n");
-
-				float *pRMS = pBuffer + 400;
-			}
-			pClock->SetTime(0);
-			// This should fail now as sample for 0 would be removed from queue by this time
-			hr = S_OK; //  pSource->GetFrame(&spFrame);
-			AssertHR::HasSucceeded(hr, L"GetFrame", LINE_INFO());
-			Assert::IsNull(spFrame.Get(), L"GetFrame", LINE_INFO());
-		} */
-
 		void Test_Setup_Mft(IMFTransform *pMft,unsigned sampleRate,unsigned channels)
 		{
 			Test_GetStreamLimits(pMft);
@@ -554,7 +345,7 @@ namespace AnalyzerTest
 			Start_Streaming(pMft);
 			// Simulate the player by buffering some samples and then staring "play" by advancing the clock
 			MFTIME clockTime = 0;
-			MFTIME runStreamUntil = 60 * 10000000L;	// 60sec
+			MFTIME runStreamUntil = 60 * 10000000L;	// Run stream until 60sec
 			MFTIME preBuffer = 5 * 10000000L;	// Prebuffer 5sec worth of samples
 			MFTIME sampleLength = 3000000L;	// Generate approximately 300ms samples
 
@@ -568,6 +359,7 @@ namespace AnalyzerTest
 
 			CGenerator g(sampleRate, channels);
 			HRESULT hr = S_OK;
+			
 			// Preroll
 			while (g.GetPosition() < preBuffer)
 			{
@@ -583,8 +375,28 @@ namespace AnalyzerTest
 			Sleep(100);
 			while (clockTime < runStreamUntil)
 			{
-				
+				spClock->SetTime(clockTime);
 
+				ComPtr<IVisualizationDataFrame> frame;
+				hr = spSource->GetData(&frame);
+
+				AssertHR::HasSucceeded(hr,L"GetFrame",LINE_INFO());
+				Assert::IsNotNull(frame.Get(), L"GetFrame", LINE_INFO());
+
+				// TODO: Validate frame time and duration
+
+				clockTime += 166667;	// Advance clock by 16ms
+				if (g.GetPosition() < clockTime + preBuffer)
+				{
+					// Add new sample
+					ComPtr<IMFSample> sample;
+					g.GetSample(&sample, sampleCount, [=](unsigned long offset, unsigned channel)
+					{
+						return (1.0f / (channel + 1)) * sinf(offset*3.14f / (4.0f * channel));
+					});
+					Test_PumpSample(pMft, sample.Get());
+				}
+				Sleep(5);	// Introduce a small delay to allow processing
 			}
 
 			Stop_Streaming(pMft);
@@ -612,7 +424,10 @@ namespace AnalyzerTest
 		{
 			HRESULT hr = MFShutdown();
 		}
-
+		TEST_METHOD(Mft_Analyzer_32000_2)
+		{
+			Test_Mft_Pipeline(32000, 2);
+		}
 		TEST_METHOD(Mft_Analyzer_44100_2)
 		{
 			Test_Mft_Pipeline(44100,2);
@@ -620,6 +435,18 @@ namespace AnalyzerTest
 		TEST_METHOD(Mft_Analyzer_48000_2)
 		{
 			Test_Mft_Pipeline(48000,2);
+		}
+		TEST_METHOD(Mft_Analyzer_48000_1)
+		{
+			Test_Mft_Pipeline(48000, 1);
+		}
+		TEST_METHOD(Mft_Analyzer_96000_2)
+		{
+			Test_Mft_Pipeline(96000, 2);
+		}
+		TEST_METHOD(Mft_Analyzer_192000_2)
+		{
+			Test_Mft_Pipeline(192000, 2);
 		}
 	};
 } 
