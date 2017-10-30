@@ -10,5 +10,6 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <a:DiscreteVUBar x:Name="ledbar"></a:DiscreteVUBar>
+        <a:CustomVisualizer x:Name="spectrum" CreateResources="spectrum_CreateResources"></a:CustomVisualizer>
     </Grid>
 </Page>

@@ -53,6 +53,43 @@ namespace AudioVisualizer
 				pResult[vIndex] = vPrevious + vFactors * vDelta;
 			}
 		}
+		void SpectrumTransform(const float *pInput, size_t inputSize, float fromIndex, float toIndex, float *pOutput, size_t outputSize,bool bLinear)
+		{
+			float inStep = bLinear == true ? (toIndex - fromIndex) / (float)outputSize : powf(toIndex/fromIndex,1/(float)(outputSize -1));
+			float inIndex = fromIndex;
+			float nextInIndex = bLinear == true ? inIndex + inStep : inIndex * inStep;
+
+			for (size_t outIndex = 0; outIndex < outputSize; outIndex++)
+			{
+				int inValueIntIndex = (int)floor(inIndex);
+				int inValueIntNextIndex = (int)floor(nextInIndex);
+
+				float outValue = 0;
+
+				if (inValueIntNextIndex > inValueIntIndex)
+				{
+					for (int index = inValueIntIndex + 1; index < inValueIntNextIndex && index < (int)inputSize; index++)
+					{
+						outValue += index < (int)inputSize && index >= 0 ? pInput[index] : 0;
+					}
+					outValue += (inValueIntIndex < (int)inputSize && inValueIntIndex >= 0 ? pInput[inValueIntIndex] : 0) * (1 - inIndex + (float)inValueIntIndex);
+					
+					if (inValueIntNextIndex < (int)inputSize && inValueIntNextIndex >= 0)
+						outValue += pInput[inValueIntNextIndex] * (nextInIndex - (float)inValueIntNextIndex);
+				}
+				else
+				{
+					float current = inValueIntIndex < (int)inputSize && inValueIntIndex >= 0 ? pInput[inValueIntIndex] : 0;
+					outValue = current * inStep;
+				}
+				pOutput[outIndex] = outValue;
+
+				inIndex = nextInIndex;
+				nextInIndex = bLinear == true ? inIndex + inStep : inIndex * inStep;
+			}
+
+		}
+
 
 		void SpectrumLinearTransform(const float *pInput, size_t inputSize, float *pOutput, size_t outputSize)
 		{

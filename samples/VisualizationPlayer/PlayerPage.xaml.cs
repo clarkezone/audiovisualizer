@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Graphics.Canvas;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,6 +23,8 @@ namespace VisualizationPlayer
     /// </summary>
     public sealed partial class PlayerPage : Page
     {
+        public PlayerService Player { get { return App.Player; } }
+
         public PlayerPage()
         {
             this.InitializeComponent();
@@ -51,6 +54,12 @@ namespace VisualizationPlayer
             {
                 App.Player.VisualizationSource.IsSuspended = true;
             }
+        }
+
+        private void spectrum_CreateResources(object sender, object args)
+        {
+            ICanvasResourceCreator rc = (ICanvasResourceCreator)args;
+            System.Diagnostics.Debug.WriteLine(rc);
         }
     }
 }

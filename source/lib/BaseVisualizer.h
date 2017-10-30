@@ -201,6 +201,7 @@ namespace AudioVisualizer
 			return hr;
 		}
 		virtual HRESULT OnDraw(ABI::Microsoft::Graphics::Canvas::ICanvasDrawingSession *pSession,ABI::AudioVisualizer::IVisualizationDataFrame *pDataFrame) = 0;
+		virtual HRESULT OnCreateResources() { return S_OK; };
 	public:
 		BaseVisualizer()
 		{
@@ -225,8 +226,8 @@ namespace AudioVisualizer
 	private:
 		HRESULT OnLoaded(IInspectable *pSender, IRoutedEventArgs *pArgs)
 		{
+			OnCreateResources();
 			StartDrawLoop();
-			
 			auto element = As<IFrameworkElement>(GetControl());
 			double width = 0, height = 0;
 			element->get_ActualWidth(&width);

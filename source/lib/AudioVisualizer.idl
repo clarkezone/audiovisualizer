@@ -105,6 +105,11 @@ namespace AudioVisualizer
 			[in] Windows.Foundation.TypedEventHandler<IVisualizer*, VisualizerDrawEventArgs*>* value,
 			[out, retval] EventRegistrationToken* token);
 		[eventremove] HRESULT Draw([in] EventRegistrationToken token);
+		[eventadd] HRESULT CreateResources(
+			[in] Windows.Foundation.TypedEventHandler<IInspectable*, IInspectable*>* value,
+			[out, retval] EventRegistrationToken* token);
+		[eventremove] HRESULT CreateResources([in] EventRegistrationToken token);
+
 	};
 
 	[version(1.0), activatable(1.0), marshaling_behavior(agile), threading(both)]
@@ -161,7 +166,10 @@ namespace AudioVisualizer
 		[propget] HRESULT FrequencyStep([out, retval] float *value);
 		[propget] HRESULT FrequencyCount([out, retval] UINT32 *value);
 
-		HRESULT TransformLinearFrequency(UINT32 elementCount, [out, retval] ArrayData **result);
+		[overload("TransformLinearFrequency")]
+		HRESULT TransformLinearFrequency([in] UINT32 elementCount, [out, retval] ArrayData **result);
+		[overload("TransformLinearFrequency")]
+		HRESULT TransformLinearFrequencyWithRange([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [out, retval] ArrayData **result);
 		HRESULT ConvertToLogFrequency([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [in] InterpolationType type, [out, retval] ArrayData **result);
 		HRESULT ApplyRiseAndFall([in] ArrayData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] ArrayData **result);
 		HRESULT ConvertToLogAmplitude([in] float minValue,[in] float maxValue, [out, retval] ArrayData **result );
@@ -191,6 +199,7 @@ namespace AudioVisualizer
 	{
 		[default] interface IScalarData;
 		interface Windows.Foundation.Collections.IVectorView<float>;
+		interface Windows.Foundation.Collections.IIterable<float>;
 	}
 
 	[version(1.0), uuid(D2E78F9C-8EE6-441B-85A6-A87E6DCE2114), exclusiveto(ArrayData)]

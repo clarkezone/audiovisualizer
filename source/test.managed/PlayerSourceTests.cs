@@ -15,10 +15,10 @@ using System.Collections.Generic;
 namespace test.managed
 {
     [TestClass]
-    public class UnitTest1
+    public class PlayerSourceTests
     {
         [TestMethod]
-        public async Task VisualizerSource_CreateFromMediaPlayer()
+        public async Task PlayerSource_MediaPlayer()
         {
             var testFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///TestContent/test_signal.mp3"));
             var player = new MediaPlayer();

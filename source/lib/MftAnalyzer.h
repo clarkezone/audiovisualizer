@@ -13,6 +13,7 @@
 
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::System::Threading;
+using namespace ABI::AudioVisualizer;
 
 namespace AudioVisualizer
 {
@@ -51,7 +52,7 @@ namespace AudioVisualizer
 	
 		Microsoft::WRL::Wrappers::CriticalSection m_csAnalyzerAccess;	// Critical section to lock analyzer configuration changing
 		Microsoft::WRL::Wrappers::CriticalSection m_csOutputQueueAccess;
-		std::queue<ComPtr<IAnalyzerFrame>> m_AnalyzerOutput;
+		std::queue<ComPtr<AudioVisualizer::VisualizationDataFrame>> m_AnalyzerOutput;
 
 		size_t m_StepFrameCount;	// How many samples does calculate consume each step
 		size_t m_StepFrameOverlap;
