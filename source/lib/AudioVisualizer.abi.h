@@ -4,9 +4,9 @@
 
 
  /* File created by MIDL compiler version 8.01.0622 */
-/* at Tue Jan 19 04:14:07 2038
+/* at Tue Jan 19 05:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-54781c72:
+/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-1077fbe5:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 

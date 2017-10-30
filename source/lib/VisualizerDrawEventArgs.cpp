@@ -1,6 +1,6 @@
 #include "pch.h"
+#include "ErrorHandling.h"
 #include "VisualizerDrawEventArgs.h"
-#include "wrtutil.h"
 
 namespace AudioVisualizer
 {
@@ -18,7 +18,7 @@ namespace AudioVisualizer
 			if (args == nullptr)
 				return E_FAIL;
 
-			wrt_util::ThrowIfFailed(args.CopyTo(ppArgs));
+			ThrowIfFailed(args.CopyTo(ppArgs));
 		}
 	};
 
