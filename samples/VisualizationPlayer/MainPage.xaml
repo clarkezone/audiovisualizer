@@ -44,8 +44,8 @@
                     <Slider x:Name="seekSlider" Grid.Row="0" Orientation="Horizontal" Margin="20,5"></Slider>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
                         <a:CustomVisualizer x:Name="PositionDisplay" Height="50" Width="250" Draw="PositionDisplay_Draw"></a:CustomVisualizer>
-                        <AppBarButton Icon="Play"></AppBarButton>
-                        <AppBarButton Icon="Stop"></AppBarButton>
+                        <AppBarButton Icon="Play" Click="PlayButton_Click"></AppBarButton>
+                        <AppBarButton Icon="Pause" Click="StopButton_Click" ></AppBarButton>
                     </StackPanel>
                 </Grid>
             </Grid>

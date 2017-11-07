@@ -26,7 +26,6 @@ namespace AudioVisualizer
 	template<class ControlType>
 	class BaseVisualizer
 	{
-
 		ComPtr<ABI::Windows::UI::Xaml::IWindow> _window;
 		EventRegistrationToken _sizeChangedToken;
 		EventRegistrationToken _loadedToken;
@@ -212,7 +211,7 @@ namespace AudioVisualizer
 					else
 					{
 						lock.Unlock();
-						WaitForSingleObject(cancelEvent, 17);
+						WaitForSingleObject(cancelEvent, 17);	// If there is no swap chain wait for 17ms and retry
 					}
 				}
 				return hr;
@@ -224,24 +223,12 @@ namespace AudioVisualizer
 		}
 		HRESULT RecreateDevice()
 		{
-			ComPtr<IWindowStatics> windowStatics;
-			HRESULT hr = GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Window).Get(), &windowStatics);
-			if (FAILED(hr))
-				return hr;
-			ComPtr<ABI::Windows::UI::Xaml::IWindow> window;
-			hr = windowStatics->get_Current(&window);
-			if (FAILED(hr) || window == nullptr)
-				return hr;
-			auto dpo = As<IDependencyObject>(GetControl());
-
-			ComPtr<ABI::Windows::UI::Core::ICoreDispatcher> dispatcher;
-
-			dpo->get_Dispatcher()
-			hr = window->get_Dispatcher(&dispatcher);
-
 			_swapChain = nullptr;
 			_compositionGraphicsDevice = nullptr;
 			_device = nullptr;
+
+			ComPtr<ABI::Windows::UI::Core::ICoreDispatcher> dispatcher;
+			As<IDependencyObject>(GetControl())->get_Dispatcher(&dispatcher);
 
 			ComPtr<ABI::Windows::Foundation::IAsyncAction> action;
 			auto callback = Callback<AddFtmBase<ABI::Windows::UI::Core::IDispatchedHandler>::Type>(

@@ -201,5 +201,15 @@ namespace VisualizationPlayer
                 ds.DrawText(timeString, 0, 0, Colors.Gray);
             }
         }
+
+        private void PlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            App.Player.Play();
+        }
+
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            App.Player.Pause();
+        }
     }
 }
