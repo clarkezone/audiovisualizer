@@ -33,6 +33,7 @@ using namespace Microsoft::WRL;
 #define EVT_MFT_PROCESSMSG L"ProcessMessage"
 #define EVT_GET_PRESENTATION_TIME L"GetTime"
 #define EVT_SET_PRESENTATION_CLOCK L"SetClock"
+#define EVT_DRAWLOOP_DEVICE_LOST L"DrawLoop_DeviceLost"
 
 namespace AudioVisualizer
 {
@@ -488,6 +489,14 @@ namespace AudioVisualizer
 
 			}
 			return g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_SET_PRESENTATION_CLOCK).Get(), spFields.Get());
+		}
+
+		HRESULT Trace::Log_DeviceLost(HRESULT result)
+		{
+			ComPtr<ILoggingFields> spFields;
+			HRESULT hr = CreateLoggingFields(&spFields);
+			spFields->AddInt32WithFormat(HStringReference(L"HResult").Get(), result, LoggingFieldFormat::LoggingFieldFormat_Hexadecimal);
+			return g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_DRAWLOOP_DEVICE_LOST).Get(), spFields.Get());
 		}
 
 

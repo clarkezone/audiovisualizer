@@ -29,6 +29,7 @@ namespace AudioVisualizer
 	runtimeclass VisualizationDataFrame;
 	runtimeclass ArrayData;
 	runtimeclass ScalarData;
+	runtimeclass CreateResourcesEventArgs;
 }
 
 namespace AudioVisualizer
@@ -47,6 +48,14 @@ namespace AudioVisualizer
 		CubicSpline = (int)1
 	} InterpolationType;
 
+	[version(1.0)]
+	typedef enum CreateResourcesReason
+	{
+		New = (int)0,
+		DeviceLost = (int)1,
+		DpiChanged = (int)2
+	} CreateResourcesReason;
+
 	[version(1.0),flags]
 	typedef enum AnalyzerType
 	{
@@ -58,6 +67,7 @@ namespace AudioVisualizer
 
 	declare{
 		interface Windows.Foundation.IAsyncOperation<IVisualizationSource *>;
+		interface Windows.Foundation.TypedEventHandler<IInspectable*, CreateResourcesEventArgs*>;
 		interface Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float> *>;
 	}
 
@@ -86,6 +96,31 @@ namespace AudioVisualizer
 		[default] interface IVisualizerDrawEventArgs;
 	}
 
+	[uuid(12E64D18-2267-4416-B925-549FEC6775C5)]
+	[version(1.0)]
+	[exclusiveto(CreateResourcesEventArgs)]
+	interface ICreateResourcesEventArgs : IInspectable
+	{
+		[propget] HRESULT Reason([out][retval] CreateResourcesReason *reason);
+		[propget] HRESULT ResourceCreator([out][retval] IInspectable **ppObject);
+	}
+
+	[uuid(3B2C2810-F608-49D5-9F17-951F8BDDFFB0)]
+	[version(1.0)]
+	[exclusiveto(CreateResourcesEventArgs)]
+	interface ICreateResourcesEventArgsFactory : IInspectable
+	{
+		HRESULT Create([in] CreateResourcesReason reason, 
+			[in] IInspectable *pCreatorObject, 
+			[retval, out] CreateResourcesEventArgs **createEventArgs);
+	};
+
+	[version(1.0),activatable(ICreateResourcesEventArgsFactory,1.0), marshaling_behavior(agile), threading(both)]
+	runtimeclass CreateResourcesEventArgs
+	{
+		[default] interface ICreateResourcesEventArgs;
+	}
+
 	[uuid(D3C979CE-1D6D-4507-B7CE-5A2E97F672FC)]
 	[version(1.0)]
 	interface IVisualizer : IInspectable
@@ -106,7 +141,7 @@ namespace AudioVisualizer
 			[out, retval] EventRegistrationToken* token);
 		[eventremove] HRESULT Draw([in] EventRegistrationToken token);
 		[eventadd] HRESULT CreateResources(
-			[in] Windows.Foundation.TypedEventHandler<IInspectable*, IInspectable*>* value,
+			[in] Windows.Foundation.TypedEventHandler<IInspectable*, CreateResourcesEventArgs*>* value,
 			[out, retval] EventRegistrationToken* token);
 		[eventremove] HRESULT CreateResources([in] EventRegistrationToken token);
 

@@ -31,6 +31,7 @@ namespace AudioVisualizer
 		EventRegistrationToken _sizeChangedToken;
 		EventRegistrationToken _loadedToken;
 		EventRegistrationToken _deviceLostToken;
+		EventRegistrationToken _deviceReplacedToken;
 		Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::ICompositor> _compositor;
 		Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::IContainerVisual> _rootVisual;
 		ComPtr<ABI::Windows::UI::Composition::ISpriteVisual> _swapChainVisual;
@@ -60,21 +61,32 @@ namespace AudioVisualizer
 
 			ThrowIfFailed(_deviceStatics->GetSharedDevice(&_device));
 
-			ThrowIfFailed(_device->add_DeviceLost(
-				Callback<__FITypedEventHandler_2_Microsoft__CGraphics__CCanvas__CCanvasDevice_IInspectable>(
-					[](ABI::Microsoft::Graphics::Canvas::ICanvasDevice*, IInspectable *) -> HRESULT
-			{
-				// TODO: Unregister callback and create a new device on UI thread
-				return E_NOTIMPL;
-			}
-					).Get(),
-				&_deviceLostToken
-				));
-
 			if (_compositionGraphicsDevice == nullptr)
 				ThrowIfFailed(_canvasCompositionStatics->CreateCompositionGraphicsDevice(_compositor.Get(), _device.Get(), &_compositionGraphicsDevice));
 			else
 				ThrowIfFailed(_canvasCompositionStatics->SetCanvasDevice(_compositionGraphicsDevice.Get(), _device.Get()));
+
+			/*_compositionGraphicsDevice->add_RenderingDeviceReplaced(
+				Callback<__FITypedEventHandler_2_Windows__CUI__CComposition__CCompositionGraphicsDevice_Windows__CUI__CComposition__CRenderingDeviceReplacedEventArgs>(
+					[](ABI::Windows::UI::Composition::ICompositionGraphicsDevice*pDevice, ABI::Windows::UI::Composition::IRenderingDeviceReplacedEventArgs*pArgs) -> HRESULT
+			{
+				return S_OK;
+			}
+					).Get(),&_deviceReplacedToken
+			
+			);*/
+
+
+			/*ThrowIfFailed(_device->add_DeviceLost(
+				Callback<__FITypedEventHandler_2_Microsoft__CGraphics__CCanvas__CCanvasDevice_IInspectable>(
+					[](ABI::Microsoft::Graphics::Canvas::ICanvasDevice*, IInspectable *) -> HRESULT
+			{
+				// TODO: Unregister callback and create a new device on UI thread
+				return S_OK;
+			}
+					).Get(),
+				&_deviceLostToken
+				));*/
 
 			return S_OK;
 
@@ -164,8 +176,18 @@ namespace AudioVisualizer
 						ComPtr<ICanvasDrawingSession> drawingSession;
 						
 						HRESULT hr = _swapChain->CreateDrawingSession(_drawingSessionBackgroundColor, &drawingSession);
+						
 						if (FAILED(hr))
-							continue;
+						{
+							if (DeviceLostException::IsDeviceLostHResult(hr))
+							{
+								Diagnostics::Trace::Log_DeviceLost(hr);
+								RecreateDevice();
+								continue;
+							}
+							else
+								continue;
+						}
 
 						ComPtr<IVisualizationDataFrame> dataFrame;
 						if (_visualizationSource != nullptr)
@@ -200,8 +222,53 @@ namespace AudioVisualizer
 			hr = spThreadPool->RunAsync(drawLoop.Get(), &asyncAction);
 			return hr;
 		}
+		HRESULT RecreateDevice()
+		{
+			ComPtr<IWindowStatics> windowStatics;
+			HRESULT hr = GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Window).Get(), &windowStatics);
+			if (FAILED(hr))
+				return hr;
+			ComPtr<ABI::Windows::UI::Xaml::IWindow> window;
+			hr = windowStatics->get_Current(&window);
+			if (FAILED(hr) || window == nullptr)
+				return hr;
+			auto dpo = As<IDependencyObject>(GetControl());
+
+			ComPtr<ABI::Windows::UI::Core::ICoreDispatcher> dispatcher;
+
+			dpo->get_Dispatcher()
+			hr = window->get_Dispatcher(&dispatcher);
+
+			_swapChain = nullptr;
+			_compositionGraphicsDevice = nullptr;
+			_device = nullptr;
+
+			ComPtr<ABI::Windows::Foundation::IAsyncAction> action;
+			auto callback = Callback<AddFtmBase<ABI::Windows::UI::Core::IDispatchedHandler>::Type>(
+				[this]() -> HRESULT
+			{
+				CreateDevice();
+				auto element = As<IFrameworkElement>(GetControl());
+				double width = 0, height = 0;
+				element->get_ActualWidth(&width);
+				element->get_ActualHeight(&height);
+				CreateSwapChain(Size() = { (float)width, (float)height });
+				OnCreateResources(ABI::AudioVisualizer::CreateResourcesReason::DeviceLost);
+				return S_OK;
+			}
+				);
+
+			dispatcher->RunAsync(
+				ABI::Windows::UI::Core::CoreDispatcherPriority::CoreDispatcherPriority_Normal,
+				callback.Get(),
+				&action
+				);
+
+			return S_OK;
+		}
+
 		virtual HRESULT OnDraw(ABI::Microsoft::Graphics::Canvas::ICanvasDrawingSession *pSession,ABI::AudioVisualizer::IVisualizationDataFrame *pDataFrame) = 0;
-		virtual HRESULT OnCreateResources() { return S_OK; };
+		virtual HRESULT OnCreateResources(ABI::AudioVisualizer::CreateResourcesReason reason) { return S_OK; };
 	public:
 		BaseVisualizer()
 		{
@@ -226,7 +293,7 @@ namespace AudioVisualizer
 	private:
 		HRESULT OnLoaded(IInspectable *pSender, IRoutedEventArgs *pArgs)
 		{
-			OnCreateResources();
+			OnCreateResources(CreateResourcesReason::New);
 			StartDrawLoop();
 			auto element = As<IFrameworkElement>(GetControl());
 			double width = 0, height = 0;
