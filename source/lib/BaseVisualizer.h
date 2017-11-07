@@ -5,6 +5,7 @@
 #include "Utilities.h"
 #include <windows.system.threading.h>
 #include <Microsoft.Graphics.Canvas.h>
+#include <windows.graphics.display.h>
 
 
 using namespace Microsoft::WRL;
@@ -31,6 +32,7 @@ namespace AudioVisualizer
 		EventRegistrationToken _loadedToken;
 		EventRegistrationToken _deviceLostToken;
 		EventRegistrationToken _deviceReplacedToken;
+		EventRegistrationToken _dpiChangedToken;
 		Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::ICompositor> _compositor;
 		Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::IContainerVisual> _rootVisual;
 		ComPtr<ABI::Windows::UI::Composition::ISpriteVisual> _swapChainVisual;
@@ -117,12 +119,34 @@ namespace AudioVisualizer
 			ThrowIfFailed(children->InsertAtTop(As<IVisual>(_swapChainVisual).Get()));
 			return S_OK;
 		}
-		HRESULT CreateSwapChain(ABI::Windows::Foundation::Size size)
+		HRESULT CreateSwapChain()
+		{
+			auto element = As<IFrameworkElement>(GetControl());
+			double width = 0, height = 0;
+			element->get_ActualWidth(&width);
+			element->get_ActualHeight(&height);
+			return CreateSwapChainWithSize(Size() = { (float)width, (float)height });
+		}
+		HRESULT CreateSwapChainWithSize(ABI::Windows::Foundation::Size size)
+		{
+			ComPtr<ABI::Windows::Graphics::Display::IDisplayInformationStatics> displayInfoStatics;
+			ThrowIfFailed(GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(), &displayInfoStatics));
+
+			ComPtr<ABI::Windows::Graphics::Display::IDisplayInformation> dispInfo;
+			displayInfoStatics->GetForCurrentView(&dispInfo);
+
+			float logicalDpi = 96.0f;
+
+			dispInfo->get_LogicalDpi(&logicalDpi);
+			return CreateSwapChainWithSizeAndDpi(size, logicalDpi);
+		}
+
+		HRESULT CreateSwapChainWithSizeAndDpi(ABI::Windows::Foundation::Size size,float dpi)
 		{
 			auto _lock = _swapChainLock.Lock();
 
 			HRESULT hr = _swapChainFactory->CreateWithWidthAndHeightAndDpi(
-				As<ICanvasResourceCreator>(_device).Get(), size.Width, size.Height, 96.0f, &_swapChain);
+				As<ICanvasResourceCreator>(_device).Get(), size.Width, size.Height, dpi, &_swapChain);
 
 			if (FAILED(hr))
 				return hr;
@@ -239,7 +263,7 @@ namespace AudioVisualizer
 				double width = 0, height = 0;
 				element->get_ActualWidth(&width);
 				element->get_ActualHeight(&height);
-				CreateSwapChain(Size() = { (float)width, (float)height });
+				CreateSwapChainWithSize(Size() = { (float)width, (float)height });
 				OnCreateResources(ABI::AudioVisualizer::CreateResourcesReason::DeviceLost);
 				return S_OK;
 			}
@@ -256,6 +280,15 @@ namespace AudioVisualizer
 
 		virtual HRESULT OnDraw(ABI::Microsoft::Graphics::Canvas::ICanvasDrawingSession *pSession,ABI::AudioVisualizer::IVisualizationDataFrame *pDataFrame) = 0;
 		virtual HRESULT OnCreateResources(ABI::AudioVisualizer::CreateResourcesReason reason) { return S_OK; };
+
+		ABI::Windows::Foundation::Size GetSize()
+		{
+			auto element = As<IFrameworkElement>(GetControl());
+			double width = 0, height = 0;
+			element->get_ActualWidth(&width);
+			element->get_ActualHeight(&height);
+			return ABI::Windows::Foundation::Size() = { (float)width, (float)height };
+		}
 	public:
 		BaseVisualizer()
 		{
@@ -282,11 +315,7 @@ namespace AudioVisualizer
 		{
 			OnCreateResources(CreateResourcesReason::New);
 			StartDrawLoop();
-			auto element = As<IFrameworkElement>(GetControl());
-			double width = 0, height = 0;
-			element->get_ActualWidth(&width);
-			element->get_ActualHeight(&height);
-			CreateSwapChain(Size() = { (float)width, (float)height });
+			CreateSwapChainWithSize(GetSize());
 			return S_OK;
 		}
 
@@ -297,7 +326,7 @@ namespace AudioVisualizer
 			pArgs->get_NewSize(&size);
 			if (size.Width > 0 && size.Height > 0)
 			{
-				CreateSwapChain(size);
+				CreateSwapChainWithSize(size);
 			}
 			return S_OK;
 		}
@@ -330,6 +359,32 @@ namespace AudioVisualizer
 			{
 				return OnSizeChanged(pSender, pArgs);
 			}).Get(),&_sizeChangedToken));
+
+			ComPtr<ABI::Windows::Graphics::Display::IDisplayInformationStatics> displayInfoStatics;
+			ThrowIfFailed(GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(), &displayInfoStatics));
+			
+			ComPtr<ABI::Windows::Graphics::Display::IDisplayInformation> dispInfo;
+			displayInfoStatics->GetForCurrentView(&dispInfo);
+
+			float logicalDpi,rawDpi;
+
+			dispInfo->get_LogicalDpi(&logicalDpi);
+			dispInfo->get_RawDpiX(&rawDpi);
+
+			dispInfo->add_DpiChanged(
+				Callback<__FITypedEventHandler_2_Windows__CGraphics__CDisplay__CDisplayInformation_IInspectable>(
+					[this](ABI::Windows::Graphics::Display::IDisplayInformation *pInfo, IInspectable *pObj) ->HRESULT
+			{
+				float newDpi;
+				pInfo->get_LogicalDpi(&newDpi);
+				CreateSwapChainWithSizeAndDpi(GetSize(),newDpi);
+				OnCreateResources(ABI::AudioVisualizer::CreateResourcesReason::DpiChanged);
+
+				return S_OK;
+			}
+					).Get(),
+				&_dpiChangedToken
+			);
 		}
 	};
 }
