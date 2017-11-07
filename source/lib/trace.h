@@ -69,6 +69,7 @@ namespace AudioVisualizer
 			static HRESULT Log_MftProcessMessage(MFT_MESSAGE_TYPE msg);
 			static HRESULT Log_GetPresentationTime(IMFPresentationClock *pClock,REFERENCE_TIME time, HRESULT hr);
 			static HRESULT Log_SetPresentationClock(IMFPresentationClock *pClock);
+			static HRESULT Log_DeviceLost(HRESULT hr);
 
 			template<class T> static void Trace_Log_RefCount1(const wchar_t *szContext, T *pObject, ILoggingActivity *pActivity)
 			{

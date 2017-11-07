@@ -56,10 +56,9 @@ namespace VisualizationPlayer
             }
         }
 
-        private void spectrum_CreateResources(object sender, object args)
+        private void spectrum_CreateResources(object sender, AudioVisualizer.CreateResourcesEventArgs args)
         {
-            ICanvasResourceCreator rc = (ICanvasResourceCreator)args;
-            System.Diagnostics.Debug.WriteLine(rc);
+            System.Diagnostics.Debug.WriteLine($"Create resources - reason: {args.Reason}");
         }
     }
 }

@@ -21,16 +21,13 @@ namespace AudioVisualizer
 
 		typedef ABI::Windows::Foundation::ITypedEventHandler<
 			IInspectable *,
-			IInspectable *> Visualizer_CreateResources_EventHandler;
+			ABI::AudioVisualizer::CreateResourcesEventArgs *> Visualizer_CreateResources_EventHandler;
 
 		Microsoft::WRL::EventSource<Visualizer_DrawEventHandler> _drawEventList;
 		Microsoft::WRL::EventSource<Visualizer_CreateResources_EventHandler> _createResourcesEventList;
 	protected:
 		virtual HRESULT OnDraw(ICanvasDrawingSession *pSession,IVisualizationDataFrame *pDataFrame);
-		virtual HRESULT OnCreateResources()
-		{
-			return _createResourcesEventList.InvokeAll(As<IInspectable>(GetControl()).Get(), _swapChain.Get());
-		}
+		virtual HRESULT OnCreateResources(ABI::AudioVisualizer::CreateResourcesReason reason);
 	public:
 		STDMETHODIMP get_Source(ABI::AudioVisualizer::IVisualizationSource **ppSource)
 		{

@@ -105,5 +105,10 @@ namespace VisualizationPlayer
         public event EventHandler<TimeSpan> PositionChanged;
         public event EventHandler<IVisualizationSource> VisualizationSourceChanged;
         public event PropertyChangedEventHandler PropertyChanged;
+
+        internal void Pause()
+        {
+            _player.Pause();
+        }
     }
 }

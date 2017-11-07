@@ -361,6 +361,7 @@
     <ClInclude Include="AudioBuffer.h" />
     <ClInclude Include="AudioMath.h" />
     <ClInclude Include="BaseVisualizer.h" />
+    <ClInclude Include="CreateResourcesEventArgs.h" />
     <ClInclude Include="CustomVisualizer.h" />
     <ClInclude Include="DiscreteVUBar.h" />
     <ClInclude Include="ErrorHandling.h" />
@@ -382,6 +383,7 @@
     <ClCompile Include="AudioAnalyzer.cpp" />
     <ClCompile Include="AudioBuffer.cpp" />
     <ClCompile Include="AudioMath.cpp" />
+    <ClCompile Include="CreateResourcesEventArgs.cpp" />
     <ClCompile Include="CustomVisualizer.cpp" />
     <ClCompile Include="DiscreteVUBar.cpp" />
     <ClCompile Include="LifespanTracker.cpp" />
