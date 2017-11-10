@@ -194,9 +194,9 @@ namespace VisualizationPlayer
 
         private void PositionDisplay_Draw(IVisualizer sender, VisualizerDrawEventArgs args)
         {
-            if (args.Data?.Time != null)
+            if (args.PresentationTime != null)
             {
-                string timeString = args.Data.Time.Value.ToString("mm\\:ss\\.f");
+                string timeString = args.PresentationTime.Value.ToString("mm\\:ss\\.f");
                 var ds = (CanvasDrawingSession)args.DrawingSession;
                 ds.DrawText(timeString, 0, 0, Colors.Gray);
             }

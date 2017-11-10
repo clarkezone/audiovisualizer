@@ -7,9 +7,10 @@
 
 namespace AudioVisualizer
 {
-	HRESULT CustomVisualizer::OnDraw(ICanvasDrawingSession *pSession, IVisualizationDataFrame *pDataFrame)
+	HRESULT CustomVisualizer::OnDraw(ICanvasDrawingSession *pSession, IVisualizationDataFrame *pDataFrame, IReference<TimeSpan> *pPresentationTime)
 	{
-		auto args = Make<VisualizerDrawEventArgs>(pSession, pDataFrame);
+
+		auto args = Make<VisualizerDrawEventArgs>(pSession, pDataFrame,_swapChainSize,pPresentationTime);
 #ifdef _TRACE
 			ComPtr<ILoggingActivity> activity;
 			Diagnostics::Trace::Log_StartDraw(pDataFrame, &activity);

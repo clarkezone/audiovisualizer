@@ -7,6 +7,7 @@ namespace AudioVisualizer
 	using namespace Microsoft::WRL;
 	using namespace ABI::AudioVisualizer;
 	using namespace ABI::Microsoft::Graphics::Canvas;
+	using namespace ABI::Windows::Foundation;
 
 	class VisualizerDrawEventArgs : public RuntimeClass<IVisualizerDrawEventArgs,FtmBase>, LifespanTracker<VisualizerDrawEventArgs>
 	{
@@ -14,11 +15,15 @@ namespace AudioVisualizer
 
 		ComPtr<IInspectable> _drawingSession;
 		ComPtr<IVisualizationDataFrame> _data;
+		Size _viewExtent;
+		ComPtr<IReference<TimeSpan>> _presentationTime;
 	public:
-		VisualizerDrawEventArgs(IInspectable *pSession, IVisualizationDataFrame *pData)
+		VisualizerDrawEventArgs(IInspectable *pSession, IVisualizationDataFrame *pData,Size viewExtent,IReference<TimeSpan> *pTime)
 		{
 			_drawingSession = pSession;
 			_data = pData;
+			_viewExtent = viewExtent;
+			_presentationTime = pTime;
 		}
 		~VisualizerDrawEventArgs()
 		{
@@ -38,7 +43,20 @@ namespace AudioVisualizer
 			_data.CopyTo(ppData);
 			return S_OK;
 		}
-
+		STDMETHODIMP get_ViewExtent(Size *pSize)
+		{
+			if (pSize == nullptr)
+				return E_INVALIDARG;
+			*pSize = _viewExtent;
+			return S_OK;
+		}
+		STDMETHODIMP get_PresentationTime(IReference<TimeSpan> **ppTime)
+		{
+			if (ppTime == nullptr)
+				return E_POINTER;
+			*ppTime = nullptr;
+			return _presentationTime.CopyTo(ppTime);
+		}
 	};
 }
 

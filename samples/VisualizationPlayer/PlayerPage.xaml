@@ -7,9 +7,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:a="using:AudioVisualizer"
     mc:Ignorable="d">
+    <Page.Resources>
+        <local:BooleanToVisibilityConverter x:Key="visibilityConverter"></local:BooleanToVisibilityConverter>
+    </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <ToggleSwitch IsOn="{x:Bind ledbar.Visibility,Mode=TwoWay,Converter={StaticResource ResourceKey=visibilityConverter}}"></ToggleSwitch>
         <a:DiscreteVUBar x:Name="ledbar"></a:DiscreteVUBar>
-        <a:CustomVisualizer x:Name="spectrum" CreateResources="spectrum_CreateResources"></a:CustomVisualizer>
+        <a:CustomVisualizer x:Name="spectrum" CreateResources="spectrum_CreateResources" Draw="spectrum_Draw"></a:CustomVisualizer>
     </Grid>
 </Page>

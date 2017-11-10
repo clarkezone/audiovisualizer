@@ -14,6 +14,7 @@
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::System::Threading;
 using namespace ABI::AudioVisualizer;
+using namespace ABI::Windows::Foundation;
 
 namespace AudioVisualizer
 {
@@ -140,6 +141,7 @@ namespace AudioVisualizer
 		STDMETHODIMP put_Fps(float frameRate);
 		STDMETHODIMP get_AnalyzerTypes(AnalyzerType *pResult);
 		STDMETHODIMP put_AnalyzerTypes(AnalyzerType result);
+		STDMETHODIMP get_PresentationTime(IReference<TimeSpan> **ppTime);
 #pragma endregion
 		
 		STDMETHODIMP ConfigureSpectrum(UINT32 fftLength, float overlap);

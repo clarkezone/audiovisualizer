@@ -150,6 +150,21 @@ namespace AudioVisualizer
 		return E_NOTIMPL;
 	}
 
+	STDMETHODIMP CAnalyzerEffect::get_PresentationTime(IReference<TimeSpan> **ppTime)
+	{
+		if (ppTime == nullptr)
+			return E_POINTER;
+		*ppTime = nullptr;
+
+		REFERENCE_TIME time = GetPresentationTime();
+		if (time != -1)
+		{
+			auto timeReference = Make<wrl_util::Nullable<TimeSpan>>(TimeSpan() = { time });
+			return timeReference.CopyTo(ppTime);
+		}
+		return S_OK;
+	}
+
 	STDMETHODIMP CAnalyzerEffect::ConfigureSpectrum(UINT32 fftLength, float inputOverlap)
 	{
 		if ((fftLength & fftLength - 1) != 0)	// FFT length needs to be power of 2

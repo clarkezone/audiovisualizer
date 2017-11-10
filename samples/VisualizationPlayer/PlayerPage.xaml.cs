@@ -60,5 +60,9 @@ namespace VisualizationPlayer
         {
             System.Diagnostics.Debug.WriteLine($"Create resources - reason: {args.Reason}");
         }
+
+        private void spectrum_Draw(AudioVisualizer.IVisualizer sender, AudioVisualizer.VisualizerDrawEventArgs args)
+        {
+        }
     }
 }

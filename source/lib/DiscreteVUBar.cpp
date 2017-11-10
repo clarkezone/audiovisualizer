@@ -55,7 +55,7 @@ namespace AudioVisualizer
 		element->put_Height(size.Height);
 	}
 
-	HRESULT DiscreteVUBar::OnDraw(ICanvasDrawingSession *pDrawingSession, IVisualizationDataFrame *pDataFrame)
+	HRESULT DiscreteVUBar::OnDraw(ICanvasDrawingSession *pDrawingSession, IVisualizationDataFrame *pDataFrame, IReference<TimeSpan> *)
 	{
 		ComPtr<IScalarData> logRms;
 		ComPtr<ABI::Windows::Foundation::Collections::IVectorView<float>> rmsValues;
