@@ -198,7 +198,7 @@ namespace AudioVisualizer
 		void ResizeControl();
 
 
-		virtual HRESULT OnDraw(ICanvasDrawingSession *pSession, IVisualizationDataFrame *pDataFrame);
+		virtual HRESULT OnDraw(ICanvasDrawingSession *pSession, IVisualizationDataFrame *pDataFrame, IReference<TimeSpan> *pPresentationTime);
 	};
 
 }

@@ -5,12 +5,14 @@
 #include <DirectXMath.h>
 #include "LifeSpanTracker.h"
 #include "trace.h"
+#include "wrl_util.h"
 
 using namespace Microsoft::WRL;
 using namespace ABI::AudioVisualizer;
 using namespace ABI::Windows::Foundation::Collections;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Foundation::Diagnostics;
+using namespace wrl_util;
 
 namespace AudioVisualizer
 {
@@ -58,9 +60,8 @@ namespace AudioVisualizer
 
 		STDMETHODIMP First(IIterator<float> **ppIterator)
 		{
-			//auto iterator = Make<IteratorImpl<float>>((float *)_pData, _size);
-			//return iterator.CopyTo(ppIterator);
-			return E_NOTIMPL;
+			auto iterator = Make<IteratorImpl<float>>((float *)_pData, _size);
+			return iterator.CopyTo(ppIterator);
 		}
 
 		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, IScalarData **ppResult);

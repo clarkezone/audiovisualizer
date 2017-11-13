@@ -26,7 +26,7 @@ namespace AudioVisualizer
 		Microsoft::WRL::EventSource<Visualizer_DrawEventHandler> _drawEventList;
 		Microsoft::WRL::EventSource<Visualizer_CreateResources_EventHandler> _createResourcesEventList;
 	protected:
-		virtual HRESULT OnDraw(ICanvasDrawingSession *pSession,IVisualizationDataFrame *pDataFrame);
+		virtual HRESULT OnDraw(ICanvasDrawingSession *pSession,IVisualizationDataFrame *pDataFrame, IReference<TimeSpan> *pPresentationTime);
 		virtual HRESULT OnCreateResources(ABI::AudioVisualizer::CreateResourcesReason reason);
 	public:
 		STDMETHODIMP get_Source(ABI::AudioVisualizer::IVisualizationSource **ppSource)

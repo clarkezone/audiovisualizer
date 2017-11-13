@@ -376,6 +376,7 @@
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="VisualizationDataFrame.h" />
     <ClInclude Include="VisualizerDrawEventArgs.h" />
+    <ClInclude Include="wrl_util.h" />
     <ClInclude Include="XDSP.h" />
   </ItemGroup>
   <ItemGroup>

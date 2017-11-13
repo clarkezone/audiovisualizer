@@ -5,7 +5,6 @@
 #include "AudioVisualizer.abi.h"
 #include "ScalarData.h"
 #include "ArrayData.h"
-#include "Nullable.h"
 #include <DirectXMath.h>
 #include <AudioAnalyzer.h>
 #include "LifeSpanTracker.h"
@@ -16,6 +15,7 @@ using namespace Microsoft::WRL;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Foundation::Diagnostics;
 using namespace Microsoft::WRL::Wrappers;
+using namespace wrl_util;
 
 namespace AudioVisualizer
 {
