@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0622 */
 /* at Tue Jan 19 05:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-4cea49d8:
+/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-3f6e4879:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -1230,6 +1230,27 @@ DEFINE_ENUM_FLAG_OPERATORS(AnalyzerType)
 } /*AudioVisualizer*/
 }
 #endif
+#if !defined(__cplusplus)
+
+#if !defined(__cplusplus)
+/* [v1_enum] */ 
+enum __x_ABI_CAudioVisualizer_CSourcePlaybackState
+    {
+        SourcePlaybackState_Stopped	= ( int  )0,
+        SourcePlaybackState_Playing	= ( int  )1,
+        SourcePlaybackState_Paused	= ( int  )2
+    } ;
+#endif /* end if !defined(__cplusplus) */
+
+#if !defined(__cplusplus)
+
+typedef enum __x_ABI_CAudioVisualizer_CSourcePlaybackState __x_ABI_CAudioVisualizer_CSourcePlaybackState;
+
+
+#endif /* end if !defined(__cplusplus) */
+
+
+#endif
 
 
 /* interface __MIDL_itf_AudioVisualizer_0000_0013 */
@@ -1378,6 +1399,43 @@ namespace ABI {
     namespace AudioVisualizer {
         
         typedef MIDL_ENUM AnalyzerType AnalyzerType;
+        
+    } /* end namespace */
+} /* end namespace */
+
+extern "C" { 
+#endif
+
+#ifdef __cplusplus
+} /* end extern "C" */
+namespace ABI {
+    namespace AudioVisualizer {
+        
+        /* [v1_enum] */ 
+        MIDL_ENUM SourcePlaybackState
+            {
+                Stopped	= ( int  )0,
+                Playing	= ( int  )1,
+                Paused	= ( int  )2
+            } ;
+
+        const MIDL_ENUM SourcePlaybackState SourcePlaybackState_Stopped = SourcePlaybackState::Stopped;
+        const MIDL_ENUM SourcePlaybackState SourcePlaybackState_Playing = SourcePlaybackState::Playing;
+        const MIDL_ENUM SourcePlaybackState SourcePlaybackState_Paused = SourcePlaybackState::Paused;
+        
+    } /* end namespace */
+} /* end namespace */
+
+extern "C" { 
+#endif
+
+#ifdef __cplusplus
+
+} /* end extern "C" */
+namespace ABI {
+    namespace AudioVisualizer {
+        
+        typedef MIDL_ENUM SourcePlaybackState SourcePlaybackState;
         
     } /* end namespace */
 } /* end namespace */
@@ -4810,6 +4868,9 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSource;
                 virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_PresentationTime( 
                     /* [out][retval] */ __FIReference_1_Windows__CFoundation__CTimeSpan **pTime) = 0;
                 
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_PlaybackState( 
+                    /* [out][retval] */ ABI::AudioVisualizer::SourcePlaybackState *state) = 0;
+                
             };
 
             extern const __declspec(selectany) IID & IID_IVisualizationSource = __uuidof(IVisualizationSource);
@@ -4882,6 +4943,10 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSource;
             __x_ABI_CAudioVisualizer_CIVisualizationSource * This,
             /* [out][retval] */ __FIReference_1_Windows__CFoundation__CTimeSpan **pTime);
         
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_PlaybackState )( 
+            __x_ABI_CAudioVisualizer_CIVisualizationSource * This,
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CSourcePlaybackState *state);
+        
         END_INTERFACE
     } __x_ABI_CAudioVisualizer_CIVisualizationSourceVtbl;
 
@@ -4938,6 +5003,9 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIVisualizationSource;
 
 #define __x_ABI_CAudioVisualizer_CIVisualizationSource_get_PresentationTime(This,pTime)	\
     ( (This)->lpVtbl -> get_PresentationTime(This,pTime) ) 
+
+#define __x_ABI_CAudioVisualizer_CIVisualizationSource_get_PlaybackState(This,state)	\
+    ( (This)->lpVtbl -> get_PlaybackState(This,state) ) 
 
 #endif /* COBJMACROS */
 

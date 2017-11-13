@@ -486,8 +486,8 @@ namespace AudioVisualizer
 			else
 			{
 				spFields->AddEmpty(HStringReference(L"Clock").Get());
-
 			}
+			spFields->AddInt32WithFormat(HStringReference(L"ptr").Get(), (INT32) pClock, LoggingFieldFormat::LoggingFieldFormat_Hexadecimal);
 			return g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_SET_PRESENTATION_CLOCK).Get(), spFields.Get());
 		}
 

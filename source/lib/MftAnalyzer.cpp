@@ -34,6 +34,7 @@ namespace AudioVisualizer
 		m_fOutputFps(60.0f),
 		m_fInputOverlap(0.5f),
 		m_bIsSuspended(false),
+		_playbackState(SourcePlaybackState::Stopped),
 		_analyzerTypes(AnalyzerType::All)
 	{
 		_analyzer = std::make_shared<Math::CAudioAnalyzer>(CircleBufferSize);
@@ -44,6 +45,10 @@ namespace AudioVisualizer
 
 	CAnalyzerEffect::~CAnalyzerEffect()
 	{
+		if (m_spPresentationClock != nullptr)
+		{
+			m_spPresentationClock->RemoveClockStateSink(this);
+		}
 		CloseHandle(_threadPoolSemaphore);
 #ifdef _TRACE
 		AudioVisualizer::Diagnostics::Trace::Shutdown();
@@ -786,8 +791,15 @@ namespace AudioVisualizer
 
 	HRESULT CAnalyzerEffect::SetPresentationClock(IMFPresentationClock * pPresentationClock)
 	{
+		if (m_spPresentationClock != nullptr)
+		{
+			m_spPresentationClock->RemoveClockStateSink(this);
+		}
 		m_spPresentationClock = pPresentationClock;
 		Diagnostics::Trace::Log_SetPresentationClock(pPresentationClock);
+		if (m_spPresentationClock != nullptr)
+			m_spPresentationClock->AddClockStateSink(this);
+		
 		return S_OK;
 	}
 

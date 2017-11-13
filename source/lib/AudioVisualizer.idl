@@ -65,6 +65,14 @@ namespace AudioVisualizer
 		All = (int)7
 	} AnalyzerType;
 
+	[version(1.0)]
+	typedef enum SourcePlaybackState
+	{
+		Stopped = (int) 0,
+		Playing = (int) 1,
+		Paused = (int) 2
+	} SourcePlaybackState;
+
 	declare{
 		interface Windows.Foundation.IAsyncOperation<IVisualizationSource *>;
 		interface Windows.Foundation.TypedEventHandler<IInspectable*, CreateResourcesEventArgs*>;
@@ -287,6 +295,7 @@ namespace AudioVisualizer
 		[propget] HRESULT AnalyzerTypes([out,retval] AnalyzerType *pResult);
 		[propput] HRESULT AnalyzerTypes([in] AnalyzerType types);
 		[propget] HRESULT PresentationTime([out, retval] Windows.Foundation.IReference<Windows.Foundation.TimeSpan> **pTime);
+		[propget] HRESULT PlaybackState([out, retval] SourcePlaybackState *state);
 	};
 
 	[uuid(722B9116-78B8-40BD-9840-84B59CAC6E84)]

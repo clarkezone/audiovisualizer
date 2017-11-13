@@ -12,8 +12,11 @@
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <ToggleSwitch IsOn="{x:Bind ledbar.Visibility,Mode=TwoWay,Converter={StaticResource ResourceKey=visibilityConverter}}"></ToggleSwitch>
-        <a:DiscreteVUBar x:Name="ledbar"></a:DiscreteVUBar>
-        <a:CustomVisualizer x:Name="spectrum" CreateResources="spectrum_CreateResources" Draw="spectrum_Draw"></a:CustomVisualizer>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="8*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <a:DiscreteVUBar Grid.Column="0" x:Name="ledbar"></a:DiscreteVUBar>
+        <a:CustomVisualizer Grid.Column="1" x:Name="spectrum" CreateResources="spectrum_CreateResources" Draw="spectrum_Draw"></a:CustomVisualizer>
     </Grid>
 </Page>

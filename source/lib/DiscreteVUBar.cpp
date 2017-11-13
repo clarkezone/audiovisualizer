@@ -10,9 +10,9 @@ namespace AudioVisualizer
 	{
 		_levels.resize(24);
 		int level = -60;
-		for (size_t i = 0; i < 24; i++,level+=3)
+		for (size_t i = 0; i < 24; i++, level += 3)
 		{
-			_levels[i].Level = (float) level;
+			_levels[i].Level = (float)level;
 			if (level < -6)
 				_levels[i].Color = Color() = { 255 , 0, 255, 0 };
 			else if (level <= 0)
@@ -61,28 +61,32 @@ namespace AudioVisualizer
 		ComPtr<ABI::Windows::Foundation::Collections::IVectorView<float>> rmsValues;
 		UINT32 valueCount = 0;
 
-			ComPtr<IScalarData> rms;
-			if (pDataFrame != nullptr)
-				pDataFrame->get_RMS(&rms);
-			else
-				rms = Make<ScalarData>(_channelCount,ScaleType::Linear,true);
+		SourcePlaybackState state = SourcePlaybackState::Stopped;
+		if (_visualizationSource != nullptr)
+			_visualizationSource->get_PlaybackState(&state);
 
-			ComPtr<IReference<TimeSpan>> ref_duration;
-			TimeSpan duration = { 166667 };
+		ComPtr<IScalarData> rms;
+		if (pDataFrame != nullptr && state == SourcePlaybackState::Playing)
+			pDataFrame->get_RMS(&rms);
+		else
+			rms = Make<ScalarData>(_channelCount, ScaleType::Linear, true);
 
-			if (pDataFrame != nullptr)
-			{
-				pDataFrame->get_Duration(&ref_duration);
-				ref_duration->get_Value(&duration);
-			}
-			ComPtr<IScalarData> prevValue;
-			rms->ApplyRiseAndFall(_previousValues.Get(), _riseTime, _fallTime, duration, &prevValue);
-			_previousValues = prevValue;
-			_previousValues->ConvertToLogAmplitude(-100, 0, &logRms);
-			logRms.As(&rmsValues);
-			rmsValues->get_Size(&valueCount);
+		ComPtr<IReference<TimeSpan>> ref_duration;
+		TimeSpan duration = { 166667 };
 
-			for (size_t levelIndex = 0; levelIndex < _levels.size(); levelIndex++)
+		if (pDataFrame != nullptr)
+		{
+			pDataFrame->get_Duration(&ref_duration);
+			ref_duration->get_Value(&duration);
+		}
+		ComPtr<IScalarData> prevValue;
+		rms->ApplyRiseAndFall(_previousValues.Get(), _riseTime, _fallTime, duration, &prevValue);
+		_previousValues = prevValue;
+		_previousValues->ConvertToLogAmplitude(-100, 0, &logRms);
+		logRms.As(&rmsValues);
+		rmsValues->get_Size(&valueCount);
+
+		for (size_t levelIndex = 0; levelIndex < _levels.size(); levelIndex++)
 		{
 			for (size_t channelIndex = 0; channelIndex < _channelCount; channelIndex++)
 			{
@@ -99,7 +103,7 @@ namespace AudioVisualizer
 				if (_orientation == Orientation::Orientation_Vertical)
 				{
 					pDrawingSession->FillRectangleAtCoordsWithColor(
-						elementX,elementY,_elementSize.Width,_elementSize.Height,elementColor
+						elementX, elementY, _elementSize.Width, _elementSize.Height, elementColor
 					);
 				}
 				else
