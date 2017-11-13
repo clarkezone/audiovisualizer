@@ -41,6 +41,7 @@ namespace VisualizationPlayer
             {
                 App.Player.VisualizationSource.IsSuspended = false;
                 ledbar.Source = App.Player.VisualizationSource;
+                spectrum.Source = App.Player.VisualizationSource;
                 App.Player.VisualizationSourceChanged += Player_VisualizationSourceChanged;
             }
 
@@ -49,6 +50,7 @@ namespace VisualizationPlayer
         private void Player_VisualizationSourceChanged(object sender, AudioVisualizer.IVisualizationSource source)
         {
             ledbar.Source = source;
+            spectrum.Source = source;
         }
 
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
@@ -88,76 +90,91 @@ namespace VisualizationPlayer
         {
             var drawingSession = (CanvasDrawingSession)args.DrawingSession;
 
-            Thickness margin = new Thickness(10);
+            Thickness margin = new Thickness(40,10,20,10);
             // Calculate spectum metrics
             Vector2 barSize = new Vector2((float)(args.ViewExtent.Width - margin.Left - margin.Right) / spectrumBarCount,
-                                    (float)(args.ViewExtent.Height - margin.Top * 2 - margin.Bottom * 2)); // Top and bottom margins apply twice (as there are two spectrum displays)
+                                    (float)(args.ViewExtent.Height / 2 - margin.Top * 2 - margin.Bottom * 2)); // Top and bottom margins apply twice (as there are two spectrum displays)
 
-            Color gridlineColor = Colors.WhiteSmoke;
+            Color gridlineColor = Colors.Black;
+            Color textColor = Colors.Blue;
 
             // Draw bounding rectangles for spectrum
-            Rect boundingRectTop = new Rect(margin.Left, margin.Top, args.ViewExtent.Width - margin.Right, barSize.Y);
-            Rect boundingRectBottom = new Rect(margin.Left, margin.Top * 2 + margin.Bottom + barSize.Y, args.ViewExtent.Width - margin.Right, barSize.Y);
+            Rect boundingRectTop = new Rect(margin.Left, margin.Top, args.ViewExtent.Width - margin.Right - margin.Left, barSize.Y);
+            Rect boundingRectBottom = new Rect(margin.Left, margin.Top * 2 + margin.Bottom + barSize.Y, args.ViewExtent.Width - margin.Right - margin.Left, barSize.Y);
 
-            drawingSession.DrawRectangle(boundingRectTop,gridlineColor);
-            drawingSession.DrawRectangle(boundingRectBottom, gridlineColor);
+            // Get the data if data exists and source is in play state, else use empty
+            var spectrumData = args.Data != null && 
+                                spectrum.Source?.PlaybackState == SourcePlaybackState.Playing ? 
+                                args.Data.Spectrum.TransformLinearFrequency(spectrumBarCount,0,20000f) : 
+                                _emptySpectrum;
 
-            // Draw db based volume grid for spectrum -40 to 0db, every 10db
-            for (int i = -40; i <= 0; i += 10)
-            {
-                drawingSession.DrawLine(810 + 20 * i, 10, 810 + 20 * i, 60, Colors.White);
-                drawingSession.DrawText($"{i}dB", 810 + 20 * i, 70, Colors.White, _spectrumTextFormat);
-            }
-            /*
-            drawingSession.DrawLine(0, 320, 1000, 320, Colors.WhiteSmoke);
-            drawingSession.DrawLine(0, 340, 1000, 340, Colors.WhiteSmoke);
-
-            var rmsData = args.Data != null ? args.Data.RMS : _emptyVolumeData;
-            var peakData = args.Data != null ? args.Data.Peak : _emptyVolumeData;
-
-            _previousRMS = rmsData.ApplyRiseAndFall(_previousRMS, _rmsRiseTime, _rmsFallTime, _frameDuration);
-            _previousPeak = peakData.ApplyRiseAndFall(_previousPeak, _peakRiseTime, _peakFallTime, _frameDuration);
-
-            var logRMS = _previousRMS.ConvertToLogAmplitude(-40.0f, 0.0f);
-            var logPeak = _previousPeak.ConvertToLogAmplitude(-40.0f, 0.0f);
-
-            drawingSession.FillRectangle(10, 10, 20 + 20 * (40.0f + (logRMS[0])), 20, Colors.Green);
-            drawingSession.FillRectangle(10, 40, 20 + 20 * (40.0f + (logRMS[1])), 20, Colors.Green);
-
-            drawingSession.DrawLine(820.0f + 20 * logPeak[0], 10, 820.0f + 20 * logPeak[0], 30, Colors.Red, 3);
-            drawingSession.DrawLine(820.0f + 20 * logPeak[1], 40, 820.0f + 20 * logPeak[1], 60, Colors.Red, 3);
-
-            var spectrum = args.Data != null ? args.Data.Spectrum.TransformLinearFrequency(20) : _emptySpectrum;
-
-            _previousSpectrum = spectrum.ApplyRiseAndFall(_previousSpectrum, _rmsRiseTime, _rmsFallTime, _frameDuration);
-            _previousPeakSpectrum = spectrum.ApplyRiseAndFall(_previousPeakSpectrum, _peakRiseTime, _peakFallTime, _frameDuration);
+            _previousSpectrum = spectrumData.ApplyRiseAndFall(_previousSpectrum, _rmsRiseTime, _rmsFallTime, _frameDuration);
+            _previousPeakSpectrum = spectrumData.ApplyRiseAndFall(_previousPeakSpectrum, _peakRiseTime, _peakFallTime, _frameDuration);
 
             var logSpectrum = _previousSpectrum.ConvertToLogAmplitude(-50, 0);
             var logPeakSpectrum = _previousPeakSpectrum.ConvertToLogAmplitude(-50, 0);
 
-            Vector2 prevPointLeft = new Vector2(), prevPointRight = new Vector2();
-
-            for (int i = 0; i < logSpectrum.FrequencyCount; i++)
+            // Draw spectrum bars
+            for (int index = 0; index < spectrumBarCount; index++)
             {
-                float barHeight0 = 160 + 3.2f * logSpectrum[0][i];
-                drawingSession.FillRectangle(i * 50, 320 - barHeight0, 50, barHeight0, Colors.WhiteSmoke);
-                float barHeight1 = 160 + 3.2f * logSpectrum[1][i];
-                drawingSession.FillRectangle(i * 50, 340, 50, barHeight1, Colors.WhiteSmoke);
+                float barX = (float)margin.Left + index * barSize.X;
 
-                Vector2 leftPoint = new Vector2(i * 50 + 25, 160 - 3.2f * logPeakSpectrum[0][i]);
-                Vector2 rightPoint = new Vector2(i * 50 + 25, 500 + 3.2f * logPeakSpectrum[1][i]);
-                if (i != 0)
-                {
-                    drawingSession.DrawLine(prevPointLeft, leftPoint, Colors.Red, 3);
-                    drawingSession.DrawLine(prevPointRight, rightPoint, Colors.Red, 3);
-                }
-                prevPointLeft = leftPoint;
-                prevPointRight = rightPoint;
-
-                string freqText = $"{Math.Round(logSpectrum.FrequencyStep * i * 1e-3),2:F0}k";
-                drawingSession.DrawText(freqText, i * 50 + 25, 330, Colors.White, _spectrumTextFormat);
+                float spectrumBarHeight1 = barSize.Y * (1.0f - logSpectrum[0][index] / -50.0f);
+                float spectrumBarHeight2 = barSize.Y * (1.0f - logSpectrum[1][index] / -50.0f);
+                drawingSession.FillRectangle(barX, (float)boundingRectTop.Bottom - spectrumBarHeight1, barSize.X, spectrumBarHeight1, Colors.DarkCyan);
+                drawingSession.FillRectangle(barX, (float)boundingRectBottom.Bottom - spectrumBarHeight2, barSize.X, spectrumBarHeight2, Colors.DarkCyan);
             }
-            */
+
+            // If source is playing then draw peak spectrum
+            if (spectrum.Source?.PlaybackState == SourcePlaybackState.Playing)
+            {
+                // Spectrum points to draw a slow decay line
+                Vector2 prevPointLeft = new Vector2(), prevPointRight = new Vector2();
+                for (int index = 0; index < spectrumBarCount; index++)
+                {
+                    float X = (float)margin.Left + index * barSize.X + barSize.X / 2;
+
+                    Vector2 leftPoint = new Vector2(X, (float)boundingRectTop.Bottom - barSize.Y * (1.0f - logPeakSpectrum[0][index] / -50.0f));
+                    Vector2 rightPoint = new Vector2(X, (float)boundingRectBottom.Bottom - barSize.Y * (1.0f - logPeakSpectrum[1][index] / -50.0f));
+                    if (index != 0)
+                    {
+                        drawingSession.DrawLine(prevPointLeft, leftPoint, Colors.Red, 3);
+                        drawingSession.DrawLine(prevPointRight, rightPoint, Colors.Red, 3);
+                    }
+                    prevPointLeft = leftPoint;
+                    prevPointRight = rightPoint;
+                }
+            }
+
+            // Draw grid for 1k step from 0 - 20kHz
+            float fStepWidth = (float) boundingRectTop.Width / 20;
+            for (int f=0;f<20;f++)
+            {
+                float X = f * fStepWidth + (float) margin.Left;
+                if (f!=0)
+                {
+                    drawingSession.DrawLine(X, (float)boundingRectTop.Top, X, (float)boundingRectTop.Bottom, gridlineColor);
+                    drawingSession.DrawLine(X, (float)boundingRectBottom.Top, X, (float)boundingRectBottom.Bottom, gridlineColor);
+                }
+                string freqText = $"{f}k";
+                drawingSession.DrawText(freqText, X + fStepWidth/2, (float)boundingRectTop.Bottom + 10, textColor, _spectrumTextFormat);
+                drawingSession.DrawText(freqText, X + fStepWidth / 2, (float)boundingRectBottom.Bottom + 10, textColor, _spectrumTextFormat);
+            }
+
+            drawingSession.DrawRectangle(boundingRectTop, gridlineColor);
+            drawingSession.DrawRectangle(boundingRectBottom, gridlineColor);
+
+            // Draw db based volume grid for spectrum -40 to 0db, every 10db
+            for (int i = -50; i <= 0; i += 10)
+            {
+                float topY = (float)boundingRectTop.Top - (float)i * (float)boundingRectTop.Height / 50.0f;
+                float bottomY = (float)boundingRectBottom.Bottom + (float)i * (float)boundingRectBottom.Height / 50.0f;
+                drawingSession.DrawLine((float)boundingRectTop.Left, topY, (float)boundingRectTop.Right, topY, gridlineColor);
+                drawingSession.DrawLine((float)boundingRectTop.Left, bottomY, (float)boundingRectTop.Right, bottomY, gridlineColor);
+                drawingSession.DrawText($"{i}dB", (float)boundingRectTop.Left - (float)margin.Left / 2, topY, textColor, _spectrumTextFormat);
+                drawingSession.DrawText($"{i}dB", (float)boundingRectTop.Left - (float)margin.Left / 2, bottomY, textColor, _spectrumTextFormat);
+
+            }
         }
     }
 }
