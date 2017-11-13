@@ -74,6 +74,8 @@ namespace VisualizationPlayer
                 }
                 // Ensure the current window is active
                 Window.Current.Activate();
+                var coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
+                coreTitleBar.ExtendViewIntoTitleBar = true;
             }
         }
 

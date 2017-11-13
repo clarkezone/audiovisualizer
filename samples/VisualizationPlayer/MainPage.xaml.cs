@@ -74,12 +74,16 @@ namespace VisualizationPlayer
             PositionDisplay.Source = source;
         }
 
+        bool _insidePositionUpdate = false;
+
         private async void Player_PositionChanged(object sender, TimeSpan position)
         {
             await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
                 () =>
                 {
+                    _insidePositionUpdate = true;
                     seekSlider.Value = position.TotalSeconds;
+                    _insidePositionUpdate = false;
                 });
         }
 
@@ -92,31 +96,6 @@ namespace VisualizationPlayer
                 });
         }
 
-
-        private void visualizer_Draw(AudioVisualizer.IVisualizer sender, AudioVisualizer.VisualizerDrawEventArgs args)
-        {
-        }
-
-
-        private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
-        {
-            if (args.IsSettingsInvoked)
-            {
-                // not implemented
-            }
-            else
-            {
-                switch (args.InvokedItem)
-                {
-                    case "Player":
-                        ContentFrame.Navigate(typeof(PlayerPage));
-                        break;
-                    case "Information":
-                        ContentFrame.Navigate(typeof(InformationPage));
-                        break;
-                }
-            }
-        }
 
         private void PositionDisplay_Draw(IVisualizer sender, VisualizerDrawEventArgs args)
         {
@@ -136,6 +115,34 @@ namespace VisualizationPlayer
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
             App.Player.Pause();
+        }
+
+        private void seekSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (!_insidePositionUpdate)
+            {
+                App.Player.Seek(TimeSpan.FromSeconds(e.NewValue));
+            }
+        }
+
+        private void navView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            if (args.IsSettingsSelected)
+            {
+                // not implemented
+            }
+            else
+            {
+                switch (((NavigationViewItem)args.SelectedItem).Tag)
+                {
+                    case "Player":
+                        ContentFrame.Navigate(typeof(PlayerPage));
+                        break;
+                    case "Information":
+                        ContentFrame.Navigate(typeof(InformationPage));
+                        break;
+                }
+            }
         }
     }
 }

@@ -7,7 +7,7 @@
     xmlns:a="using:AudioVisualizer"
     xmlns:local="using:VisualizationPlayer"
     mc:Ignorable="d" Loaded="Page_Loaded">
-    <NavigationView x:Name="navView" IsPaneOpen="True" ItemInvoked="NavigationView_ItemInvoked" Header="{x:Bind Player}">
+    <NavigationView x:Name="navView" IsPaneOpen="True" SelectionChanged="navView_SelectionChanged" Header="{x:Bind Player}">
         <NavigationView.HeaderTemplate>
             <DataTemplate x:DataType="local:PlayerService">
                 <Grid>
@@ -16,16 +16,13 @@
                         <ColumnDefinition></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="20,0" Text="{x:Bind Title,Mode=OneWay}"></TextBlock>
-                    <CommandBar Grid.Column="1">
-                        <AppBarButton Icon="OpenFile" Click="OpenFile_Click"></AppBarButton>
-                    </CommandBar>
                 </Grid>
             </DataTemplate>
         </NavigationView.HeaderTemplate>
         <NavigationView.MenuItems>
-            <NavigationViewItem Content="Player">
+            <NavigationViewItem Content="Player" Tag="Player">
             </NavigationViewItem>
-            <NavigationViewItem Content="Information">
+            <NavigationViewItem Content="Information" Tag="Information">
             </NavigationViewItem>
         </NavigationView.MenuItems>
         <NavigationView.Content>
@@ -41,11 +38,12 @@
                         <RowDefinition></RowDefinition>
                         <RowDefinition></RowDefinition>
                     </Grid.RowDefinitions>
-                    <Slider x:Name="seekSlider" Grid.Row="0" Orientation="Horizontal" Margin="20,5"></Slider>
+                    <Slider x:Name="seekSlider" Grid.Row="0" Orientation="Horizontal" Margin="40,5" ValueChanged="seekSlider_ValueChanged" ></Slider>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
                         <a:CustomVisualizer x:Name="PositionDisplay" Height="50" Width="250" Draw="PositionDisplay_Draw"></a:CustomVisualizer>
                         <AppBarButton Icon="Play" Click="PlayButton_Click"></AppBarButton>
                         <AppBarButton Icon="Pause" Click="StopButton_Click" ></AppBarButton>
+                        <AppBarButton Icon="OpenFile" Click="OpenFile_Click"></AppBarButton>
                     </StackPanel>
                 </Grid>
             </Grid>

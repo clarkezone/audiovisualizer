@@ -86,7 +86,6 @@ namespace VisualizationPlayer
 
         private void Player_MediaOpened(MediaPlayer sender, object args)
         {
-            System.Diagnostics.Debug.WriteLine("Media opened");
             MediaOpened?.Invoke(sender, args);
         }
 
@@ -110,6 +109,11 @@ namespace VisualizationPlayer
         internal void Pause()
         {
             _player.Pause();
+        }
+
+        internal void Seek(TimeSpan timeSpan)
+        {
+            _player.PlaybackSession.Position = timeSpan;
         }
     }
 }
