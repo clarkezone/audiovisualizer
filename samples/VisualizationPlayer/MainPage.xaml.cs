@@ -59,8 +59,9 @@ namespace VisualizationPlayer
         {
             App.Player.MediaOpened += Player_MediaOpened;
             App.Player.PositionChanged += Player_PositionChanged;
-            App.Player.VisualizationSourceChanged += Player_VisualizationSourceChanged; 
+            App.Player.VisualizationSourceChanged += Player_VisualizationSourceChanged;
             PositionDisplay.Source = App.Player.VisualizationSource;
+            navView.SelectedItem = navView.MenuItems[0];
         }
 
         private void Player_VisualizationSourceChanged(object sender, IVisualizationSource visualizationSource)

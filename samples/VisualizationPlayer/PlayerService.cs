@@ -33,6 +33,7 @@ namespace VisualizationPlayer
 
         private void _source_SourceChanged(object sender, IVisualizationSource source)
         {
+            var list = VisualizationSourceChanged.GetInvocationList();
             VisualizationSourceChanged?.Invoke(sender, source);
         }
 

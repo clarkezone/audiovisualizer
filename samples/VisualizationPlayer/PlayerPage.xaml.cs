@@ -42,9 +42,8 @@ namespace VisualizationPlayer
                 App.Player.VisualizationSource.IsSuspended = false;
                 ledbar.Source = App.Player.VisualizationSource;
                 spectrum.Source = App.Player.VisualizationSource;
-                App.Player.VisualizationSourceChanged += Player_VisualizationSourceChanged;
             }
-
+            App.Player.VisualizationSourceChanged += Player_VisualizationSourceChanged;
         }
 
         private void Player_VisualizationSourceChanged(object sender, AudioVisualizer.IVisualizationSource source)
@@ -70,11 +69,7 @@ namespace VisualizationPlayer
             _spectrumTextFormat.FontSize = 9;
         }
 
-        ScalarData _emptyVolumeData = new ScalarData(2);    // Create empty data for volume data
-        ScalarData _previousRMS;
-        ScalarData _previousPeak;
-
-        const uint spectrumBarCount = 20;
+        const uint spectrumBarCount = 50;
         ArrayData _emptySpectrum = new ArrayData(2, spectrumBarCount);
         ArrayData _previousSpectrum;
         ArrayData _previousPeakSpectrum;

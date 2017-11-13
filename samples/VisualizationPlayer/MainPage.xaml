@@ -7,7 +7,7 @@
     xmlns:a="using:AudioVisualizer"
     xmlns:local="using:VisualizationPlayer"
     mc:Ignorable="d" Loaded="Page_Loaded">
-    <NavigationView IsPaneOpen="True" ItemInvoked="NavigationView_ItemInvoked" Header="{x:Bind Player}">
+    <NavigationView x:Name="navView" IsPaneOpen="True" ItemInvoked="NavigationView_ItemInvoked" Header="{x:Bind Player}">
         <NavigationView.HeaderTemplate>
             <DataTemplate x:DataType="local:PlayerService">
                 <Grid>
