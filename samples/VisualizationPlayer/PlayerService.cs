@@ -7,10 +7,12 @@ using AudioVisualizer;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.Media.Core;
+using Windows.Storage.FileProperties;
+using System.ComponentModel;
 
 namespace VisualizationPlayer
 {
-    public class PlayerService
+    public class PlayerService : INotifyPropertyChanged
     {
         public IVisualizationSource VisualizationSource { get
             {
@@ -31,6 +33,7 @@ namespace VisualizationPlayer
 
         private void _source_SourceChanged(object sender, IVisualizationSource source)
         {
+            var list = VisualizationSourceChanged.GetInvocationList();
             VisualizationSourceChanged?.Invoke(sender, source);
         }
 
@@ -42,7 +45,39 @@ namespace VisualizationPlayer
         public void OpenFile(StorageFile file)
         {
             _player.Source = MediaSource.CreateFromStorageFile(file);
+            GetMusicInfoAsync(file);
         }
+
+        async void GetMusicInfoAsync(StorageFile file)
+        {
+            MusicProperties musicProps = await file.Properties.GetMusicPropertiesAsync();
+            Title = musicProps.Title;
+            Artist = musicProps.Artist;
+        }
+
+        private string _artist;
+
+        public string Artist
+        {
+            get { return _artist; }
+            set {
+                _artist = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Artist"));
+            }
+        }
+
+
+        private string m_Title;
+
+        public string Title
+        {
+            get { return m_Title; }
+            set {
+                m_Title = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Title"));
+            }
+        }
+
 
         public void Play()
         {
@@ -51,7 +86,6 @@ namespace VisualizationPlayer
 
         private void Player_MediaOpened(MediaPlayer sender, object args)
         {
-            System.Diagnostics.Debug.WriteLine("Media opened");
             MediaOpened?.Invoke(sender, args);
         }
 
@@ -70,5 +104,16 @@ namespace VisualizationPlayer
         public event EventHandler<object> MediaOpened;
         public event EventHandler<TimeSpan> PositionChanged;
         public event EventHandler<IVisualizationSource> VisualizationSourceChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        internal void Pause()
+        {
+            _player.Pause();
+        }
+
+        internal void Seek(TimeSpan timeSpan)
+        {
+            _player.PlaybackSession.Position = timeSpan;
+        }
     }
 }

@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "ArrayData.h"
 #include "AudioMath.h"
-#include "ErrorHandling.h"
-#include "Utilities.h"
 #include <Microsoft.Graphics.Canvas.h>
 
 namespace AudioVisualizer
@@ -12,7 +10,7 @@ namespace AudioVisualizer
 	public:
 		IFACEMETHODIMP Create(UINT32 channels, UINT32 cElements,IArrayData **ppResult)
 		{
-			ComPtr<ArrayData> data = Make<ArrayData>(channels, cElements, ScaleType::Linear,ScaleType::Linear,0,22100,22100.0f/cElements,true);
+			ComPtr<ArrayData> data = Make<ArrayData>(channels, cElements, ScaleType::Linear,ScaleType::Linear,0.0f,22050.0f,22050.0f/cElements,true);
 			return data.CopyTo(ppResult);
 		}
 	};
@@ -113,12 +111,41 @@ namespace AudioVisualizer
 			ScaleType::Linear,
 			_minFrequency,
 			_maxFrequency,
-			(_maxFrequency - _minFrequency) / cElements);
+			(_maxFrequency - _minFrequency) / (float) cElements);
 		for (size_t index = 0,vSrcIndex = 0,vDstIndex = 0; index < _channels; index++,vSrcIndex+=_vElementsCount,vDstIndex+=result->_vElementsCount)
 		{
 			float *pSource = (float *)(GetBuffer() + vSrcIndex);
 			float *pDest = (float*)(result->GetBuffer() + vDstIndex);
-			Math::SpectrumLinearTransform(pSource, _size, pDest, result->_size);
+			Math::SpectrumTransform(pSource, _size, 0.0f, (float) _size, pDest, result->_size,true);
+		}
+
+		return result.CopyTo(ppResult);
+	}
+
+	STDMETHODIMP ArrayData::TransformLinearFrequencyWithRange(UINT32 cElements, float fromFrequency, float toFrequency, IArrayData ** ppResult)
+	{
+		if (_amplitudeScale != ScaleType::Linear || _frequencyScale != ScaleType::Linear || cElements < 1)
+			return E_FAIL;
+
+		if (cElements < 1 || fromFrequency >= toFrequency)
+			return E_INVALIDARG;
+
+		ComPtr<ArrayData> result = Make<ArrayData>(_channels,
+			cElements,
+			ScaleType::Linear,
+			ScaleType::Linear,
+			fromFrequency,
+			toFrequency,
+			(fromFrequency - toFrequency) / cElements);
+
+		float fromIndex = (fromFrequency - _minFrequency) / _frequencyStep;
+		float toIndex = (toFrequency - _minFrequency) / _frequencyStep;
+
+		for (size_t index = 0, vSrcIndex = 0, vDstIndex = 0; index < _channels; index++, vSrcIndex += _vElementsCount, vDstIndex += result->_vElementsCount)
+		{
+			float *pSource = (float *)(GetBuffer() + vSrcIndex);
+			float *pDest = (float*)(result->GetBuffer() + vDstIndex);
+			Math::SpectrumTransform(pSource, _size, fromIndex, toIndex, pDest, result->_size, true);
 		}
 
 		return result.CopyTo(ppResult);

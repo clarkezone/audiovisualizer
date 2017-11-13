@@ -5,7 +5,6 @@
 #include <memory>
 #include <windows.media.core.interop.h>
 #include <trace.h>
-#include "Nullable.h"
 #include <VisualizationDataFrame.h>
 
 #pragma comment(lib, "mf.lib")
@@ -35,6 +34,7 @@ namespace AudioVisualizer
 		m_fOutputFps(60.0f),
 		m_fInputOverlap(0.5f),
 		m_bIsSuspended(false),
+		_playbackState(SourcePlaybackState::Stopped),
 		_analyzerTypes(AnalyzerType::All)
 	{
 		_analyzer = std::make_shared<Math::CAudioAnalyzer>(CircleBufferSize);
@@ -45,6 +45,10 @@ namespace AudioVisualizer
 
 	CAnalyzerEffect::~CAnalyzerEffect()
 	{
+		if (m_spPresentationClock != nullptr)
+		{
+			m_spPresentationClock->RemoveClockStateSink(this);
+		}
 		CloseHandle(_threadPoolSemaphore);
 #ifdef _TRACE
 		AudioVisualizer::Diagnostics::Trace::Shutdown();
@@ -149,6 +153,21 @@ namespace AudioVisualizer
 	STDMETHODIMP CAnalyzerEffect::put_AnalyzerTypes(AnalyzerType result)
 	{
 		return E_NOTIMPL;
+	}
+
+	STDMETHODIMP CAnalyzerEffect::get_PresentationTime(IReference<TimeSpan> **ppTime)
+	{
+		if (ppTime == nullptr)
+			return E_POINTER;
+		*ppTime = nullptr;
+
+		REFERENCE_TIME time = GetPresentationTime();
+		if (time != -1)
+		{
+			auto timeReference = Make<wrl_util::Nullable<TimeSpan>>(TimeSpan() = { time });
+			return timeReference.CopyTo(ppTime);
+		}
+		return S_OK;
 	}
 
 	STDMETHODIMP CAnalyzerEffect::ConfigureSpectrum(UINT32 fftLength, float inputOverlap)
@@ -772,8 +791,15 @@ namespace AudioVisualizer
 
 	HRESULT CAnalyzerEffect::SetPresentationClock(IMFPresentationClock * pPresentationClock)
 	{
+		if (m_spPresentationClock != nullptr)
+		{
+			m_spPresentationClock->RemoveClockStateSink(this);
+		}
 		m_spPresentationClock = pPresentationClock;
 		Diagnostics::Trace::Log_SetPresentationClock(pPresentationClock);
+		if (m_spPresentationClock != nullptr)
+			m_spPresentationClock->AddClockStateSink(this);
+		
 		return S_OK;
 	}
 

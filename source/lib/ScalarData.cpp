@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "ScalarData.h"
 #include <AudioMath.h>
-#include "ErrorHandling.h"
-#include "Utilities.h"
 
 namespace AudioVisualizer
 {

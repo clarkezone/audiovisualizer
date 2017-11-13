@@ -13,6 +13,8 @@
 
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::System::Threading;
+using namespace ABI::AudioVisualizer;
+using namespace ABI::Windows::Foundation;
 
 namespace AudioVisualizer
 {
@@ -24,6 +26,7 @@ namespace AudioVisualizer
 		ABI::Windows::Media::IMediaExtension,
 		IMFTransform,
 		IMFClockConsumer,
+		IMFClockStateSink,
 		ABI::AudioVisualizer::IVisualizationSource>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_MftAnalyzer, BaseTrust)
@@ -51,7 +54,7 @@ namespace AudioVisualizer
 	
 		Microsoft::WRL::Wrappers::CriticalSection m_csAnalyzerAccess;	// Critical section to lock analyzer configuration changing
 		Microsoft::WRL::Wrappers::CriticalSection m_csOutputQueueAccess;
-		std::queue<ComPtr<IAnalyzerFrame>> m_AnalyzerOutput;
+		std::queue<ComPtr<AudioVisualizer::VisualizationDataFrame>> m_AnalyzerOutput;
 
 		size_t m_StepFrameCount;	// How many samples does calculate consume each step
 		size_t m_StepFrameOverlap;
@@ -62,7 +65,9 @@ namespace AudioVisualizer
 		float m_fOutputFps;
 		float m_fInputOverlap;
 
-		ABI::AudioVisualizer::AnalyzerType  _analyzerTypes;
+		AnalyzerType  _analyzerTypes;
+
+		SourcePlaybackState _playbackState;
 
 		HRESULT Analyzer_TestInputType(IMFMediaType *pType);
 		HRESULT Analyzer_SetMediaType(IMFMediaType *pType);
@@ -127,18 +132,64 @@ namespace AudioVisualizer
 		}
 #pragma endregion
 
+#pragma region IMFClockStateSink implementation
+		virtual HRESULT STDMETHODCALLTYPE OnClockStart(
+			/* [in] */ MFTIME hnsSystemTime,
+			/* [in] */ LONGLONG llClockStartOffset)
+		{
+			_playbackState = SourcePlaybackState::Playing;
+			return S_OK;
+		}
+
+		virtual HRESULT STDMETHODCALLTYPE OnClockStop(
+			/* [in] */ MFTIME hnsSystemTime)
+		{
+			_playbackState = SourcePlaybackState::Stopped;
+			return S_OK;
+		}
+
+		virtual HRESULT STDMETHODCALLTYPE OnClockPause(
+			/* [in] */ MFTIME hnsSystemTime)
+		{
+			_playbackState = SourcePlaybackState::Paused;
+			return S_OK;
+		}
+
+		virtual HRESULT STDMETHODCALLTYPE OnClockRestart(
+			/* [in] */ MFTIME hnsSystemTime)
+		{
+			_playbackState = SourcePlaybackState::Playing;
+			return S_OK;
+		}
+
+		virtual HRESULT STDMETHODCALLTYPE OnClockSetRate(
+			/* [in] */ MFTIME hnsSystemTime,
+			/* [in] */ float flRate)
+		{
+			return S_OK;
+		}
+#pragma endregion
+
 	public:
 		CAnalyzerEffect();
 		~CAnalyzerEffect();
 		HRESULT RuntimeClassInitialize();
 #pragma region IVisualizationSource
-		STDMETHODIMP GetData(ABI::AudioVisualizer::IVisualizationDataFrame **pData);
+		STDMETHODIMP GetData(IVisualizationDataFrame **pData);
 		STDMETHODIMP get_IsSuspended(boolean *pbIsSuspended);
 		STDMETHODIMP put_IsSuspended(boolean bIsSuspended);
 		STDMETHODIMP get_Fps(float *pFrameRate);
 		STDMETHODIMP put_Fps(float frameRate);
 		STDMETHODIMP get_AnalyzerTypes(AnalyzerType *pResult);
 		STDMETHODIMP put_AnalyzerTypes(AnalyzerType result);
+		STDMETHODIMP get_PresentationTime(IReference<TimeSpan> **ppTime);
+		STDMETHODIMP get_PlaybackState(SourcePlaybackState *pState)
+		{
+			if (pState == nullptr)
+				return E_POINTER;
+			*pState = _playbackState;
+			return S_OK;
+		}
 #pragma endregion
 		
 		STDMETHODIMP ConfigureSpectrum(UINT32 fftLength, float overlap);

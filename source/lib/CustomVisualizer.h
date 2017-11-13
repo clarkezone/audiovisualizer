@@ -15,17 +15,20 @@ namespace AudioVisualizer
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_CustomVisualizer, BaseTrust)
 
-			typedef ABI::Windows::Foundation::ITypedEventHandler<
+		typedef ABI::Windows::Foundation::ITypedEventHandler<
 			ABI::AudioVisualizer::IVisualizer*,
 			ABI::AudioVisualizer::VisualizerDrawEventArgs *> Visualizer_DrawEventHandler;
 
-		Microsoft::WRL::EventSource<Visualizer_DrawEventHandler> _drawEventList;
-	protected:
-		virtual HRESULT OnDraw(ICanvasDrawingSession *pSession,IVisualizationDataFrame *pDataFrame);
+		typedef ABI::Windows::Foundation::ITypedEventHandler<
+			IInspectable *,
+			ABI::AudioVisualizer::CreateResourcesEventArgs *> Visualizer_CreateResources_EventHandler;
 
+		Microsoft::WRL::EventSource<Visualizer_DrawEventHandler> _drawEventList;
+		Microsoft::WRL::EventSource<Visualizer_CreateResources_EventHandler> _createResourcesEventList;
+	protected:
+		virtual HRESULT OnDraw(ICanvasDrawingSession *pSession,IVisualizationDataFrame *pDataFrame, IReference<TimeSpan> *pPresentationTime);
+		virtual HRESULT OnCreateResources(ABI::AudioVisualizer::CreateResourcesReason reason);
 	public:
-		CustomVisualizer();
-		~CustomVisualizer();
 		STDMETHODIMP get_Source(ABI::AudioVisualizer::IVisualizationSource **ppSource)
 		{
 			if (ppSource == nullptr)
@@ -55,9 +58,27 @@ namespace AudioVisualizer
 
 		STDMETHODIMP add_Draw(
 			Visualizer_DrawEventHandler* value,
-			EventRegistrationToken *token);
+			EventRegistrationToken *token)
+		{
+			return _drawEventList.Add(value, token);
+		}
 		STDMETHODIMP remove_Draw(
-			EventRegistrationToken token);
+			EventRegistrationToken token)
+		{
+			return _drawEventList.Remove(token);
+		}
+		
+		STDMETHODIMP add_CreateResources(
+			Visualizer_CreateResources_EventHandler* value,
+			EventRegistrationToken *token)
+		{
+			return _createResourcesEventList.Add(value, token);
+		}
+		STDMETHODIMP remove_CreateResources(
+			EventRegistrationToken token)
+		{
+			return _createResourcesEventList.Remove(token);
+		}
 	};
 }
 

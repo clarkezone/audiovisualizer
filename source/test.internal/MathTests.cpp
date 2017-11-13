@@ -2,11 +2,14 @@
 #include "CppUnitTest.h"
 #include <math.h>
 #include <limits>
+#include <vector>
+#include <algorithm>
 #include <DirectXMath.h>
 #include <AudioMath.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace AudioVisualizer::Math;
+using namespace std;
 
 namespace AnalyzerTest
 {
@@ -48,23 +51,41 @@ namespace AnalyzerTest
 			}
 		}
 
-		TEST_METHOD(Math_SpectrumLinearTransform)
+		void Test_SpectrumTransform(vector<float> &input,vector<float> &expected,float from,float to,bool linear)
 		{
-			float testData[10] = { 0,1,2,3,4,5,6,7,8,9 };
-			float output1[4] = { -100,-100,-100,-100 };
-			float expected[4] = { 2, 8 , 14.5 , 20.5 };
-			SpectrumLinearTransform(testData, 10, output1, 4);
-			for (size_t i = 0; i < 4; i++)
+			vector<float> output(expected.size() + 1);
+			fill(output.begin(), output.end(), numeric_limits<float>::quiet_NaN());
+			SpectrumTransform(&input[0], input.size(), from, to, &output[0], expected.size(), linear);
+			for (size_t i = 0; i < expected.size(); i++)
 			{
-				Assert::AreEqual(expected[i], output1[i]);
+				Assert::AreEqual(expected[i], output[i]);
 			}
+			Assert::IsTrue(isnan(output[expected.size()]));	// Test for buffer overwrites
+		}
 
-			float testData2[2] = { 0,1 };
-			float output2[4] = { std::numeric_limits<float>::quiet_NaN(),
-								 std::numeric_limits<float>::quiet_NaN(),
-								 std::numeric_limits<float>::quiet_NaN(),
-								 std::numeric_limits<float>::quiet_NaN()};
+		TEST_METHOD(Math_SpectrumTransform)
+		{
+			vector<float> testData = { 0,1,2,3,4,5,6,7,8,9 };
 
+			// Full range transform into smaller
+			Test_SpectrumTransform(
+				testData,
+				vector<float>() = { 2, 8 , 14.5 , 20.5 },
+				0, 10.0f, true
+			);
+
+			// Partial range transform, from low end
+			Test_SpectrumTransform(
+				testData,
+				vector<float>() = { 0.0f,0.0f,0.0f, 0.0f , 0.5f , 0.5f },
+				-1.0f, 2.0f, true
+			);
+
+			Test_SpectrumTransform(
+				testData,
+				vector<float>() = { 4.5f,4.5f,0.0f, 0.0f },
+				9.0f, 11.0f, true
+			);
 		}
 	};
 }

@@ -2,6 +2,7 @@
 #include <DirectXMath.h>
 #include <vector>
 #include "LifeSpanTracker.h"
+#include "wrl_util.h"
 #include "trace.h"
 
 using namespace Microsoft::WRL;
@@ -9,10 +10,11 @@ using namespace ABI::AudioVisualizer;
 using namespace ABI::Windows::Foundation::Collections;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Foundation::Diagnostics;
+using namespace wrl_util;
 
 namespace AudioVisualizer
 {
-	class ArrayValueView : public RuntimeClass<IVectorView<float>>
+	class ArrayValueView : public RuntimeClass<IVectorView<float>,IIterable<float>>
 	{
 		InspectableClass(IVectorView<float>::z_get_rc_name_impl(),BaseTrust)
 		size_t _size;
@@ -42,6 +44,11 @@ namespace AudioVisualizer
 		STDMETHODIMP IndexOf(float, unsigned int *, boolean *)
 		{
 			return E_NOTIMPL;
+		}
+		STDMETHODIMP First(IIterator<float> **ppIterator)
+		{
+			auto iterator = Make<IteratorImpl<float>>((float *)_pData, _size);
+			return iterator.CopyTo(ppIterator);
 		}
 	};
 
@@ -131,6 +138,7 @@ namespace AudioVisualizer
 			return E_NOTIMPL;
 		}
 		STDMETHODIMP TransformLinearFrequency(UINT32 cElements, IArrayData **ppResult);
+		STDMETHODIMP TransformLinearFrequencyWithRange(UINT32 cElements,float fromFrequency, float toFrequency, IArrayData **result);
 		STDMETHODIMP ConvertToLogFrequency(UINT32 cElements, float minFrequency, float maxFrequency, InterpolationType ipType, IArrayData **ppResult);
 		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, IArrayData **ppResult);
 		STDMETHODIMP ApplyRiseAndFall(IArrayData *pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, IArrayData **ppResult);

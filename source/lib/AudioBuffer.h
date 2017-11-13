@@ -71,27 +71,6 @@ namespace AudioVisualizer
 			}
 
 			HRESULT Add(const float *pFrames, size_t sampleCount);	// Add specified number of samples to the buffer
-
-			/*
-				Deinterleaves by FrameSize and copies samples to the pDest
-
-				*Parameters*
-				pDest				Pointer to the output buffer. Cannot be null
-				outputBufferLength	Stride of the output buffer for channels. If 0 then StepLength is used
-									If this is longer than StepLength, then data is 0 padded
-									Cannot be shorter thant StepLength
-				pWindow				If provided is expected to be the length of StepLength
-									Each channel data will be windowed using this data (sample[index] *= window[index]
-				*Return values*
-				S_OK	Operation succeeded
-
-				If input buffer contains data 1,2,3,4,5,6,7,8, read pointer is at 3
-												  ^ - readPointer
-				then with FrameSize = 2, StepLength = 4, Overlap = 1
-				calling Step(output,6,float [] = {0.1,1.0,10.0,100.0} will result output as
-				{ 0.1,3,50.0,700.0,0,0,0.2,4.0,60.,800.0,0,0 }
-
-			*/
 			HRESULT Step(float *pDest, size_t outputBufferLength = 0, const float *pWindow = 0);
 		};
 	}

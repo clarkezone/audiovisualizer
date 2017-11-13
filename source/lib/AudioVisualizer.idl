@@ -29,6 +29,7 @@ namespace AudioVisualizer
 	runtimeclass VisualizationDataFrame;
 	runtimeclass ArrayData;
 	runtimeclass ScalarData;
+	runtimeclass CreateResourcesEventArgs;
 }
 
 namespace AudioVisualizer
@@ -47,6 +48,14 @@ namespace AudioVisualizer
 		CubicSpline = (int)1
 	} InterpolationType;
 
+	[version(1.0)]
+	typedef enum CreateResourcesReason
+	{
+		New = (int)0,
+		DeviceLost = (int)1,
+		DpiChanged = (int)2
+	} CreateResourcesReason;
+
 	[version(1.0),flags]
 	typedef enum AnalyzerType
 	{
@@ -56,9 +65,19 @@ namespace AudioVisualizer
 		All = (int)7
 	} AnalyzerType;
 
+	[version(1.0)]
+	typedef enum SourcePlaybackState
+	{
+		Stopped = (int) 0,
+		Playing = (int) 1,
+		Paused = (int) 2
+	} SourcePlaybackState;
+
 	declare{
 		interface Windows.Foundation.IAsyncOperation<IVisualizationSource *>;
+		interface Windows.Foundation.TypedEventHandler<IInspectable*, CreateResourcesEventArgs*>;
 		interface Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float> *>;
+		interface Windows.Foundation.TypedEventHandler<Windows.UI.Xaml.DependencyObject*, Windows.UI.Xaml.DependencyProperty *>;
 	}
 
 	[uuid(62C7FB4D-4712-4A49-BF0F-597AC7079F3A)]
@@ -68,6 +87,8 @@ namespace AudioVisualizer
 	{
 		[propget] HRESULT Data([out][retval] VisualizationDataFrame **pData);
 		[propget] HRESULT DrawingSession([out][retval] IInspectable **pSession);
+		[propget] HRESULT ViewExtent([out][retval] Windows.Foundation.Size *viewSize);
+		[propget] HRESULT PresentationTime([out][retval] Windows.Foundation.IReference<Windows.Foundation.TimeSpan> **pTime);
 	}
 
 	[version(1.0), uuid(7F644CA7-6BD9-455D-A330-BD5F4E9A6DA5), exclusiveto(VisualizerDrawEventArgs)]
@@ -76,6 +97,8 @@ namespace AudioVisualizer
 		HRESULT Create(
 			[in] IInspectable* canvasDrawingSession,
 			[in] IVisualizationDataFrame *data,
+			[in] Windows.Foundation.Size viewExtent,
+			[in] Windows.Foundation.IReference<Windows.Foundation.TimeSpan> *pTime,
 			[out, retval] VisualizerDrawEventArgs** drawEventArgs
 		);
 	};
@@ -84,6 +107,31 @@ namespace AudioVisualizer
 	runtimeclass VisualizerDrawEventArgs
 	{
 		[default] interface IVisualizerDrawEventArgs;
+	}
+
+	[uuid(12E64D18-2267-4416-B925-549FEC6775C5)]
+	[version(1.0)]
+	[exclusiveto(CreateResourcesEventArgs)]
+	interface ICreateResourcesEventArgs : IInspectable
+	{
+		[propget] HRESULT Reason([out][retval] CreateResourcesReason *reason);
+		[propget] HRESULT ResourceCreator([out][retval] IInspectable **ppObject);
+	}
+
+	[uuid(3B2C2810-F608-49D5-9F17-951F8BDDFFB0)]
+	[version(1.0)]
+	[exclusiveto(CreateResourcesEventArgs)]
+	interface ICreateResourcesEventArgsFactory : IInspectable
+	{
+		HRESULT Create([in] CreateResourcesReason reason, 
+			[in] IInspectable *pCreatorObject, 
+			[retval, out] CreateResourcesEventArgs **createEventArgs);
+	};
+
+	[version(1.0),activatable(ICreateResourcesEventArgsFactory,1.0), marshaling_behavior(agile), threading(both)]
+	runtimeclass CreateResourcesEventArgs
+	{
+		[default] interface ICreateResourcesEventArgs;
 	}
 
 	[uuid(D3C979CE-1D6D-4507-B7CE-5A2E97F672FC)]
@@ -105,6 +153,11 @@ namespace AudioVisualizer
 			[in] Windows.Foundation.TypedEventHandler<IVisualizer*, VisualizerDrawEventArgs*>* value,
 			[out, retval] EventRegistrationToken* token);
 		[eventremove] HRESULT Draw([in] EventRegistrationToken token);
+		[eventadd] HRESULT CreateResources(
+			[in] Windows.Foundation.TypedEventHandler<IInspectable*, CreateResourcesEventArgs*>* value,
+			[out, retval] EventRegistrationToken* token);
+		[eventremove] HRESULT CreateResources([in] EventRegistrationToken token);
+
 	};
 
 	[version(1.0), activatable(1.0), marshaling_behavior(agile), threading(both)]
@@ -161,7 +214,10 @@ namespace AudioVisualizer
 		[propget] HRESULT FrequencyStep([out, retval] float *value);
 		[propget] HRESULT FrequencyCount([out, retval] UINT32 *value);
 
-		HRESULT TransformLinearFrequency(UINT32 elementCount, [out, retval] ArrayData **result);
+		[overload("TransformLinearFrequency")]
+		HRESULT TransformLinearFrequency([in] UINT32 elementCount, [out, retval] ArrayData **result);
+		[overload("TransformLinearFrequency")]
+		HRESULT TransformLinearFrequencyWithRange([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [out, retval] ArrayData **result);
 		HRESULT ConvertToLogFrequency([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [in] InterpolationType type, [out, retval] ArrayData **result);
 		HRESULT ApplyRiseAndFall([in] ArrayData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] ArrayData **result);
 		HRESULT ConvertToLogAmplitude([in] float minValue,[in] float maxValue, [out, retval] ArrayData **result );
@@ -191,6 +247,7 @@ namespace AudioVisualizer
 	{
 		[default] interface IScalarData;
 		interface Windows.Foundation.Collections.IVectorView<float>;
+		interface Windows.Foundation.Collections.IIterable<float>;
 	}
 
 	[version(1.0), uuid(D2E78F9C-8EE6-441B-85A6-A87E6DCE2114), exclusiveto(ArrayData)]
@@ -237,6 +294,8 @@ namespace AudioVisualizer
 		[propput] HRESULT Fps([in] float framesPerSecond);
 		[propget] HRESULT AnalyzerTypes([out,retval] AnalyzerType *pResult);
 		[propput] HRESULT AnalyzerTypes([in] AnalyzerType types);
+		[propget] HRESULT PresentationTime([out, retval] Windows.Foundation.IReference<Windows.Foundation.TimeSpan> **pTime);
+		[propget] HRESULT PlaybackState([out, retval] SourcePlaybackState *state);
 	};
 
 	[uuid(722B9116-78B8-40BD-9840-84B59CAC6E84)]

@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "PlaybackSource.h"
-#include "ErrorHandling.h"
-#include "Utilities.h"
 
 using namespace ABI::Windows::Media::Playback;
 using namespace ABI::AudioVisualizer;
@@ -77,7 +75,11 @@ namespace AudioVisualizer
 		if (FAILED(hr))
 			return hr;
 
-		ComPtr<IMediaPlayerEffects> playerEffects = As<IMediaPlayerEffects>(pPlayer);
+		ComPtr<IMediaPlayerEffects> playerEffects;
+		hr = ComPtr<IMediaPlayer>(pPlayer).As(&playerEffects);
+
+		if (FAILED(hr))
+			return hr;
 
 		hr = playerEffects->AddAudioEffect(
 				HStringReference(RuntimeClass_AudioVisualizer_MftAnalyzer).Get(),
