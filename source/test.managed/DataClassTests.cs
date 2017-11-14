@@ -30,5 +30,33 @@ namespace test.managed
             Assert.AreEqual(-50.0f, logData[1]);
             CollectionAssert.AreEqual(new float[] { -50.0f, -50.0f }, logData.AsEnumerable().ToArray());
         }
+
+        [TestMethod]
+        public void ArrayData()
+        {
+            var data = new ArrayData(2, 10);
+            Assert.AreEqual(2, data.Count());
+            Assert.AreEqual(2, data.Count);
+            Assert.AreEqual(ScaleType.Linear, data.AmplitudeScale);
+            foreach (var channelData in data)
+            {
+                foreach (var item in channelData)
+                {
+                    Assert.AreEqual(0.0f, item);
+                }
+            }
+        }
+
+        public float BinFrequency(ArrayData data, uint bin)
+        {
+            if (data.FrequencyScale == ScaleType.Linear)
+            {
+                return bin * data.FrequencyStep + data.MinFrequency;
+            }
+            else
+            {
+                return data.MinFrequency * (float) Math.Pow(data.FrequencyStep, bin);
+            }
+        }
     }
 }
