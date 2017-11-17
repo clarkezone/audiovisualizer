@@ -76,7 +76,7 @@ CustomVisualizer is a control which gets draw event callback every frame and it 
 
 #API Reference
 ## ArrayData class
- [ArrayData][wiki/ArrayData.md]
+ [ArrayData](wiki/ArrayData.md)
 ArrayData class is used to process spectrum data. The instance of this class is created by the library and you rarely want to create your own.
 
 ###Interfaces
