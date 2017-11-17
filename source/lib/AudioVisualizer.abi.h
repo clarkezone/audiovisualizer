@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0622 */
 /* at Tue Jan 19 05:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-bec80259:
+/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-6b31b19f:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -4526,9 +4526,10 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIArrayDataFactory;
             IArrayDataFactory : public IInspectable
             {
             public:
-                virtual HRESULT STDMETHODCALLTYPE Create( 
+                virtual HRESULT STDMETHODCALLTYPE CreateLinear( 
                     /* [in] */ UINT32 channels,
                     /* [in] */ UINT32 cElements,
+                    /* [in] */ float upperFrequency,
                     /* [out][retval] */ ABI::AudioVisualizer::IArrayData **data) = 0;
                 
             };
@@ -4571,10 +4572,11 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIArrayDataFactory;
             __x_ABI_CAudioVisualizer_CIArrayDataFactory * This,
             /* [out] */ TrustLevel *trustLevel);
         
-        HRESULT ( STDMETHODCALLTYPE *Create )( 
+        HRESULT ( STDMETHODCALLTYPE *CreateLinear )( 
             __x_ABI_CAudioVisualizer_CIArrayDataFactory * This,
             /* [in] */ UINT32 channels,
             /* [in] */ UINT32 cElements,
+            /* [in] */ float upperFrequency,
             /* [out][retval] */ __x_ABI_CAudioVisualizer_CIArrayData **data);
         
         END_INTERFACE
@@ -4610,8 +4612,8 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CIArrayDataFactory;
     ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
 
 
-#define __x_ABI_CAudioVisualizer_CIArrayDataFactory_Create(This,channels,cElements,data)	\
-    ( (This)->lpVtbl -> Create(This,channels,cElements,data) ) 
+#define __x_ABI_CAudioVisualizer_CIArrayDataFactory_CreateLinear(This,channels,cElements,upperFrequency,data)	\
+    ( (This)->lpVtbl -> CreateLinear(This,channels,cElements,upperFrequency,data) ) 
 
 #endif /* COBJMACROS */
 

@@ -8,9 +8,9 @@ namespace AudioVisualizer
 	class ArrayDataFactory : public AgileActivationFactory<IArrayDataFactory>
 	{
 	public:
-		IFACEMETHODIMP Create(UINT32 channels, UINT32 cElements,IArrayData **ppResult)
+		IFACEMETHODIMP CreateLinear(UINT32 channels, UINT32 cElements,float upperFrequency,IArrayData **ppResult)
 		{
-			ComPtr<ArrayData> data = Make<ArrayData>(channels, cElements, ScaleType::Linear,ScaleType::Linear,0.0f,22050.0f,22050.0f/cElements,true);
+			ComPtr<ArrayData> data = Make<ArrayData>(channels, cElements, ScaleType::Linear,ScaleType::Linear,0.0f,upperFrequency,upperFrequency/cElements,true);
 			return data.CopyTo(ppResult);
 		}
 	};

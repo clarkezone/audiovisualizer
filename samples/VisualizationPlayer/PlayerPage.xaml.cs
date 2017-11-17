@@ -70,7 +70,7 @@ namespace VisualizationPlayer
         }
 
         const uint spectrumBarCount = 50;
-        ArrayData _emptySpectrum = new ArrayData(2, spectrumBarCount);
+        ArrayData _emptySpectrum = new ArrayData(2, spectrumBarCount,20000);
         ArrayData _previousSpectrum;
         ArrayData _previousPeakSpectrum;
 

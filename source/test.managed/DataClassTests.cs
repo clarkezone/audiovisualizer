@@ -34,9 +34,12 @@ namespace test.managed
         [TestMethod]
         public void ArrayData()
         {
-            var data = new ArrayData(2, 10);
+            var data = new ArrayData(2, 10,20000);
             Assert.AreEqual(2, data.Count());
             Assert.AreEqual(2, data.Count);
+            Assert.AreEqual(20000.0f, data.MaxFrequency);
+            Assert.AreEqual(0.0f, data.MinFrequency);
+            Assert.AreEqual(2000.0f, data.FrequencyStep);
             Assert.AreEqual(ScaleType.Linear, data.AmplitudeScale);
             foreach (var channelData in data)
             {

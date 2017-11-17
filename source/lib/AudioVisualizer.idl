@@ -253,9 +253,10 @@ namespace AudioVisualizer
 	[version(1.0), uuid(D2E78F9C-8EE6-441B-85A6-A87E6DCE2114), exclusiveto(ArrayData)]
 	interface IArrayDataFactory : IInspectable
 	{
-		HRESULT Create(
+		HRESULT CreateLinear(
 			[in] UINT32 channels,
 			[in] UINT32 cElements,
+			[in] float upperFrequency,
 			[out, retval] ArrayData** data
 		);
 	};
