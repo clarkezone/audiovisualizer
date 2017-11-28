@@ -6,7 +6,7 @@ Interface1, Interface2
 ### Method1()
 Method 
 #### Parameters
-#####ParameterName (type)
+##### ParameterName (type)
 Description
 ##### Returns
 **type**
@@ -19,7 +19,7 @@ Remarks here
 ## Properties
 ### Property 1
 Property description
-####PropertyName (type)
+#### PropertyName (type)
 Additional Description
 #### Remarks
 Remarks here
@@ -27,12 +27,11 @@ Remarks here
 [Link](Link)
 ### Property 2
 Property description
-####PropertyName (type)
-######
+#### PropertyName (type)
 Additional Description
 #### Remarks
 Remarks here
-####See also
+#### See also
 [Link](Link)
 ## Events
 ### Event 1
