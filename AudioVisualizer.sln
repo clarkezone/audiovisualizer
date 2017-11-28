@@ -30,7 +30,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{91B50F5A-DEBB-4578-A2BF-28AF1BDF7A1C}"
 	ProjectSection(SolutionItems) = preProject
 		wiki\ArrayData.md = wiki\ArrayData.md
-		Template.md = Template.md
+		wiki\Template.md = wiki\Template.md
 	EndProjectSection
 EndProject
 Global
