@@ -5,6 +5,7 @@ Interface that will be implemented by objects that can provide analyzed data fra
 Calling this method will return [VisualizationDataFrame](VisualizationDataFrame.md) for the currently rendering audio
 ##### Returns
 **[VisualizationDataFrame](VisualizationDataFrame.md)**
+#### Notes
 This method can return null if the stream is in stopped state or the analyzer is catching up with stream change (for example seek)
 #### Example
     var data = source.GetData();
@@ -28,6 +29,6 @@ You can use this property to determine if the stream is playing or is paused. If
 will continue to return data frame for the current position, you might want to use this property to suspend drawing visualization 
 if playback is paused
 ### PresentationTime (TimeSpan?)
-This property if set will indicate current stream position. You can use this to display play time or other visualization calculations
+This property if set will indicate current playback position. You can use this to display play time or other visualization calculations
 
 [Home](AudioVisualizer.md)
