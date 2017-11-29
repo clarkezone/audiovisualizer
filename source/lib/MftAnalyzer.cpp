@@ -671,8 +671,9 @@ namespace AudioVisualizer
 		switch (eMessage)
 		{
 		case MFT_MESSAGE_COMMAND_FLUSH:
-			// Flush the MFT.
-			hr = Analyzer_Flush();
+			// Flush the MFT. Flush might happen at the end of stream - keep the existing samples and
+			// Flush the MFT at STREAM_STARTING instead
+			// hr = Analyzer_Flush();
 			break;
 
 		case MFT_MESSAGE_COMMAND_DRAIN:

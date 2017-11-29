@@ -107,6 +107,9 @@
     </Compile>
     <Compile Include="PlayerService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SpectrumPage.xaml.cs">
+      <DependentUpon>SpectrumPage.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -137,6 +140,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="PlayerPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SpectrumPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

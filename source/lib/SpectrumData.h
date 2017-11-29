@@ -139,7 +139,7 @@ namespace AudioVisualizer
 		}
 		STDMETHODIMP TransformLinearFrequency(UINT32 cElements, ISpectrumData **ppResult);
 		STDMETHODIMP TransformLinearFrequencyWithRange(UINT32 cElements,float fromFrequency, float toFrequency, ISpectrumData **result);
-		STDMETHODIMP ConvertToLogFrequency(UINT32 cElements, float minFrequency, float maxFrequency, InterpolationType ipType, ISpectrumData **ppResult);
+		STDMETHODIMP TransformLogFrequency(UINT32 cElements, float minFrequency, float maxFrequency, ISpectrumData **ppResult);
 		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, ISpectrumData **ppResult);
 		STDMETHODIMP ApplyRiseAndFall(ISpectrumData *pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, ISpectrumData **ppResult);
 

@@ -151,23 +151,33 @@ namespace AudioVisualizer
 		return result.CopyTo(ppResult);
 	}
 
-	STDMETHODIMP SpectrumData::ConvertToLogFrequency(UINT32 cElements, float minFrequency, float maxFrequency, InterpolationType ipType, ISpectrumData ** ppResult)
+	STDMETHODIMP SpectrumData::TransformLogFrequency(UINT32 cElements, float fromFrequency, float toFrequency, ISpectrumData ** ppResult)
 	{
 		if (_amplitudeScale != ScaleType::Linear || 
 			_frequencyScale != ScaleType::Linear)
 			return E_FAIL;
-		if (minFrequency >= maxFrequency || cElements < 1)
+		if (fromFrequency >= toFrequency || cElements < 1)
 			return E_INVALIDARG;
 
 		ComPtr<SpectrumData> result = Make<SpectrumData>(_channels,
 			cElements,
 			ScaleType::Linear,
-			ScaleType::Linear,
-			minFrequency,
-			maxFrequency,
-			(_maxFrequency - _minFrequency) / cElements);
+			ScaleType::Logarithmic,
+			fromFrequency,
+			toFrequency,
+			powf(_maxFrequency / _minFrequency, 1.0f / cElements));
 
-		return E_NOTIMPL;
+		float fromIndex = (fromFrequency - _minFrequency) / _frequencyStep;
+		float toIndex = (toFrequency - _minFrequency) / _frequencyStep;
+
+		for (size_t index = 0, vSrcIndex = 0, vDstIndex = 0; index < _channels; index++, vSrcIndex += _vElementsCount, vDstIndex += result->_vElementsCount)
+		{
+			float *pSource = (float *)(GetBuffer() + vSrcIndex);
+			float *pDest = (float*)(result->GetBuffer() + vDstIndex);
+			Math::SpectrumTransform(pSource, _size, fromIndex, toIndex, pDest, result->_size, false);
+		}
+
+		return result.CopyTo(ppResult);
 	}
 
 	ActivatableClassWithFactory(SpectrumData, SpectrumDataFactory);

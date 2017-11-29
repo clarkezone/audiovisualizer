@@ -174,6 +174,44 @@ namespace AudioVisualizer
 		Windows.UI.Color Color;
 	} MeterBarLevel;
 
+	[uuid(B1232BCB-4FE9-495C-A94F-3D295913C34C)]
+	[version(1.0)]
+	interface IBarVisualizer : IInspectable
+	{
+		[propget] HRESULT Levels([out] UINT32* elementCount, [out][retval][size_is(, *elementCount)] MeterBarLevel** levels);
+		[propput] HRESULT Levels([in] UINT32 elementCount, [in][size_is(elementCount)] MeterBarLevel* levels);
+		[propget] HRESULT Orientation([out, retval] Windows.UI.Xaml.Controls.Orientation *orientation);
+		[propput] HRESULT Orientation([in] Windows.UI.Xaml.Controls.Orientation orientation);
+		[propget] HRESULT ChannelCount([out, retval] UINT32* pChannels);
+		[propput] HRESULT ChannelCount([in] UINT32 channels);
+		[propget] HRESULT ChannelMapping([out] UINT32* elementCount, [out][retval][size_is(, *elementCount)] float **mapping);
+		[propput] HRESULT ChannelMapping([in] UINT32 elementCount, [in][size_is(elementCount)] float *mapping);
+		[propget] HRESULT ElementSize([out, retval] Windows.Foundation.Size *pSize);
+		[propput] HRESULT ElementSize([in] Windows.Foundation.Size size);
+		[propget] HRESULT ElementMargin([out, retval] Windows.UI.Xaml.Thickness *pValue);
+		[propput] HRESULT ElementMargin([in] Windows.UI.Xaml.Thickness value);
+		[propget] HRESULT UnlitElement([out, retval] Windows.UI.Color *pColor);
+		[propput] HRESULT UnlitElement([in] Windows.UI.Color color);
+		[propget] HRESULT RiseTime([out, retval] Windows.Foundation.TimeSpan *time);
+		[propput] HRESULT RiseTime([in] Windows.Foundation.TimeSpan time);
+		[propget] HRESULT FallTime([out, retval] Windows.Foundation.TimeSpan *time);
+		[propput] HRESULT FallTime([in] Windows.Foundation.TimeSpan time);
+	}
+
+	[uuid(DFC03A65-C30B-4B6F-8367-98B7047954AB)]
+	[version(1.0)]
+	interface ISpectrumVisualizer : IInspectable
+	{
+		[propget] HRESULT BarCount([out, retval] UINT32* barCount);
+		[propput] HRESULT BarCount([in] UINT32 barCount);
+		[propget] HRESULT MinFrequency([out, retval] float *minFrequency);
+		[propput] HRESULT MinFrequency([in] float minFrequency);
+		[propget] HRESULT MaxFrequency([out, retval] float *maxFrequency);
+		[propput] HRESULT MaxFrequency([in] float maxFrequency);
+		[propget] HRESULT Scale([out, retval] ScaleType *freqScaleType);
+		[propput] HRESULT Scale([in] ScaleType freqScaleType);
+	}
+
 	[uuid(665C9CD0-6AAE-4AAB-B152-82128615641C)]
 	[version(1.0)]
 	interface IDiscreteVUBar : IInspectable
@@ -202,6 +240,14 @@ namespace AudioVisualizer
 		[default] interface IVisualizer;
 		interface IDiscreteVUBar;
 	}
+
+	[version(1.0), marshaling_behavior(agile), threading(both), activatable(1.0)]
+	runtimeclass SpectrumVisualizer : Windows.UI.Xaml.Controls.Control
+	{
+		[default] interface IVisualizer;
+		interface IBarVisualizer;
+		interface ISpectrumVisualizer;
+	}
 	
 
 	[uuid(199F41A4-8EF0-4E0B-AAD3-9E0666511F6A),version(1.0)]
@@ -218,7 +264,7 @@ namespace AudioVisualizer
 		HRESULT TransformLinearFrequency([in] UINT32 elementCount, [out, retval] SpectrumData **result);
 		[overload("TransformLinearFrequency")]
 		HRESULT TransformLinearFrequencyWithRange([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [out, retval] SpectrumData **result);
-		HRESULT ConvertToLogFrequency([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [in] InterpolationType type, [out, retval] SpectrumData **result);
+		HRESULT TransformLogFrequency([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency,[out, retval] SpectrumData **result);
 		HRESULT ApplyRiseAndFall([in] SpectrumData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] SpectrumData **result);
 		HRESULT ConvertToLogAmplitude([in] float minValue,[in] float maxValue, [out, retval] SpectrumData **result );
 	};

@@ -371,6 +371,7 @@
     <ClInclude Include="Microsoft.Graphics.Canvas.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ScalarData.h" />
+    <ClInclude Include="SpectrumVisualizer.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="Utilities.h" />
@@ -402,6 +403,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='CIBUILD|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ScalarData.cpp" />
+    <ClCompile Include="SpectrumVisualizer.cpp" />
     <ClCompile Include="Trace.cpp" />
     <ClCompile Include="VisualizationDataFrame.cpp" />
     <ClCompile Include="VisualizerDrawEventArgs.cpp" />
