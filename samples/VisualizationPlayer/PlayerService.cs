@@ -33,7 +33,7 @@ namespace VisualizationPlayer
 
         private void _source_SourceChanged(object sender, IVisualizationSource source)
         {
-            ((ISpectralAnalyzerSettings)source).ConfigureSpectrum(4096, 0.5f);
+            // ((ISpectralAnalyzerSettings)source).ConfigureSpectrum(4096, 0.5f);
             VisualizationSourceChanged?.Invoke(sender, source);
         }
 

@@ -32,9 +32,9 @@ namespace test.managed
         }
 
         [TestMethod]
-        public void ArrayData()
+        public void SpectrumData()
         {
-            var data = new ArrayData(2, 10,20000);
+            var data = new SpectrumData(2, 10,20000);
             Assert.AreEqual(2, data.Count());
             Assert.AreEqual(2, data.Count);
             Assert.AreEqual(20000.0f, data.MaxFrequency);
@@ -50,7 +50,7 @@ namespace test.managed
             }
         }
 
-        public float BinFrequency(ArrayData data, uint bin)
+        public float BinFrequency(SpectrumData data, uint bin)
         {
             if (data.FrequencyScale == ScaleType.Linear)
             {
