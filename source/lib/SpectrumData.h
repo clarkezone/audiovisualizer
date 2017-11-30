@@ -52,10 +52,10 @@ namespace AudioVisualizer
 		}
 	};
 
-	class ArrayData : public RuntimeClass<IArrayData,IVectorView<IVectorView<float>*>>, 
+	class SpectrumData : public RuntimeClass<ISpectrumData,IVectorView<IVectorView<float>*>>, 
 		public Implements<IVectorView<IVectorView<float>*>>
 	{
-		InspectableClass(RuntimeClass_AudioVisualizer_ArrayData, BaseTrust);
+		InspectableClass(RuntimeClass_AudioVisualizer_SpectrumData, BaseTrust);
 
 		ScaleType _amplitudeScale;
 		DirectX::XMVECTOR *_pData;
@@ -68,8 +68,8 @@ namespace AudioVisualizer
 		float _maxFrequency;
 		float _frequencyStep;
 	public:
-		ArrayData(size_t cChannels, size_t cElements, ScaleType ampScaleType,ScaleType fScaleType,float minFrequency,float maxFrequency,float fStep,bool bInit=false);
-		~ArrayData();
+		SpectrumData(size_t cChannels, size_t cElements, ScaleType ampScaleType,ScaleType fScaleType,float minFrequency,float maxFrequency,float fStep,bool bInit=false);
+		~SpectrumData();
 
 		DirectX::XMVECTOR *GetBuffer() { return _pData; }
 
@@ -137,11 +137,11 @@ namespace AudioVisualizer
 		{
 			return E_NOTIMPL;
 		}
-		STDMETHODIMP TransformLinearFrequency(UINT32 cElements, IArrayData **ppResult);
-		STDMETHODIMP TransformLinearFrequencyWithRange(UINT32 cElements,float fromFrequency, float toFrequency, IArrayData **result);
-		STDMETHODIMP ConvertToLogFrequency(UINT32 cElements, float minFrequency, float maxFrequency, InterpolationType ipType, IArrayData **ppResult);
-		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, IArrayData **ppResult);
-		STDMETHODIMP ApplyRiseAndFall(IArrayData *pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, IArrayData **ppResult);
+		STDMETHODIMP TransformLinearFrequency(UINT32 cElements, ISpectrumData **ppResult);
+		STDMETHODIMP TransformLinearFrequencyWithRange(UINT32 cElements,float fromFrequency, float toFrequency, ISpectrumData **result);
+		STDMETHODIMP TransformLogFrequency(UINT32 cElements, float minFrequency, float maxFrequency, ISpectrumData **ppResult);
+		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, ISpectrumData **ppResult);
+		STDMETHODIMP ApplyRiseAndFall(ISpectrumData *pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, ISpectrumData **ppResult);
 
 	};
 }

@@ -133,15 +133,9 @@ namespace VisualizationPlayer
             }
             else
             {
-                switch (((NavigationViewItem)args.SelectedItem).Tag)
-                {
-                    case "Player":
-                        ContentFrame.Navigate(typeof(PlayerPage));
-                        break;
-                    case "Information":
-                        ContentFrame.Navigate(typeof(InformationPage));
-                        break;
-                }
+                string typeName = (string)((NavigationViewItem)args.SelectedItem).Tag;
+                Type pageType = Type.GetType(typeName);
+                ContentFrame.Navigate(pageType);
             }
         }
     }

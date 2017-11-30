@@ -4,7 +4,7 @@
 
 #include "AudioVisualizer.abi.h"
 #include "ScalarData.h"
-#include "ArrayData.h"
+#include "SpectrumData.h"
 #include <DirectXMath.h>
 #include <AudioAnalyzer.h>
 #include "LifeSpanTracker.h"
@@ -33,10 +33,10 @@ namespace AudioVisualizer
 		TimeSpan _duration;
 		ComPtr<IScalarData> _rms;
 		ComPtr<IScalarData> _peak;
-		ComPtr<IArrayData> _spectrum;
+		ComPtr<ISpectrumData> _spectrum;
 
 	public:
-		VisualizationDataFrame(REFERENCE_TIME time,REFERENCE_TIME duration,IScalarData *pRms,IScalarData *pPeak,IArrayData *pSpectrum);
+		VisualizationDataFrame(REFERENCE_TIME time,REFERENCE_TIME duration,IScalarData *pRms,IScalarData *pPeak,ISpectrumData *pSpectrum);
 		~VisualizationDataFrame();
 
 		STDMETHODIMP get_Time(IReference<TimeSpan> **ppTimeStamp)
@@ -65,7 +65,7 @@ namespace AudioVisualizer
 				return E_INVALIDARG;
 			return _peak.CopyTo(ppData);
 		}
-		STDMETHODIMP get_Spectrum(IArrayData **ppData)
+		STDMETHODIMP get_Spectrum(ISpectrumData **ppData)
 		{
 			if (ppData == nullptr)
 				return E_INVALIDARG;

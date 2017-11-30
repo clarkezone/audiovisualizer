@@ -10,7 +10,7 @@
 
 # Introduction
 
-The AudioAnalyzer UWP extension DLL contains a Media Foundation Transform object that can be loaded as MediaPlayer effect and uses overlapped FFT to produce spectrum of the audio data as well as a prebuilt XAML custom control that renders both stock and custom visulizations.
+The AudioAnalyzer UWP extension DLL contains a component that can provide realtime audio analysis information for visualization and other purposes. Library does contain also prebuilt controls implementing VU meters and spectrum analyzer and a control that has a custom draw capability
 
 # Getting Started
 TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
@@ -19,73 +19,140 @@ TODO: Guide users through getting your code up and running on their own system. 
 3.	Latest releases
 4.	API references
 
-You add the effect to the MediaPlayer pipeline by calling AddEffect:
 
-	var propertySet = new PropertySet();
-    propertySet.MapChanged += EffectProperties_Changed;
-    mediaPlayer.AddAudioEffect("AudioAnalyzer.AnalyzerEffect", false, m_AnalyzerPropertySet);
+#Getting started
+## Installing the library
+Download and install the AudioAnalyzer nuget package, for convenient use add namespace statement to your C# code as:
 
-MediaPlayer will load the effect and on load the effect will add reference to itself under key "Analyzer". 
-One way to capture that and configure the analyzer is to register for MapChanged event for the
-PropertySet. Then you can configure the analyzer in the event handler and keep the reference to the 
-IAudioAnalyzer, so you can get the spectrum data later.
+`using AudioVisualizer;
 
-	AudioAnalyzer.IAudioAnalyzer = _analyzer;
+add namespace statement to your XAML code as:
+```
+<Page ...
+    xmlns:a="using:AudioVisualizer" ...>
+	...
+	<a:CustomVisualizer/>
+	...
+</Page>
+```
+##Initializing the source
+First you need to create the analyzer object, that implements IVisualizationSource interface which is basis to retrieve audio data.
 
-    private void EffectProperties_Changed(IObservableMap<string, object> sender, IMapChangedEventArgs<string> @event)
+To use visualizations with MediaPlayer or MediaElement you need to use PlaybackSource class. Both MediaPlayer and MediaElement use Media Foundation pipeline to render media. Pipeline will re-create the Media Foundation Tranform object that does the analysis every time you open a new source. That means that the instance of IVisualizationSource will change for every new media that you open in MediaPlayer.
+
+PlaybackSource monitors media pipeline and get's the new visualization when it is created and raises an event. You should use this event to get the new visualization source and set the source for all the visualization controls you have active. This is also a good place to configure the analyzer if you wish - for more on this please see Configuring the Analyzer.
+If the player is a global object it is also good idea to set the current visualization source in OnLoad or OnNavigatedTo type of an event/overload.
+
+    class VisualizationPage
     {
-		_analyzer = (AudioAnalyzer.IAudioAnalyzer) sender["Analyzer"];
-        _analyzer.Configure(4096, 60, 0.5f);
-        _analyzer.SetLinearFScale(100);
+        MediaPlayer _player;
+        AudioVisualizer.PlaybackSource _source;
+
+        public VisualizationPage()
+        {
+            _player = new MediaPlayer();
+            _source = new PlaybackSource(_player);
+            _source.SourceChanged += Playback_SourceChanged;
+		}
+
+		private void Playback_SourceChanged(object sender, IVisualizationSource source)
+        {
+            ((ISpectralAnalyzerSettings)source).ConfigureSpectrum(4096, 0.5f);
+			vuMeter.Source = source;
+			spectrumDisplay.Source = source;
+			playPositionDisplay.Source = source;
+        }
+
+		private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+			vuMeter.Source = _source.VisualizationSource;
+			spectrumDisplay.Source = _source.VisualizationSource;
+			playPositionDisplay.Source = _source.VisualizationSource;
+        }
+   }
+
+## CustomVisualizer
+CustomVisualizer is a control which gets draw event callback every frame and it is up for the code in the event handler to present the visual look of the control. You can use then the [VisualizerDrawEventArgs]
+
+#API Reference
+## ArrayData class
+ArrayData class is used to process spectrum data. The instance of this class is created by the library and you rarely want to create your own.
+
+###Interfaces
+- IReadOnlyList<IReadOnlyList<float>>
+- IEnumerable<IReadOnlyList<float>>
+
+### Properties
+#### AmplitudeScale (ScaleType)
+- Linear: Frequency amplitudes are represented by linear scale 0.0f - 1.0f
+- Logarithmic: Frequency amplitudes are represented in db, where value 1.0f = 0dB
+
+#### FrequencyCount (uint)
+The count of frequency bins in spectrum.
+
+#### FrequencyScale (ScaleType)
+- Linear: Frequency scale is linear
+- Logarithmic: Frequency scale is logarithmic
+
+#### FrequencyStep (float)
+Frequency value difference (linear) or ratio (logarithmic) between spectrum elements
+
+#### MinFrequency (float)
+Spectrum element 0 starting frequency
+
+#### MaxFrequency (float)
+Spectrum element FrequencyCount starting frequency
+
+### Methods
+#### ApplyRiseAndFall
+This method allows to apply rise and fall times to the spectrum data over time and thus smooth the spectrum movements over time. For calculation you need to keep the value of last displayed spectrum values and pass them as the first parameter of the method. 
+The time value of rise (and fall) time indicate the time by what the difference in values of spectrum data has decreased by 67%. So if the input for spectrum bin 1kHz changes from 0 to 1.0 at 1sec and the riseTime = 300ms then by 1.3sec the output value of this method at 1khZ will be 0.67
+This method will fail if the AmplitudeScale is Logarithmic or the Frequency Counts and other attributes do not match
+
+##### Parameters
+- previousData (ArrayData) Spectrum values of the previous instance. If null calculations run as if all values of previous data were 0
+- riseTime (TimeSpan) Time constant for rising values
+- fallTime (TimeSpan) Time constant for falling values
+- timeFromPrevious (TimeSpan) Time passed from previousData
+##### Returns (ArrayData)
+Method returns the calculated spectrum values with fall and rise times applied
+
+
+### Notes
+You can use this code to calculate the bin frequency like this
+```
+public float BinFrequency(ArrayData data, uint bin)
+{
+    if (data.FrequencyScale == ScaleType.Linear)
+    {
+        return bin * data.FrequencyStep + data.MinFrequency;
     }
-
-IAudioAnalyzer interface
-
-Methods
-
-void Configure(uint fftLength,float outFrameRate,float overlap)
-	Configures the analyzer for operation, needs to be called before operation as exception will be generated otherwise
-
-	fftLength -		this is the length of elements in FFT that is used to analyze the spectrum.
-					The bigger the number the higher the precision of output. By default and also the maximum
-					number of elements for output is fftLength / 2
-					fftLength has to be power of 2 and needs to be more audio frames than output frame + overlap time will cover
-					So at 48000 sample rate and 60Hz out frame rate and 50% (0.5) overlap the minimum
-					number of frames is (1+0.5) * (48000 * 1/60) = 900 -> closest power of 2 is 1024.
-					Usually 2048 or 4096 will be good values to use here
-	outFrameRate -	Input audio data will be analyzed at this frequency. 60.0 is a good value to be in sync with 
-					display updates
-	overlap -		Percentage value of how much data that is analyzed will overlap with previous frame. So if using
-					60fps with 48000HZ audio and 0.5 overlap the first spectr will be generated from audio frames -300 ... 600,
-					second from 300...1200
-
-void SetLinearFScale(uint outputElementsCount)
-	Configures the output frames to contain a specific number of elements
-
-	outputElementsCount -	Number of elements in the output frames. Need to be 1...fftLength/2. Default is
-							fftLength/2
-
-void SetLogFScale(float lowFrequency,float hiFrequency,uint outputElementsCount)
-	Not implemented in this version
-
-AudioFrame GetFrame()
-	Based on the presentation time of current stream extracts spectral data and returns this as AudioFrame
-	If there is not frame with current presentation time in the queue then returns null
-	You can expect this function to return null at the start of the stream or when seeking for couple of frames
-
-	Data is packed in the AudioFrame buffer as following
-
-	<aligned to 16 bytes> | Channel 0 outputElements (float) |
-	<aligned to 16 bytes> | Channel 1 outputElements (float) |
-	<aligned to 16 bytes> | float array of RMS data for all channels |
-
-	You can obtain the step from one channel data to another and rms data offset
-	by getting extended properties as following. Data is given in float elements (4 bytes).
-
-	dataStep = (uint)frame.ExtendedProperties["{F4D65F78-CF5A-4949-88C1-76DAD605C313}"];
-    rmsOffset = (uint)frame.ExtendedProperties["{0B82B25D-E6E1-4B6B-92A1-7EEE99D02CFE}"];
+    else
+    {
+        return data.MinFrequency * (float) Math.Pow(data.FrequencyStep, bin);
+    }
+}
+```
 
 
+
+You access data as you would in an array
+    ArrayData a1;
+    float third_value_channel_0 = a1[0][3];
+
+
+## VisualizerDrawEventArgs
+This is a class an instance of which is passed into the Draw event of the CustomVisualizer class
+###Properties
+#### Data (VisualizationDataFrame)
+This property contains the visualization data, volume and spectrum. If this value is null then this means that there is no current data available - this could mean that the stream is stopped or after for example seek the audio analyzer has not yet caught up with buffering.
+#### DrawingSession (Object)
+This is the Win2D CanvasDrawingSession object you can use to draw the control. You need to cast it to CanvasDrawingSession first before using
+`var drawingSession = (CanvasDrawingSession)args.DrawingSession;
+#### PresentationTime (TimeSpan ?)
+Represent the actual rendering position of the stream, you can use this to get the actual play position
+#### ViewExtent (Size)
+This is the size of the client area of the control. Use this to scale your drawing for the control when resized
 
 # Build and Test
 TODO: Describe and show how to build your code and run the tests. 

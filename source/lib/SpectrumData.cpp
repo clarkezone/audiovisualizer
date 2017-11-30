@@ -1,22 +1,22 @@
 #include "pch.h"
-#include "ArrayData.h"
+#include "SpectrumData.h"
 #include "AudioMath.h"
 #include <Microsoft.Graphics.Canvas.h>
 
 namespace AudioVisualizer
 {
-	class ArrayDataFactory : public AgileActivationFactory<IArrayDataFactory>
+	class SpectrumDataFactory : public AgileActivationFactory<ISpectrumDataFactory>
 	{
 	public:
-		IFACEMETHODIMP Create(UINT32 channels, UINT32 cElements,IArrayData **ppResult)
+		IFACEMETHODIMP CreateLinear(UINT32 channels, UINT32 cElements,float upperFrequency,ISpectrumData **ppResult)
 		{
-			ComPtr<ArrayData> data = Make<ArrayData>(channels, cElements, ScaleType::Linear,ScaleType::Linear,0.0f,22050.0f,22050.0f/cElements,true);
+			ComPtr<SpectrumData> data = Make<SpectrumData>(channels, cElements, ScaleType::Linear,ScaleType::Linear,0.0f,upperFrequency,upperFrequency/cElements,true);
 			return data.CopyTo(ppResult);
 		}
 	};
 
 
-	ArrayData::ArrayData(size_t cChannels, size_t cElements, ScaleType ampScaleType, ScaleType fScaleType, float minFrequency, float maxFrequency, float frequencyStep,bool bInit) :
+	SpectrumData::SpectrumData(size_t cChannels, size_t cElements, ScaleType ampScaleType, ScaleType fScaleType, float minFrequency, float maxFrequency, float frequencyStep,bool bInit) :
 		_amplitudeScale(ampScaleType),
 		_frequencyScale(fScaleType),
 		_minFrequency(minFrequency),
@@ -42,15 +42,15 @@ namespace AudioVisualizer
 		}
 	}
 
-	ArrayData::~ArrayData()
+	SpectrumData::~SpectrumData()
 	{
 		if (_pData != nullptr)
 			_aligned_free(_pData);
 	}
 
-	STDMETHODIMP ArrayData::ConvertToLogAmplitude(float minValue, float maxValue, IArrayData **ppResult)
+	STDMETHODIMP SpectrumData::ConvertToLogAmplitude(float minValue, float maxValue, ISpectrumData **ppResult)
 	{
-		ComPtr<ArrayData> result = Make<ArrayData>(
+		ComPtr<SpectrumData> result = Make<SpectrumData>(
 			_channels,
 			_size,
 			ScaleType::Logarithmic,
@@ -63,12 +63,12 @@ namespace AudioVisualizer
 		return result.CopyTo(ppResult);
 	}
 
-	STDMETHODIMP ArrayData::ApplyRiseAndFall(IArrayData * pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, IArrayData ** ppResult)
+	STDMETHODIMP SpectrumData::ApplyRiseAndFall(ISpectrumData * pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, ISpectrumData ** ppResult)
 	{
 		if (_amplitudeScale != ScaleType::Linear || timeDelta.Duration == 0)
 			return E_INVALIDARG;
 
-		ArrayData *pPreviousData = dynamic_cast<ArrayData *>(pPrevious);
+		SpectrumData *pPreviousData = dynamic_cast<SpectrumData *>(pPrevious);
 
 		if (pPreviousData != nullptr &&
 				( pPreviousData->_size != _size ||
@@ -77,7 +77,7 @@ namespace AudioVisualizer
 			return E_INVALIDARG;
 		}
 
-		ComPtr<ArrayData> result = Make<ArrayData>(
+		ComPtr<SpectrumData> result = Make<SpectrumData>(
 			_channels,
 			_size,
 			_amplitudeScale,
@@ -100,12 +100,12 @@ namespace AudioVisualizer
 		return result.CopyTo(ppResult);
 	}
 
-	STDMETHODIMP ArrayData::TransformLinearFrequency(UINT32 cElements, IArrayData ** ppResult)
+	STDMETHODIMP SpectrumData::TransformLinearFrequency(UINT32 cElements, ISpectrumData ** ppResult)
 	{
 		if (_amplitudeScale != ScaleType::Linear || _frequencyScale != ScaleType::Linear || cElements < 1)
 			return E_FAIL;
 
-		ComPtr<ArrayData> result = Make<ArrayData>(_channels,
+		ComPtr<SpectrumData> result = Make<SpectrumData>(_channels,
 			cElements,
 			ScaleType::Linear,
 			ScaleType::Linear,
@@ -122,7 +122,7 @@ namespace AudioVisualizer
 		return result.CopyTo(ppResult);
 	}
 
-	STDMETHODIMP ArrayData::TransformLinearFrequencyWithRange(UINT32 cElements, float fromFrequency, float toFrequency, IArrayData ** ppResult)
+	STDMETHODIMP SpectrumData::TransformLinearFrequencyWithRange(UINT32 cElements, float fromFrequency, float toFrequency, ISpectrumData ** ppResult)
 	{
 		if (_amplitudeScale != ScaleType::Linear || _frequencyScale != ScaleType::Linear || cElements < 1)
 			return E_FAIL;
@@ -130,7 +130,7 @@ namespace AudioVisualizer
 		if (cElements < 1 || fromFrequency >= toFrequency)
 			return E_INVALIDARG;
 
-		ComPtr<ArrayData> result = Make<ArrayData>(_channels,
+		ComPtr<SpectrumData> result = Make<SpectrumData>(_channels,
 			cElements,
 			ScaleType::Linear,
 			ScaleType::Linear,
@@ -151,26 +151,36 @@ namespace AudioVisualizer
 		return result.CopyTo(ppResult);
 	}
 
-	STDMETHODIMP ArrayData::ConvertToLogFrequency(UINT32 cElements, float minFrequency, float maxFrequency, InterpolationType ipType, IArrayData ** ppResult)
+	STDMETHODIMP SpectrumData::TransformLogFrequency(UINT32 cElements, float fromFrequency, float toFrequency, ISpectrumData ** ppResult)
 	{
 		if (_amplitudeScale != ScaleType::Linear || 
 			_frequencyScale != ScaleType::Linear)
 			return E_FAIL;
-		if (minFrequency >= maxFrequency || cElements < 1)
+		if (fromFrequency >= toFrequency || cElements < 1)
 			return E_INVALIDARG;
 
-		ComPtr<ArrayData> result = Make<ArrayData>(_channels,
+		ComPtr<SpectrumData> result = Make<SpectrumData>(_channels,
 			cElements,
 			ScaleType::Linear,
-			ScaleType::Linear,
-			minFrequency,
-			maxFrequency,
-			(_maxFrequency - _minFrequency) / cElements);
+			ScaleType::Logarithmic,
+			fromFrequency,
+			toFrequency,
+			powf(_maxFrequency / _minFrequency, 1.0f / cElements));
 
-		return E_NOTIMPL;
+		float fromIndex = (fromFrequency - _minFrequency) / _frequencyStep;
+		float toIndex = (toFrequency - _minFrequency) / _frequencyStep;
+
+		for (size_t index = 0, vSrcIndex = 0, vDstIndex = 0; index < _channels; index++, vSrcIndex += _vElementsCount, vDstIndex += result->_vElementsCount)
+		{
+			float *pSource = (float *)(GetBuffer() + vSrcIndex);
+			float *pDest = (float*)(result->GetBuffer() + vDstIndex);
+			Math::SpectrumTransform(pSource, _size, fromIndex, toIndex, pDest, result->_size, false);
+		}
+
+		return result.CopyTo(ppResult);
 	}
 
-	ActivatableClassWithFactory(ArrayData, ArrayDataFactory);
+	ActivatableClassWithFactory(SpectrumData, SpectrumDataFactory);
 
 }
 

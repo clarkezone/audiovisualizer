@@ -356,7 +356,7 @@
     <Exec Command="$(MdMergeExe) -v @(MetaDataDir -> '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(MergedWinmdDirectory)&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial" />
   </Target>
   <ItemGroup>
-    <ClInclude Include="ArrayData.h" />
+    <ClInclude Include="SpectrumData.h" />
     <ClInclude Include="AudioAnalyzer.h" />
     <ClInclude Include="AudioBuffer.h" />
     <ClInclude Include="AudioMath.h" />
@@ -371,6 +371,7 @@
     <ClInclude Include="Microsoft.Graphics.Canvas.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ScalarData.h" />
+    <ClInclude Include="SpectrumVisualizer.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="Utilities.h" />
@@ -380,7 +381,7 @@
     <ClInclude Include="XDSP.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ArrayData.cpp" />
+    <ClCompile Include="SpectrumData.cpp" />
     <ClCompile Include="AudioAnalyzer.cpp" />
     <ClCompile Include="AudioBuffer.cpp" />
     <ClCompile Include="AudioMath.cpp" />
@@ -402,6 +403,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='CIBUILD|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ScalarData.cpp" />
+    <ClCompile Include="SpectrumVisualizer.cpp" />
     <ClCompile Include="Trace.cpp" />
     <ClCompile Include="VisualizationDataFrame.cpp" />
     <ClCompile Include="VisualizerDrawEventArgs.cpp" />

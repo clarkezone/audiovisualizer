@@ -20,9 +20,12 @@
             </DataTemplate>
         </NavigationView.HeaderTemplate>
         <NavigationView.MenuItems>
-            <NavigationViewItem Content="Player" Tag="Player">
+            <NavigationViewItem Content="Player" Tag="VisualizationPlayer.PlayerPage">
             </NavigationViewItem>
-            <NavigationViewItem Content="Information" Tag="Information">
+            <NavigationViewItem Content="Spectrum" Tag="VisualizationPlayer.SpectrumPage">
+                
+            </NavigationViewItem>
+            <NavigationViewItem Content="Information" Tag="VisualizationPlayer.InformationPage">
             </NavigationViewItem>
         </NavigationView.MenuItems>
         <NavigationView.Content>

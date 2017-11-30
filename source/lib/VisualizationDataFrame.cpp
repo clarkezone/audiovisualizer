@@ -3,7 +3,7 @@
 
 namespace AudioVisualizer
 {
-	VisualizationDataFrame::VisualizationDataFrame(REFERENCE_TIME time, REFERENCE_TIME duration, IScalarData *pRms, IScalarData *pPeak, IArrayData *pSpectrum)
+	VisualizationDataFrame::VisualizationDataFrame(REFERENCE_TIME time, REFERENCE_TIME duration, IScalarData *pRms, IScalarData *pPeak, ISpectrumData *pSpectrum)
 	{
 		_time.Duration = time;
 		_duration.Duration = duration;

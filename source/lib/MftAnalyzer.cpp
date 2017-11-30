@@ -671,8 +671,9 @@ namespace AudioVisualizer
 		switch (eMessage)
 		{
 		case MFT_MESSAGE_COMMAND_FLUSH:
-			// Flush the MFT.
-			hr = Analyzer_Flush();
+			// Flush the MFT. Flush might happen at the end of stream - keep the existing samples and
+			// Flush the MFT at STREAM_STARTING instead
+			// hr = Analyzer_Flush();
 			break;
 
 		case MFT_MESSAGE_COMMAND_DRAIN:
@@ -960,11 +961,11 @@ namespace AudioVisualizer
 			if ((int)_analyzerTypes & (int)AnalyzerType::Peak)
 				peak = Make<ScalarData>(m_nChannels);
 
-			ComPtr<ArrayData> spectrum;
+			ComPtr<SpectrumData> spectrum;
 			if ((int)_analyzerTypes & (int)AnalyzerType::Spectrum)
 			{
 				float maxFreq = (float)(m_FramesPerSecond >> 1) / (float)_analyzer->GetDownsampleRate();
-				spectrum = Make<ArrayData>(m_nChannels,
+				spectrum = Make<SpectrumData>(m_nChannels,
 					m_FftLength >> 1,
 					ScaleType::Linear,
 					ScaleType::Linear,
