@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0622 */
 /* at Mon Jan 18 19:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-e4b84c2e:
+/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-f6cc7ce3:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -5081,11 +5081,22 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CISpectrumDataFactory;
             ISpectrumDataFactory : public IInspectable
             {
             public:
-                virtual HRESULT STDMETHODCALLTYPE CreateLinear( 
-                    /* [in] */ UINT32 channels,
+                virtual HRESULT STDMETHODCALLTYPE Create( 
+                    /* [in] */ UINT32 cChannels,
                     /* [in] */ UINT32 cElements,
-                    /* [in] */ float upperFrequency,
-                    /* [out][retval] */ ABI::AudioVisualizer::ISpectrumData **data) = 0;
+                    /* [in] */ ABI::AudioVisualizer::ScaleType amplitudeScale,
+                    /* [in] */ ABI::AudioVisualizer::ScaleType frequencyScale,
+                    /* [in] */ float minFrequency,
+                    /* [in] */ float maxFrequency,
+                    /* [out][retval] */ ABI::AudioVisualizer::ISpectrumData **ppResult) = 0;
+                
+                virtual HRESULT STDMETHODCALLTYPE CreateWithValues( 
+                    /* [in] */ __FIVectorView_1___FIVectorView_1_float *pValues,
+                    /* [in] */ ABI::AudioVisualizer::ScaleType amplitudeScale,
+                    /* [in] */ ABI::AudioVisualizer::ScaleType frequencyScale,
+                    /* [in] */ float minFrequency,
+                    /* [in] */ float maxFrequency,
+                    /* [out][retval] */ ABI::AudioVisualizer::ISpectrumData **ppResult) = 0;
                 
             };
 
@@ -5127,12 +5138,24 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CISpectrumDataFactory;
             __x_ABI_CAudioVisualizer_CISpectrumDataFactory * This,
             /* [out] */ TrustLevel *trustLevel);
         
-        HRESULT ( STDMETHODCALLTYPE *CreateLinear )( 
+        HRESULT ( STDMETHODCALLTYPE *Create )( 
             __x_ABI_CAudioVisualizer_CISpectrumDataFactory * This,
-            /* [in] */ UINT32 channels,
+            /* [in] */ UINT32 cChannels,
             /* [in] */ UINT32 cElements,
-            /* [in] */ float upperFrequency,
-            /* [out][retval] */ __x_ABI_CAudioVisualizer_CISpectrumData **data);
+            /* [in] */ __x_ABI_CAudioVisualizer_CScaleType amplitudeScale,
+            /* [in] */ __x_ABI_CAudioVisualizer_CScaleType frequencyScale,
+            /* [in] */ float minFrequency,
+            /* [in] */ float maxFrequency,
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CISpectrumData **ppResult);
+        
+        HRESULT ( STDMETHODCALLTYPE *CreateWithValues )( 
+            __x_ABI_CAudioVisualizer_CISpectrumDataFactory * This,
+            /* [in] */ __FIVectorView_1___FIVectorView_1_float *pValues,
+            /* [in] */ __x_ABI_CAudioVisualizer_CScaleType amplitudeScale,
+            /* [in] */ __x_ABI_CAudioVisualizer_CScaleType frequencyScale,
+            /* [in] */ float minFrequency,
+            /* [in] */ float maxFrequency,
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CISpectrumData **ppResult);
         
         END_INTERFACE
     } __x_ABI_CAudioVisualizer_CISpectrumDataFactoryVtbl;
@@ -5167,8 +5190,11 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CISpectrumDataFactory;
     ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
 
 
-#define __x_ABI_CAudioVisualizer_CISpectrumDataFactory_CreateLinear(This,channels,cElements,upperFrequency,data)	\
-    ( (This)->lpVtbl -> CreateLinear(This,channels,cElements,upperFrequency,data) ) 
+#define __x_ABI_CAudioVisualizer_CISpectrumDataFactory_Create(This,cChannels,cElements,amplitudeScale,frequencyScale,minFrequency,maxFrequency,ppResult)	\
+    ( (This)->lpVtbl -> Create(This,cChannels,cElements,amplitudeScale,frequencyScale,minFrequency,maxFrequency,ppResult) ) 
+
+#define __x_ABI_CAudioVisualizer_CISpectrumDataFactory_CreateWithValues(This,pValues,amplitudeScale,frequencyScale,minFrequency,maxFrequency,ppResult)	\
+    ( (This)->lpVtbl -> CreateWithValues(This,pValues,amplitudeScale,frequencyScale,minFrequency,maxFrequency,ppResult) ) 
 
 #endif /* COBJMACROS */
 

@@ -104,8 +104,6 @@ namespace wrl_util
 		{
 			return E_NOTIMPL;
 		}
-
-
 	};
 
 }

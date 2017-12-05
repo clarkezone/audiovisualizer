@@ -14,46 +14,9 @@ using namespace wrl_util;
 
 namespace AudioVisualizer
 {
-	class ArrayValueView : public RuntimeClass<IVectorView<float>,IIterable<float>>
-	{
-		InspectableClass(IVectorView<float>::z_get_rc_name_impl(),BaseTrust)
-		size_t _size;
-		float *_pData;
-	public:
-		ArrayValueView(DirectX::XMVECTOR *pBuffer, size_t cElements)
-		{
-			_pData = reinterpret_cast<float *>(pBuffer);
-			_size = cElements;
-		}
-		STDMETHODIMP GetAt(unsigned int index, float *pResult)
-		{
-			if (pResult == nullptr)
-				return E_INVALIDARG;
-			if (index >= _size)
-				return E_INVALIDARG;
-			*pResult = _pData[index];
-			return S_OK;
-		}
-		STDMETHODIMP get_Size(unsigned int *pSize)
-		{
-			if (pSize == nullptr)
-				return E_INVALIDARG;
-			*pSize = (unsigned int)_size;
-			return S_OK;
-		}
-		STDMETHODIMP IndexOf(float, unsigned int *, boolean *)
-		{
-			return E_NOTIMPL;
-		}
-		STDMETHODIMP First(IIterator<float> **ppIterator)
-		{
-			auto iterator = Make<IteratorImpl<float>>((float *)_pData, _size);
-			return iterator.CopyTo(ppIterator);
-		}
-	};
-
-	class SpectrumData : public RuntimeClass<ISpectrumData,IVectorView<IVectorView<float>*>>, 
-		public Implements<IVectorView<IVectorView<float>*>>
+	class SpectrumData : public RuntimeClass<ISpectrumData,
+		IVectorView<IVectorView<float>*>, 
+		IIterable<IVectorView<float> *>>, public LifespanTracker<SpectrumData>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_SpectrumData, BaseTrust);
 
@@ -72,6 +35,8 @@ namespace AudioVisualizer
 		~SpectrumData();
 
 		DirectX::XMVECTOR *GetBuffer() { return _pData; }
+
+		const std::vector<ComPtr<IVectorView<float>>> & GetValues() { return _values; }
 
 		STDMETHODIMP get_AmplitudeScale(ScaleType *pScale)
 		{
@@ -137,6 +102,7 @@ namespace AudioVisualizer
 		{
 			return E_NOTIMPL;
 		}
+		STDMETHODIMP First(IIterator<IVectorView<float>*> **ppIterator);
 		STDMETHODIMP TransformLinearFrequency(UINT32 cElements, ISpectrumData **ppResult);
 		STDMETHODIMP TransformLinearFrequencyWithRange(UINT32 cElements,float fromFrequency, float toFrequency, ISpectrumData **result);
 		STDMETHODIMP TransformLogFrequency(UINT32 cElements, float minFrequency, float maxFrequency, ISpectrumData **ppResult);

@@ -19,24 +19,17 @@ using namespace wrl_util;
 
 namespace AudioVisualizer
 {
-	/*
-	struct IAnalyzerFrame : public IUnknown
-	{
-		virtual bool IsBefore(REFERENCE_TIME time)=0;	// true if time < frame->time
-		virtual bool IsAfter(REFERENCE_TIME time) = 0;	// true is time >= frame->time + 50us
-	};*/
-
 	class VisualizationDataFrame : public RuntimeClass<IVisualizationDataFrame,FtmBase>, public LifespanTracker<VisualizationDataFrame>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_VisualizationDataFrame, BaseTrust)
 		TimeSpan _time;
 		TimeSpan _duration;
-		ComPtr<IScalarData> _rms;
-		ComPtr<IScalarData> _peak;
-		ComPtr<ISpectrumData> _spectrum;
+		ComPtr<ScalarData> _rms;
+		ComPtr<ScalarData> _peak;
+		ComPtr<SpectrumData> _spectrum;
 
 	public:
-		VisualizationDataFrame(REFERENCE_TIME time,REFERENCE_TIME duration,IScalarData *pRms,IScalarData *pPeak,ISpectrumData *pSpectrum);
+		VisualizationDataFrame(REFERENCE_TIME time,REFERENCE_TIME duration,ScalarData *pRms,ScalarData *pPeak,SpectrumData *pSpectrum);
 		~VisualizationDataFrame();
 
 		STDMETHODIMP get_Time(IReference<TimeSpan> **ppTimeStamp)

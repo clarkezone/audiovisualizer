@@ -299,12 +299,23 @@ namespace AudioVisualizer
 	[version(1.0), uuid(D2E78F9C-8EE6-441B-85A6-A87E6DCE2114), exclusiveto(SpectrumData)]
 	interface ISpectrumDataFactory : IInspectable
 	{
-		HRESULT CreateLinear(
-			[in] UINT32 channels,
+		HRESULT Create(
+			[in] UINT32 cChannels,
 			[in] UINT32 cElements,
-			[in] float upperFrequency,
-			[out, retval] SpectrumData** data
-		);
+			[in] ScaleType amplitudeScale,
+			[in] ScaleType frequencyScale,
+			[in] float minFrequency,
+			[in] float maxFrequency,
+			[out, retval] SpectrumData **ppResult);
+
+		HRESULT CreateWithValues(
+			[in] Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float> *> *pValues,
+			[in] ScaleType amplitudeScale,
+			[in] ScaleType frequencyScale,
+			[in] float minFrequency,
+			[in] float maxFrequency,
+			[out, retval] SpectrumData **ppResult);
+		
 	};
 	[version(1.0), marshaling_behavior(agile), threading(both)]
 	[activatable(ISpectrumDataFactory,1.0)]

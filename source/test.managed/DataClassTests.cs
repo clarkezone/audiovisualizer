@@ -31,10 +31,11 @@ namespace test.managed
             CollectionAssert.AreEqual(new float[] { -50.0f, -50.0f }, logData.AsEnumerable().ToArray());
         }
 
-        [TestMethod]
-        public void SpectrumData()
-        {
-            var data = new SpectrumData(2, 10,20000);
+        
+        [TestMethod()]
+        public void SpectrumData_ctor_zero()
+        { 
+            var data = new SpectrumData(2, 10,ScaleType.Linear,ScaleType.Linear,0,20000);
             Assert.AreEqual(2, data.Count());
             Assert.AreEqual(2, data.Count);
             Assert.AreEqual(20000.0f, data.MaxFrequency);
@@ -48,6 +49,26 @@ namespace test.managed
                     Assert.AreEqual(0.0f, item);
                 }
             }
+        }
+
+        [TestMethod()]
+        public void SpectrumData_ctor_values()
+        {
+            float[][] initialValues = {
+                new float[] { 0.0f, 0.1f, 0.2f, 0.3f, 0.4f },
+                new float[] { 0.5f, 0.6f, 0.7f, 0.8f, 0.9f }
+                };
+            var data = new SpectrumData(initialValues, ScaleType.Linear, ScaleType.Logarithmic, 20, 20000);
+            Assert.AreEqual(20, data.MinFrequency);
+            Assert.AreEqual(20000, data.MaxFrequency);
+            Assert.AreEqual(ScaleType.Linear, data.AmplitudeScale);
+            Assert.AreEqual(ScaleType.Logarithmic, data.FrequencyScale);
+            Assert.AreEqual(2, data.Count);
+            Assert.AreEqual(5U, data.FrequencyCount);
+            Assert.AreEqual(3.9810717f, data.FrequencyStep);
+            CollectionAssert.AreEqual(initialValues[0], data[0].ToArray());
+            CollectionAssert.AreEqual(initialValues[1], data[1].ToArray());
+
         }
 
         public float BinFrequency(SpectrumData data, uint bin)

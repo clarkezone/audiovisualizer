@@ -86,20 +86,12 @@ namespace AudioVisualizer
 		if (currentPosition != -1)	// If no presentation position then return nullptr
 		{
 			ComPtr<IVisualizationDataFrame> spFrameFound;
-#ifdef _TRACE_LOCKS
-			AudioVisualizer::Diagnostics::Trace::Trace_Lock(&m_csOutputQueueAccess,L"OutputQueue",
-				[&hr,this,currentPosition,&spFrameFound]
-			{
-				hr = Analyzer_FFwdQueueTo(currentPosition, &spFrameFound);
-			}
-			);
-#else
 			auto lock = m_csOutputQueueAccess.Lock();	
 			hr = Analyzer_FFwdQueueTo(currentPosition, &spFrameFound);
-#endif
 			if (spFrameFound != nullptr)
 			{
 				spFrameFound.CopyTo(ppData);
+				
 			}
 		}
 
@@ -673,7 +665,7 @@ namespace AudioVisualizer
 		case MFT_MESSAGE_COMMAND_FLUSH:
 			// Flush the MFT. Flush might happen at the end of stream - keep the existing samples and
 			// Flush the MFT at STREAM_STARTING instead
-			// hr = Analyzer_Flush();
+			hr = Analyzer_Flush();
 			break;
 
 		case MFT_MESSAGE_COMMAND_DRAIN:
