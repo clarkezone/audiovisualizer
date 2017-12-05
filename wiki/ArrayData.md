@@ -2,7 +2,7 @@
  [ArrayData](wiki/ArrayData.md)
 ArrayData class is used to process spectrum data. The instance of this class is created by the library and you rarely want to create your own.
 
-###Interfaces
+### Interfaces
 - IReadOnlyList<IReadOnlyList<float>>
 - IEnumerable<IReadOnlyList<float>>
 
@@ -34,10 +34,14 @@ The time value of rise (and fall) time indicate the time by what the difference 
 This method will fail if the AmplitudeScale is Logarithmic or the Frequency Counts and other attributes do not match
 
 ##### Parameters
-- previousData (ArrayData) Spectrum values of the previous instance. If null calculations run as if all values of previous data were 0
-- riseTime (TimeSpan) Time constant for rising values
-- fallTime (TimeSpan) Time constant for falling values
-- timeFromPrevious (TimeSpan) Time passed from previousData
+###### previousData (ArrayData) 
+Spectrum values of the previous instance. If null calculations run as if all values of previous data were 0
+###### riseTime (TimeSpan)
+Time constant for rising values
+###### fallTime (TimeSpan)
+Time constant for falling values
+###### timeFromPrevious (TimeSpan)
+Time passed from previousData
 ##### Returns (ArrayData)
 Method returns the calculated spectrum values with fall and rise times applied
 
@@ -56,9 +60,6 @@ public float BinFrequency(ArrayData data, uint bin)
         return data.MinFrequency * (float) Math.Pow(data.FrequencyStep, bin);
     }
 }
-```
-
-
 
 You access data as you would in an array
     ArrayData a1;
