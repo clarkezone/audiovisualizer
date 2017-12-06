@@ -157,17 +157,19 @@ namespace AudioVisualizer
 				(maxFrequency - minFrequency) / cElements :
 				powf(maxFrequency / minFrequency, 1.0f / cElements);
 
-			ComPtr<SpectrumData> data = Make<SpectrumData>(
-				channels, 
-				cElements, 
-				amplitudeScaleType, 
-				frequencyScaleType, 
-				minFrequency, 
-				maxFrequency, 
-				fStep, 
+			ComPtr<SpectrumData> result;
+			HRESULT hr = MakeAndInitialize<SpectrumData>(&result,
+				channels,
+				cElements,
+				amplitudeScaleType,
+				frequencyScaleType,
+				minFrequency,
+				maxFrequency,
 				true);
+			if (FAILED(hr))
+				return hr;
 
-			return data.CopyTo(ppResult);
+			return result.CopyTo(ppResult);
 		}
 		STDMETHODIMP CreateWithValues(
 			IVectorView<IVectorView<float> *> *pData,
@@ -214,18 +216,22 @@ namespace AudioVisualizer
 				(maxFrequency - minFrequency) / cElements :
 				powf(maxFrequency / minFrequency, 1.0f / cElements);
 
-			ComPtr<SpectrumData> data = Make<SpectrumData>(
+			ComPtr<SpectrumData> result;
+			
+			hr = MakeAndInitialize<SpectrumData>(&result,
 				channels,
 				cElements,
 				amplitudeScaleType,
 				frequencyScaleType,
 				minFrequency,
 				maxFrequency,
-				fStep,
 				false);
 
+			if (FAILED(hr))
+				return hr;
+
 			size_t vElementsCount = (cElements + 3) >> 2;
-			DirectX::XMVECTOR *pValues = data->GetBuffer();
+			DirectX::XMVECTOR *pValues = result->GetBuffer();
 
 			for (size_t channelIndex = 0; channelIndex < channels; channelIndex++,pValues += vElementsCount)
 			{
@@ -241,22 +247,42 @@ namespace AudioVisualizer
 					return E_FAIL;
 			}
 
-			return data.CopyTo(ppResult);
+			return result.CopyTo(ppResult);
 		}
 	};
 
 
-	SpectrumData::SpectrumData(size_t cChannels, size_t cElements, ScaleType ampScaleType, ScaleType fScaleType, float minFrequency, float maxFrequency, float frequencyStep,bool bInit) :
-		_amplitudeScale(ampScaleType),
-		_frequencyScale(fScaleType),
-		_minFrequency(minFrequency),
-		_maxFrequency(maxFrequency),
-		_frequencyStep(frequencyStep),
+	SpectrumData::SpectrumData() :
 		_pData(nullptr), 
 		_vElementsCount(0), 
 		_size(0), 
 		_channels(0)
 	{
+	}
+
+	SpectrumData::~SpectrumData()
+	{
+		if (_pData != nullptr)
+			_aligned_free(_pData);
+	}
+
+	HRESULT SpectrumData::RuntimeClassInitialize(size_t cChannels, size_t cElements, ScaleType ampScaleType, ScaleType fScaleType, float minFrequency, float maxFrequency, bool bInit)
+	{
+		if (cChannels == 0 || cElements == 0)
+			return E_INVALIDARG;
+		if (maxFrequency <= minFrequency || minFrequency < 0)
+			return E_INVALIDARG;
+		if (fScaleType == ScaleType::Logarithmic && minFrequency == 0)
+			return E_INVALIDARG;
+
+		_amplitudeScale = ampScaleType;
+		_frequencyScale = fScaleType;
+		_minFrequency = minFrequency;
+		_maxFrequency = maxFrequency;
+		_frequencyStep = _frequencyScale == ScaleType::Linear ?
+			(maxFrequency - minFrequency) / cElements :
+			powf(maxFrequency / minFrequency, 1.0f / cElements);
+
 		_vElementsCount = (cElements + 3) >> 2;	// Make sure channel data is aligned
 		_size = cElements;
 		_channels = cChannels;
@@ -266,28 +292,28 @@ namespace AudioVisualizer
 			memset(_pData, 0, _vElementsCount * cChannels * sizeof(DirectX::XMVECTOR));
 		}
 		_values.resize(_channels);
-		for (size_t index = 0,vIndex = 0; index < _channels; index++,vIndex += _vElementsCount)
+		for (size_t index = 0, vIndex = 0; index < _channels; index++, vIndex += _vElementsCount)
 		{
-			_values[index] = Make<SpectrumValuesView>(this,(float *)(_pData + vIndex),cElements);
+			_values[index] = Make<SpectrumValuesView>(this, (float *)(_pData + vIndex), cElements);
 		}
-	}
 
-	SpectrumData::~SpectrumData()
-	{
-		if (_pData != nullptr)
-			_aligned_free(_pData);
+		return S_OK;
 	}
 
 	STDMETHODIMP SpectrumData::ConvertToLogAmplitude(float minValue, float maxValue, ISpectrumData **ppResult)
 	{
-		ComPtr<SpectrumData> result = Make<SpectrumData>(
+		ComPtr<SpectrumData> result;
+		HRESULT hr = MakeAndInitialize<SpectrumData>(
+			&result,
 			_channels,
 			_size,
 			ScaleType::Logarithmic,
 			_frequencyScale,
 			_minFrequency,
 			_maxFrequency,
-			_frequencyStep);
+			false);
+		if (FAILED(hr))
+			return hr;
 
 		Math::ConvertToLogarithmic(_pData, result->GetBuffer(), _vElementsCount * _channels, minValue, maxValue);
 		return result.CopyTo(ppResult);
@@ -307,14 +333,18 @@ namespace AudioVisualizer
 			return E_INVALIDARG;
 		}
 
-		ComPtr<SpectrumData> result = Make<SpectrumData>(
+		ComPtr<SpectrumData> result;
+		HRESULT hr = MakeAndInitialize<SpectrumData>(
+			&result,
 			_channels,
 			_size,
 			_amplitudeScale,
 			_frequencyScale,
 			_minFrequency,
 			_maxFrequency,
-			_frequencyStep);
+			false);
+		if (FAILED(hr))
+			return hr;
 
 		size_t vSize = (_size + 3) >> 2;
 		DirectX::XMVECTOR *pLastData = nullptr;
@@ -330,6 +360,44 @@ namespace AudioVisualizer
 		return result.CopyTo(ppResult);
 	}
 
+	STDMETHODIMP SpectrumData::CombineChannels(UINT32 elementCount, float *pMap, ISpectrumData **ppResult)
+	{
+		if (elementCount < _channels)
+			return E_INVALIDARG;
+		if (_amplitudeScale != ScaleType::Linear)
+			return E_INVALIDARG;
+
+		UINT32 outputChannels = elementCount / _channels;
+		ComPtr<SpectrumData> result;
+		HRESULT hr = MakeAndInitialize<SpectrumData>(
+			&result,
+			_channels,
+			_size,
+			_amplitudeScale,
+			_frequencyScale,
+			_minFrequency,
+			_maxFrequency,
+			false);
+		if (FAILED(hr))
+			return hr;
+
+
+		std::vector<XMVECTOR *> src(_channels);
+		XMVECTOR *pData = _pData;
+		for (size_t channelIndex = 0; channelIndex < _channels; channelIndex++,pData+=_vElementsCount)
+		{
+			src[channelIndex] = pData;
+		}
+
+		XMVECTOR *pDest = result->GetBuffer();
+		for (size_t channelIndex = 0; channelIndex < outputChannels; channelIndex++,pDest+=_vElementsCount)
+		{
+			Math::CombineChannels(src.data(), _channels, _vElementsCount, pMap + channelIndex * _channels, pDest);
+		}
+
+		return result.CopyTo(ppResult);
+	}
+
 	STDMETHODIMP SpectrumData::First(IIterator<IVectorView<float> *> **ppIterator)
 	{
 		auto iterator = Make<SpectrumDataIterator>(this);
@@ -341,13 +409,19 @@ namespace AudioVisualizer
 		if (_amplitudeScale != ScaleType::Linear || _frequencyScale != ScaleType::Linear || cElements < 1)
 			return E_FAIL;
 
-		ComPtr<SpectrumData> result = Make<SpectrumData>(_channels,
+		ComPtr<SpectrumData> result;
+		HRESULT hr = MakeAndInitialize<SpectrumData>(
+			&result,
+			_channels,
 			cElements,
-			ScaleType::Linear,
-			ScaleType::Linear,
+			_amplitudeScale,
+			_frequencyScale,
 			_minFrequency,
 			_maxFrequency,
-			(_maxFrequency - _minFrequency) / (float) cElements);
+			false);
+		if (FAILED(hr))
+			return hr;
+
 		for (size_t index = 0,vSrcIndex = 0,vDstIndex = 0; index < _channels; index++,vSrcIndex+=_vElementsCount,vDstIndex+=result->_vElementsCount)
 		{
 			float *pSource = (float *)(GetBuffer() + vSrcIndex);
@@ -365,14 +439,18 @@ namespace AudioVisualizer
 
 		if (cElements < 1 || fromFrequency >= toFrequency)
 			return E_INVALIDARG;
-
-		ComPtr<SpectrumData> result = Make<SpectrumData>(_channels,
+		ComPtr<SpectrumData> result;
+		HRESULT hr = MakeAndInitialize<SpectrumData>(
+			&result,
+			_channels,
 			cElements,
-			ScaleType::Linear,
-			ScaleType::Linear,
+			_amplitudeScale,
+			_frequencyScale,
 			fromFrequency,
 			toFrequency,
-			(fromFrequency - toFrequency) / cElements);
+			false);
+		if (FAILED(hr))
+			return hr;
 
 		float fromIndex = (fromFrequency - _minFrequency) / _frequencyStep;
 		float toIndex = (toFrequency - _minFrequency) / _frequencyStep;
@@ -392,16 +470,23 @@ namespace AudioVisualizer
 		if (_amplitudeScale != ScaleType::Linear || 
 			_frequencyScale != ScaleType::Linear)
 			return E_FAIL;
+		if (fromFrequency <= 0 || toFrequency < fromFrequency)
+			return E_INVALIDARG;
 		if (fromFrequency >= toFrequency || cElements < 1)
 			return E_INVALIDARG;
 
-		ComPtr<SpectrumData> result = Make<SpectrumData>(_channels,
-			cElements,
-			ScaleType::Linear,
+		ComPtr<SpectrumData> result;
+		HRESULT hr = MakeAndInitialize<SpectrumData>(
+			&result,
+			_channels,
+			_size,
+			_amplitudeScale,
 			ScaleType::Logarithmic,
-			fromFrequency,
-			toFrequency,
-			powf(_maxFrequency / _minFrequency, 1.0f / cElements));
+			_minFrequency,
+			_maxFrequency,
+			false);
+		if (FAILED(hr))
+			return hr;
 
 		float fromIndex = (fromFrequency - _minFrequency) / _frequencyStep;
 		float toIndex = (toFrequency - _minFrequency) / _frequencyStep;

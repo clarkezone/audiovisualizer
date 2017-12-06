@@ -13,6 +13,6 @@ namespace AudioVisualizer
 		void SpectrumLinearTransform(const float *pSource, size_t sourceCount, float *pDest, size_t destCount);
 		void SpectrumTransform(const float *pSource, size_t sourceCount, float fromIndex,float toIndex, float *pDest, size_t destCount,bool bLinear);
 		void SpectrumLogTransform(const float *pSource, size_t sourceCount, float fromIndex, float toIndex, float *pDest, size_t destCount);
-
+		void CombineChannels(DirectX::XMVECTOR **pSource, size_t sourceCount, size_t sourcevLength, float *pMap, DirectX::XMVECTOR *pDest);
 	}
 }

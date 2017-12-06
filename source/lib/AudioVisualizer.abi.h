@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.01.0622 */
 /* at Mon Jan 18 19:14:07 2038
  */
-/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-f6cc7ce3:
+/* Compiler settings for C:\Users\tonuv\AppData\Local\Temp\AudioVisualizer.idl-be7668c3:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -16,12 +16,11 @@
 */
 /* @@MIDL_FILE_HEADING(  ) */
 
-#pragma warning( disable: 4049 )  /* more than 64k source lines */
 
 
 /* verify that the <rpcndr.h> version is high enough to compile this file*/
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
-#define __REQUIRED_RPCNDR_H_VERSION__ 475
+#define __REQUIRED_RPCNDR_H_VERSION__ 500
 #endif
 
 #include "rpc.h"
@@ -4564,6 +4563,11 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CISpectrumData;
                     /* [in] */ float maxValue,
                     /* [out][retval] */ ABI::AudioVisualizer::ISpectrumData **result) = 0;
                 
+                virtual HRESULT STDMETHODCALLTYPE CombineChannels( 
+                    /* [in] */ UINT32 elementCount,
+                    /* [in][size_is] */ float *pMap,
+                    /* [out][retval] */ ABI::AudioVisualizer::ISpectrumData **result) = 0;
+                
             };
 
             extern const __declspec(selectany) IID & IID_ISpectrumData = __uuidof(ISpectrumData);
@@ -4661,6 +4665,12 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CISpectrumData;
             /* [in] */ float maxValue,
             /* [out][retval] */ __x_ABI_CAudioVisualizer_CISpectrumData **result);
         
+        HRESULT ( STDMETHODCALLTYPE *CombineChannels )( 
+            __x_ABI_CAudioVisualizer_CISpectrumData * This,
+            /* [in] */ UINT32 elementCount,
+            /* [in][size_is] */ float *pMap,
+            /* [out][retval] */ __x_ABI_CAudioVisualizer_CISpectrumData **result);
+        
         END_INTERFACE
     } __x_ABI_CAudioVisualizer_CISpectrumDataVtbl;
 
@@ -4726,6 +4736,9 @@ EXTERN_C const IID IID___x_ABI_CAudioVisualizer_CISpectrumData;
 
 #define __x_ABI_CAudioVisualizer_CISpectrumData_ConvertToLogAmplitude(This,minValue,maxValue,result)	\
     ( (This)->lpVtbl -> ConvertToLogAmplitude(This,minValue,maxValue,result) ) 
+
+#define __x_ABI_CAudioVisualizer_CISpectrumData_CombineChannels(This,elementCount,pMap,result)	\
+    ( (This)->lpVtbl -> CombineChannels(This,elementCount,pMap,result) ) 
 
 #endif /* COBJMACROS */
 

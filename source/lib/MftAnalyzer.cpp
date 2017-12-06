@@ -957,13 +957,16 @@ namespace AudioVisualizer
 			if ((int)_analyzerTypes & (int)AnalyzerType::Spectrum)
 			{
 				float maxFreq = (float)(m_FramesPerSecond >> 1) / (float)_analyzer->GetDownsampleRate();
-				spectrum = Make<SpectrumData>(m_nChannels,
+
+				MakeAndInitialize<SpectrumData>(
+					&spectrum,
+					m_nChannels,
 					m_FftLength >> 1,
 					ScaleType::Linear,
 					ScaleType::Linear,
 					0.0f,
 					maxFreq,
-					maxFreq / (float)(m_FftLength >> 1));	// Spectrum is half fft length
+					false);
 			}
 			long position = -1;
 

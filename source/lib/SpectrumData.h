@@ -31,8 +31,9 @@ namespace AudioVisualizer
 		float _maxFrequency;
 		float _frequencyStep;
 	public:
-		SpectrumData(size_t cChannels, size_t cElements, ScaleType ampScaleType,ScaleType fScaleType,float minFrequency,float maxFrequency,float fStep,bool bInit=false);
+		SpectrumData();
 		~SpectrumData();
+		HRESULT RuntimeClassInitialize(size_t cChannels, size_t cElements, ScaleType ampScaleType, ScaleType fScaleType, float minFrequency, float maxFrequency, bool bInit);
 
 		DirectX::XMVECTOR *GetBuffer() { return _pData; }
 
@@ -108,6 +109,8 @@ namespace AudioVisualizer
 		STDMETHODIMP TransformLogFrequency(UINT32 cElements, float minFrequency, float maxFrequency, ISpectrumData **ppResult);
 		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, ISpectrumData **ppResult);
 		STDMETHODIMP ApplyRiseAndFall(ISpectrumData *pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, ISpectrumData **ppResult);
+		STDMETHODIMP CombineChannels(UINT32 elementCount, float *pMap, ISpectrumData **result);
+
 
 	};
 }

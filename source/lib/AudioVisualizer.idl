@@ -267,6 +267,7 @@ namespace AudioVisualizer
 		HRESULT TransformLogFrequency([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency,[out, retval] SpectrumData **result);
 		HRESULT ApplyRiseAndFall([in] SpectrumData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] SpectrumData **result);
 		HRESULT ConvertToLogAmplitude([in] float minValue,[in] float maxValue, [out, retval] SpectrumData **result );
+		HRESULT CombineChannels([in] UINT32 elementCount, [in, size_is(elementCount)] float *pMap, [out, retval] SpectrumData **result);
 	};
 
 

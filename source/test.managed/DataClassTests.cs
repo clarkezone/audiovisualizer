@@ -68,7 +68,51 @@ namespace test.managed
             Assert.AreEqual(3.9810717f, data.FrequencyStep);
             CollectionAssert.AreEqual(initialValues[0], data[0].ToArray());
             CollectionAssert.AreEqual(initialValues[1], data[1].ToArray());
+        }
 
+        [TestMethod()]
+        public void SpectrumData_TranformToLogFrequency()
+        {
+            SpectrumData data = new SpectrumData(
+                new float[][]
+                {
+                    new float[] { 0.1f,0.2f,0.3f,0.4f,0.5f,0.6f,0.7f,0.8f,0.9f,1.0f }
+                },
+                ScaleType.Linear,
+                ScaleType.Linear,
+                0f, 1000f);
+            var log = data.TransformLogFrequency(3, 1, 1000);
+            int i = 3;
+        }
+
+        [TestMethod()]
+        public void SpectrumData_CombineChannels()
+        {
+            SpectrumData data = new SpectrumData(
+                    new float[][] 
+                    {
+                        new float[] { 1,0,0,0,0 },
+                        new float[] { 0,1,0,0,0 },
+                        new float[] { 0,0,1,0,0 },
+                        new float[] { 0,0,0,1,0 },
+                        new float[] { 0,0,0,0,1 },
+                    },
+                    ScaleType.Linear,
+                    ScaleType.Linear,
+                    0,
+                    20000
+                );
+
+            var spectrum = data.CombineChannels(new float[] { 0.1f,0.2f,0.3f,0.4f,0.5f,0.6f,0.7f,0.8f,0.9f,1.0f });
+            Assert.AreEqual(2, spectrum.Count);
+            Assert.AreEqual(5u, spectrum.FrequencyCount);
+            Assert.AreEqual(ScaleType.Linear, spectrum.AmplitudeScale);
+            Assert.AreEqual(ScaleType.Linear, spectrum.FrequencyScale);
+            Assert.AreEqual(0.0f, spectrum.MinFrequency);
+            Assert.AreEqual(20000f, spectrum.MaxFrequency);
+            Assert.AreEqual(4000f, spectrum.FrequencyStep);
+            CollectionAssert.AreEqual(new float[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f }, spectrum[0].ToArray());
+            CollectionAssert.AreEqual(new float[] { 0.6f, 0.7f, 0.8f, 0.9f, 1.0f }, spectrum[1].ToArray());
         }
 
         public float BinFrequency(SpectrumData data, uint bin)

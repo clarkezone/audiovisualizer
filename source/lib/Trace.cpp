@@ -35,6 +35,11 @@ using namespace Microsoft::WRL;
 #define EVT_SET_PRESENTATION_CLOCK L"SetClock"
 #define EVT_DRAWLOOP_DEVICE_LOST L"DrawLoop_DeviceLost"
 
+void InitializeTrace()
+{
+	AudioVisualizer::Diagnostics::Trace::Initialize();
+}
+
 namespace AudioVisualizer
 {
 	namespace Diagnostics

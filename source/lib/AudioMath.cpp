@@ -89,5 +89,18 @@ namespace AudioVisualizer
 			}
 
 		}
+		void CombineChannels(DirectX::XMVECTOR **pSource, size_t sourceCount, size_t sourcevLength, float * pMap, DirectX::XMVECTOR * pDest)
+		{
+			using namespace DirectX;
+			for (size_t index = 0; index < sourcevLength; index++)
+			{
+				XMVECTOR sum = XMVectorZero();
+				for (size_t sourceIndex = 0; sourceIndex < sourceCount; sourceIndex++)
+				{
+					sum += XMVectorScale(pSource[sourceIndex][index], pMap[sourceIndex]);
+				}
+				pDest[index] = sum;
+			}
+		}
 	}
 }
