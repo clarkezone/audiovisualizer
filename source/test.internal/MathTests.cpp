@@ -111,14 +111,14 @@ namespace AnalyzerTest
 		{
 			using namespace AudioVisualizer::Math::Internal;
 			float testData[3] = { 1.0,2.0,3.0 };
-			Assert::AreEqual(0.0f,_AreaOfElementFromStart(testData, 3, 0, 0.0));
-			Assert::AreEqual(0.625f,_AreaOfElementFromStart(testData, 3, 0, 0.5));
-			Assert::AreEqual(1.5f,_AreaOfElementFromStart(testData, 3, 0, 1.0));
-			Assert::AreEqual(0.0f, _AreaOfElementFromStart(testData, 3, 2, 0.0));
-			Assert::AreEqual(1.125f, _AreaOfElementFromStart(testData, 3, 2, 0.5));
-			Assert::AreEqual(1.5f, _AreaOfElementFromStart(testData, 3, 2, 1.0));
-			Assert::AreEqual(0.0f, _AreaOfElementFromStart(testData, 3, 4, 0.1));
-			Assert::AreEqual(0.0f, _AreaOfElementFromStart(testData, 3, -1, 0.1));
+			Assert::AreEqual(0.0f,_AreaOfElementFromStart(testData, 3, 0, 0.0f));
+			Assert::AreEqual(0.625f,_AreaOfElementFromStart(testData, 3, 0, 0.5f));
+			Assert::AreEqual(1.5f,_AreaOfElementFromStart(testData, 3, 0, 1.0f));
+			Assert::AreEqual(0.0f, _AreaOfElementFromStart(testData, 3, 2, 0.0f));
+			Assert::AreEqual(1.125f, _AreaOfElementFromStart(testData, 3, 2, 0.5f));
+			Assert::AreEqual(1.5f, _AreaOfElementFromStart(testData, 3, 2, 1.0f));
+			Assert::AreEqual(0.0f, _AreaOfElementFromStart(testData, 3, 4, 0.1f));
+			Assert::AreEqual(0.0f, _AreaOfElementFromStart(testData, 3, -1, 0.1f));
 		}
 	};
 }

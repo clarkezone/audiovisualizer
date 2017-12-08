@@ -75,13 +75,9 @@ namespace AudioVisualizer
 			*pValue = _frequencyStep;
 			return S_OK;
 		}
-		STDMETHODIMP get_FrequencyCount(UINT32 *pCount)
-		{
-			if (pCount == nullptr)
-				return E_INVALIDARG;
-			*pCount = (UINT32) _size;
-			return S_OK;
-		}
+
+		STDMETHODIMP get_Frequencies(IVectorView<float> **ppValues);
+		STDMETHODIMP get_FrequencyCenters(IVectorView<float> **ppValues);
 
 		STDMETHODIMP GetAt(unsigned int index, IVectorView<float> **ppValue)
 		{

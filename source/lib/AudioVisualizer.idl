@@ -258,7 +258,8 @@ namespace AudioVisualizer
 		[propget] HRESULT MinFrequency([out, retval] float *value);
 		[propget] HRESULT MaxFrequency([out, retval] float *value);
 		[propget] HRESULT FrequencyStep([out, retval] float *value);
-		[propget] HRESULT FrequencyCount([out, retval] UINT32 *value);
+		[propget] HRESULT Frequencies([out, retval] Windows.Foundation.Collections.IVectorView<float> **pValues);
+		[propget] HRESULT FrequencyCenters([out, retval] Windows.Foundation.Collections.IVectorView<float> **pValues);
 
 		[overload("TransformLinearFrequency")]
 		HRESULT TransformLinearFrequency([in] UINT32 elementCount, [out, retval] SpectrumData **result);
