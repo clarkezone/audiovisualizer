@@ -362,6 +362,8 @@ namespace AudioVisualizer
 
 	STDMETHODIMP SpectrumData::CombineChannels(UINT32 elementCount, float *pMap, ISpectrumData **ppResult)
 	{
+		if (pMap == nullptr)
+			return E_POINTER;
 		if (elementCount < _channels)
 			return E_INVALIDARG;
 		if (_amplitudeScale != ScaleType::Linear)
@@ -371,7 +373,7 @@ namespace AudioVisualizer
 		ComPtr<SpectrumData> result;
 		HRESULT hr = MakeAndInitialize<SpectrumData>(
 			&result,
-			_channels,
+			outputChannels,
 			_size,
 			_amplitudeScale,
 			_frequencyScale,
@@ -479,11 +481,11 @@ namespace AudioVisualizer
 		HRESULT hr = MakeAndInitialize<SpectrumData>(
 			&result,
 			_channels,
-			_size,
+			cElements,
 			_amplitudeScale,
 			ScaleType::Logarithmic,
-			_minFrequency,
-			_maxFrequency,
+			fromFrequency,
+			toFrequency,
 			false);
 		if (FAILED(hr))
 			return hr;
