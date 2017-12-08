@@ -54,7 +54,7 @@ namespace test.managed
             {
                 Assert.AreEqual(10, item.Count);
             }
-            Assert.AreEqual(10u, data.Frequencies.Count,"Frequency bin count");
+            Assert.AreEqual(10u, data.FrequencyCount,"Frequency bin count");
             Assert.AreEqual(20000.0f, data.MaxFrequency, "Max Frequency property init");
             Assert.AreEqual(0.0f, data.MinFrequency, "Min Frequency property init");
             Assert.AreEqual(2000.0f, data.FrequencyStep);
@@ -66,7 +66,7 @@ namespace test.managed
             Assert.AreEqual(ScaleType.Linear, data.AmplitudeScale);
             Assert.AreEqual(ScaleType.Logarithmic, data.FrequencyScale);
             Assert.AreEqual(2, data.Count);
-            Assert.AreEqual(10u, data.Frequencies.Count);
+            Assert.AreEqual(10u, data.FrequencyCount);
             Assert.AreEqual(1.995262f, data.FrequencyStep,1e-6f);
         }
         public void SpectrumData_ctor_validation()
@@ -128,7 +128,7 @@ namespace test.managed
                 0f, 1000f);
             var log = data.TransformLogFrequency(3, 1, 1000);
             Assert.AreEqual(1, log.Count);
-            Assert.AreEqual(3u, log.Frequencies.Count);
+            Assert.AreEqual(3u, log.FrequencyCount);
             Assert.AreEqual(1, log.MinFrequency);
             Assert.AreEqual(1000, log.MaxFrequency);
 
@@ -165,7 +165,7 @@ namespace test.managed
 
             var spectrum = data.CombineChannels(new float[] { 0.1f,0.2f,0.3f,0.4f,0.5f,0.6f,0.7f,0.8f,0.9f,1.0f });
             Assert.AreEqual(2, spectrum.Count);
-            Assert.AreEqual(5u, spectrum.Frequencies.Count);
+            Assert.AreEqual(5u, spectrum.FrequencyCount);
             Assert.AreEqual(ScaleType.Linear, spectrum.AmplitudeScale);
             Assert.AreEqual(ScaleType.Linear, spectrum.FrequencyScale);
             Assert.AreEqual(0.0f, spectrum.MinFrequency);

@@ -243,7 +243,7 @@ namespace AudioVisualizer
 			return g_pLoggingChannel->StartActivityWithFields(HStringReference(EVT_START_CALCULATE).Get(), spFields.Get(), ppActivity);
 		}
 
-		HRESULT Trace::Log_GetData(REFERENCE_TIME currentPosition, IVisualizationDataFrame *pFrame, AudioVisualizer::VisualizationDataFrame *pQueueFront, size_t queueSize, HRESULT result)
+		HRESULT Trace::Log_GetData(REFERENCE_TIME currentPosition, IVisualizationDataFrame *pFrame, size_t queueSize)
 		{
 			using namespace Windows::Foundation;
 			HRESULT hr = S_OK;
@@ -252,15 +252,8 @@ namespace AudioVisualizer
 			if (FAILED(hr))
 				return hr;
 			spFields->AddTimeSpan(HStringReference(L"Position").Get(), ABI::Windows::Foundation::TimeSpan() = { currentPosition });
-
 			AddVisualizationFrameProperties(pFrame, spFields.Get(), L"Time", L"Duration");
-
-			ComPtr<IVisualizationDataFrame> dataFrameQF = dynamic_cast<IVisualizationDataFrame *>(pQueueFront);;
-			AddVisualizationFrameProperties(dataFrameQF.Get(), spFields.Get(), L"QFTime", L"QFDuration");
-
-
 			spFields->AddUInt32(HStringReference(L"QueueSize").Get(), (UINT32)queueSize);
-			spFields->AddInt32WithFormat(HStringReference(L"Result").Get(), result, LoggingFieldFormat::LoggingFieldFormat_HResult);
 			hr = g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_GET_DATA).Get(), spFields.Get());
 			return hr;
 		}

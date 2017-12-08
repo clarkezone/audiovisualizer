@@ -96,7 +96,7 @@ namespace AudioVisualizer
 		}
 
 #ifdef _TRACE
-		AudioVisualizer::Diagnostics::Trace::Log_GetData(currentPosition, *ppData,m_AnalyzerOutput.empty() ? nullptr : m_AnalyzerOutput.front().Get(), m_AnalyzerOutput.size(),hr);
+		AudioVisualizer::Diagnostics::Trace::Log_GetData(currentPosition, *ppData,m_AnalyzerOutput.size());
 #endif
 		return hr;
 	}

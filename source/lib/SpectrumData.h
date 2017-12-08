@@ -75,10 +75,42 @@ namespace AudioVisualizer
 			*pValue = _frequencyStep;
 			return S_OK;
 		}
+		STDMETHODIMP get_FrequencyCount(UINT32 *pValue)
+		{
+			if (pValue == nullptr)
+				return E_INVALIDARG;
+			*pValue = _size;
+			return S_OK;
+		}
+		STDMETHODIMP TransformLinearFrequency(UINT32 cElements, ISpectrumData **ppResult);
+		STDMETHODIMP TransformLinearFrequencyWithRange(UINT32 cElements, float fromFrequency, float toFrequency, ISpectrumData **result);
+		STDMETHODIMP TransformLogFrequency(UINT32 cElements, float minFrequency, float maxFrequency, ISpectrumData **ppResult);
+		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, ISpectrumData **ppResult);
+		STDMETHODIMP ApplyRiseAndFall(ISpectrumData *pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, ISpectrumData **ppResult);
+		STDMETHODIMP CombineChannels(UINT32 elementCount, float *pMap, ISpectrumData **result);
+		STDMETHODIMP GetFrequency(UINT32 elementIndex, float *pValue)
+		{
+			if (pValue == nullptr)
+				return E_POINTER;
+			*pValue = _frequencyScale == ScaleType::Linear ?
+				_minFrequency + _frequencyStep * elementIndex :
+				_minFrequency * powf(_frequencyStep, (float)elementIndex);
+			return S_OK;
+		}
+		STDMETHODIMP GetCenterFrequency(UINT32 elementIndex, float *pValue)
+		{
+			if (pValue == nullptr)
+				return E_POINTER;
+			float baseFrequency = _frequencyScale == ScaleType::Linear ?
+				_minFrequency + _frequencyStep / 2 :
+				_minFrequency * sqrtf(_frequencyStep);
+			*pValue = _frequencyScale == ScaleType::Linear ?
+				baseFrequency + _frequencyStep * elementIndex :
+				baseFrequency * powf(_frequencyStep, (float)elementIndex);
+			return S_OK;
+		}
 
-		STDMETHODIMP get_Frequencies(IVectorView<float> **ppValues);
-		STDMETHODIMP get_FrequencyCenters(IVectorView<float> **ppValues);
-
+		/* IVectorView interfaces */
 		STDMETHODIMP GetAt(unsigned int index, IVectorView<float> **ppValue)
 		{
 			if (ppValue == nullptr)
@@ -99,15 +131,8 @@ namespace AudioVisualizer
 		{
 			return E_NOTIMPL;
 		}
+		/* IIterable interfaces */
 		STDMETHODIMP First(IIterator<IVectorView<float>*> **ppIterator);
-		STDMETHODIMP TransformLinearFrequency(UINT32 cElements, ISpectrumData **ppResult);
-		STDMETHODIMP TransformLinearFrequencyWithRange(UINT32 cElements,float fromFrequency, float toFrequency, ISpectrumData **result);
-		STDMETHODIMP TransformLogFrequency(UINT32 cElements, float minFrequency, float maxFrequency, ISpectrumData **ppResult);
-		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, ISpectrumData **ppResult);
-		STDMETHODIMP ApplyRiseAndFall(ISpectrumData *pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, ISpectrumData **ppResult);
-		STDMETHODIMP CombineChannels(UINT32 elementCount, float *pMap, ISpectrumData **result);
-
-
 	};
 }
 

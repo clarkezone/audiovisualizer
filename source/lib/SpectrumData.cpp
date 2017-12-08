@@ -251,97 +251,6 @@ namespace AudioVisualizer
 		}
 	};
 
-
-	class FrequencySeriesIterator : public RuntimeClass<IIterator<float>>
-	{
-		float _value;
-		size_t _size;
-		size_t _currentIndex;
-		float _step;
-		bool _isLinear;
-		InspectableClass(IIterator<float>::z_get_rc_name_impl(), BaseTrust);
-	public:
-		FrequencySeriesIterator(size_t size, float startValue, float step, bool bLinear)
-		{
-			_size = size;
-			_value = startValue;
-			_currentIndex;
-			_step = step;
-			_isLinear = bLinear;
-		}
-		virtual /* propget */ HRESULT STDMETHODCALLTYPE get_Current(float *pCurrent)
-		{
-			if (_currentIndex >= _size)
-				return E_BOUNDS;
-			*pCurrent = _value;
-			return S_OK;
-		};
-		virtual /* propget */ HRESULT STDMETHODCALLTYPE get_HasCurrent(_Out_ boolean *hasCurrent)
-		{
-			if (hasCurrent == nullptr)
-				return E_POINTER;
-			*hasCurrent = _currentIndex < _size;
-			return S_OK;
-		}
-		virtual HRESULT STDMETHODCALLTYPE MoveNext(_Out_ boolean *hasCurrent)
-		{
-			if (hasCurrent == nullptr)
-				return E_POINTER;
-			if (_currentIndex < _size)
-			{
-				_currentIndex++;
-				if (_isLinear)
-					_value += _step;
-				else
-					_value *= _step;
-			}
-			*hasCurrent = _currentIndex < _size;
-			return S_OK;
-		}
-	};
-	class FrequencyValueSeries : public RuntimeClass<IVectorView<float>, IIterable<float>>
-	{
-		size_t _size;
-		float _startValue;
-		float _step;
-		bool _isLinear;
-		InspectableClass(IVectorView<float>::z_get_rc_name_impl(), BaseTrust);
-	public:
-		FrequencyValueSeries(size_t size, float startValue, float step, bool bLinear)
-		{
-			_size = size;
-			_startValue = startValue;
-			_step = step;
-			_isLinear = bLinear;
-		}
-		STDMETHODIMP GetAt(unsigned int index, float *pResult)
-		{
-			if (pResult == nullptr)
-				return E_INVALIDARG;
-			if (index >= _size)
-				return E_INVALIDARG;
-			*pResult = _isLinear ? _startValue + index * _step : _startValue * powf(_step,index);
-			return S_OK;
-		}
-		STDMETHODIMP get_Size(unsigned int *pSize)
-		{
-			if (pSize == nullptr)
-				return E_INVALIDARG;
-			*pSize = (unsigned int)_size;
-			return S_OK;
-		}
-		STDMETHODIMP IndexOf(float, unsigned int *, boolean *)
-		{
-			return E_NOTIMPL;
-		}
-		STDMETHODIMP First(IIterator<float> **ppIterator)
-		{
-			auto iterator = Make<FrequencySeriesIterator>(_size, _startValue, _step, _isLinear);
-			return iterator.CopyTo(ppIterator);
-		}
-	};
-
-
 	SpectrumData::SpectrumData() :
 		_pData(nullptr), 
 		_vElementsCount(0), 
@@ -488,28 +397,6 @@ namespace AudioVisualizer
 		}
 
 		return result.CopyTo(ppResult);
-	}
-
-	STDMETHODIMP SpectrumData::get_Frequencies(IVectorView<float>** ppValues)
-	{
-		auto frequencies = Make<FrequencyValueSeries>(
-			_size, 
-			_minFrequency, 
-			_frequencyStep, 
-			_frequencyScale == ScaleType::Linear);
-		return frequencies.CopyTo(ppValues);
-	}
-
-	STDMETHODIMP SpectrumData::get_FrequencyCenters(IVectorView<float>** ppValues)
-	{
-		auto frequencies = Make<FrequencyValueSeries>(
-			_size,
-			_frequencyScale == ScaleType::Linear ?
-				_minFrequency + _frequencyStep/2 : 
-				_minFrequency * sqrtf(_frequencyStep),
-			_frequencyStep,
-			_frequencyScale == ScaleType::Linear);
-		return frequencies.CopyTo(ppValues);
 	}
 
 	STDMETHODIMP SpectrumData::First(IIterator<IVectorView<float> *> **ppIterator)

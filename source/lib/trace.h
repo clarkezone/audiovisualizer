@@ -52,7 +52,7 @@ namespace AudioVisualizer
 			static HRESULT Log_SetInputPosition(long frameIndex);
 			static HRESULT Log_ProcessSample(IMFSample *pSample);
 			static HRESULT Log_StartCalculate(ABI::Windows::Foundation::Diagnostics::ILoggingActivity **ppActivity, long position, size_t bufferLength);
-			static HRESULT Log_GetData(REFERENCE_TIME currentPosition, IVisualizationDataFrame *pFrame, AudioVisualizer::VisualizationDataFrame *pQueueFront, size_t queueSize, HRESULT result);
+			static HRESULT Log_GetData(REFERENCE_TIME currentPosition, IVisualizationDataFrame *pFrame,size_t queueSize);
 			static HRESULT Log_OutputQueuePush(AudioVisualizer::VisualizationDataFrame *pFrame,size_t queueSize);
 			static HRESULT Log_OutputQueuePop(AudioVisualizer::VisualizationDataFrame *pFrame, size_t queueSize, int reason);
 
