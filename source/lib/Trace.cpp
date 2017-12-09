@@ -454,11 +454,12 @@ namespace AudioVisualizer
 			hr = g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_CLEAR_OUTPUT).Get(), spFields.Get());
 			return hr;
 		}
-		HRESULT Trace::Log_MftProcessMessage(MFT_MESSAGE_TYPE msg)
+		HRESULT Trace::Log_MftProcessMessage(MFT_MESSAGE_TYPE msg,ULONG param)
 		{
 			ComPtr<ILoggingFields> spFields;
 			HRESULT hr = CreateLoggingFields(&spFields);
 			spFields->AddInt32(HStringReference(L"MessageId").Get(),(INT32) msg);
+			spFields->AddUInt64(HStringReference(L"Param").Get(), param);
 			return g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_MFT_PROCESSMSG).Get(), spFields.Get());
 		}
 		HRESULT Trace::Log_GetPresentationTime(IMFPresentationClock *pClock, REFERENCE_TIME time, HRESULT hr)

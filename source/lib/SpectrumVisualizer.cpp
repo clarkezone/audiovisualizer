@@ -28,6 +28,8 @@ namespace AudioVisualizer
 			else
 				_levels[i].Color = Color() = { 255, 255, 0, 0 };
 		}
+		Rescale();
+		ResizeControl();
 	}
 
 
@@ -36,13 +38,73 @@ namespace AudioVisualizer
 	}
 	void SpectrumVisualizer::ResizeControl()
 	{
+		float spectrumWidth = _barCount * (_channelCount * _elementSize.Width + (float) _elementMargin.Left + (float) _elementMargin.Right);
+		float spectrumHeight = _levels.size() * (_elementSize.Height + (float)_elementMargin.Top + (float)_elementMargin.Bottom);
+		auto element = As<IFrameworkElement>(GetControl());
+		element->put_Width(spectrumWidth);
+		element->put_Height(spectrumHeight);
+
 	}
-	void SpectrumVisualizer::Rescale()
+	
+	HRESULT SpectrumVisualizer::Rescale()
 	{
+		_previousSpectrum = nullptr;
+		_emptySpectrum = nullptr;
+
+		HRESULT hr = MakeAndInitialize<SpectrumData>(
+			&_emptySpectrum,
+			_channelCount,
+			_barCount,
+			ScaleType::Linear,
+			_frequencyScale,
+			_minFrequency,
+			_maxFrequency,
+			true);
+
+		if (FAILED(hr))
+			return hr;
+
+		return S_OK;
 	}
+
 	HRESULT SpectrumVisualizer::OnDraw(ICanvasDrawingSession * pSession, IVisualizationDataFrame * pDataFrame, IReference<TimeSpan>* pPresentationTime)
 	{
-		return S_OK;
+		auto lock = _lock.LockExclusive();
+		HRESULT hr = S_OK;
+		if (pDataFrame != nullptr)
+		{
+			ComPtr<ISpectrumData> frameData;
+			pDataFrame->get_Spectrum(&frameData);
+			if (frameData != nullptr)
+			{
+				ComPtr<ISpectrumData> spectrumData;	// This is a spectrum the right spectrum count and scale
+				if (_frequencyScale == ScaleType::Linear)
+					hr = frameData->TransformLinearFrequencyWithRange(_barCount, _minFrequency, _maxFrequency, &spectrumData);
+				else
+					hr = frameData->TransformLogFrequency(_barCount, _minFrequency, _maxFrequency, &spectrumData);
+				if (FAILED(hr))
+					return hr;
+
+				ComPtr<ISpectrumData> spectrumCombined;
+				ComPtr<IVectorView<IVectorView<float> *>> vectorView;
+				hr = spectrumData.As(&vectorView);
+				if (FAILED(hr))
+					return hr;
+
+				UINT32 inputDataChannelCount = 0;
+				vectorView->get_Size(&inputDataChannelCount);
+
+			}
+		}
+		for (size_t barIndex = 0; barIndex < _barCount; barIndex++)
+		{
+			for (size_t channelIndex = 0; channelIndex < _channelCount; channelIndex++)
+			{
+
+			}
+
+		}
+		return hr;
 	}
 
 	ActivatableClass(SpectrumVisualizer);

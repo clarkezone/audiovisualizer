@@ -2,6 +2,7 @@
 #include "ErrorHandling.h"
 #include "trace.h"
 #include "BaseVisualizer.h"
+#include "SpectrumData.h"
 #include <vector>
 #include <wrl.h>
 
@@ -36,10 +37,15 @@ namespace AudioVisualizer
 		float _minFrequency;
 		float _maxFrequency;
 		ScaleType _frequencyScale;
+		std::vector<float> _channelMap;
 
 		Size _calculatedSize;
 
 		SRWLock _lock;
+
+		ComPtr<SpectrumData> _emptySpectrum;
+		ComPtr<SpectrumData> _previousSpectrum;
+
 	public:
 		SpectrumVisualizer();
 		~SpectrumVisualizer();
@@ -273,7 +279,7 @@ namespace AudioVisualizer
 		}
 private:
 		void ResizeControl();
-		void Rescale();
+		HRESULT Rescale();
 		virtual HRESULT OnDraw(ICanvasDrawingSession *pSession, IVisualizationDataFrame *pDataFrame, IReference<TimeSpan> *pPresentationTime);
 
 
