@@ -182,10 +182,8 @@ namespace AudioVisualizer
 		[propput] HRESULT Levels([in] UINT32 elementCount, [in][size_is(elementCount)] MeterBarLevel* levels);
 		[propget] HRESULT Orientation([out, retval] Windows.UI.Xaml.Controls.Orientation *orientation);
 		[propput] HRESULT Orientation([in] Windows.UI.Xaml.Controls.Orientation orientation);
-		[propget] HRESULT ChannelCount([out, retval] UINT32* pChannels);
-		[propput] HRESULT ChannelCount([in] UINT32 channels);
-		[propget] HRESULT ChannelMapping([out] UINT32* elementCount, [out][retval][size_is(, *elementCount)] float **mapping);
-		[propput] HRESULT ChannelMapping([in] UINT32 elementCount, [in][size_is(elementCount)] float *mapping);
+		[propget] HRESULT ChannelIndex([out, retval] UINT32 *pIndex);
+		[propput] HRESULT ChannelIndex([in] UINT32 index);
 		[propget] HRESULT ElementSize([out, retval] Windows.Foundation.Size *pSize);
 		[propput] HRESULT ElementSize([in] Windows.Foundation.Size size);
 		[propget] HRESULT ElementMargin([out, retval] Windows.UI.Xaml.Thickness *pValue);

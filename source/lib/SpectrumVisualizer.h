@@ -27,24 +27,23 @@ namespace AudioVisualizer
 
 		Orientation _orientation;
 		std::vector<MeterBarLevel> _levels;
-		UINT32 _channelCount;
 		Size _elementSize;
 		Thickness _elementMargin;
 		Color _unlitElement;
 		TimeSpan _riseTime;
 		TimeSpan _fallTime;
 		UINT32 _barCount;
+		UINT32 _channelIndex;
 		float _minFrequency;
 		float _maxFrequency;
 		ScaleType _frequencyScale;
-		std::vector<float> _channelMap;
-
+		
 		Size _calculatedSize;
 
 		SRWLock _lock;
 
-		ComPtr<SpectrumData> _emptySpectrum;
-		ComPtr<SpectrumData> _previousSpectrum;
+		ComPtr<ISpectrumData> _emptySpectrum;
+		ComPtr<ISpectrumData> _previousSpectrum;
 
 	public:
 		SpectrumVisualizer();
@@ -92,6 +91,21 @@ namespace AudioVisualizer
 			return S_OK;
 		}
 
+		STDMETHODIMP get_ChannelIndex(UINT32 *pIndex)
+		{
+			if (pIndex == nullptr)
+				return E_POINTER;
+			*pIndex = _channelIndex;
+			return S_OK;
+		}
+		STDMETHODIMP put_ChannelIndex(UINT32 index)
+		{
+			auto lock = _lock.LockExclusive();
+			_channelIndex = index;
+			return S_OK;
+		}
+
+
 		STDMETHODIMP get_Levels(UINT32 *pcElements, MeterBarLevel **ppLevels)
 		{
 			if (ppLevels == nullptr || pcElements == nullptr)
@@ -119,35 +133,6 @@ namespace AudioVisualizer
 				_levels[i] = pLevels[i];
 			}
 			ResizeControl();
-			return S_OK;
-		}
-
-		STDMETHODIMP get_ChannelCount(UINT32 *pChannels)
-		{
-			if (pChannels == nullptr)
-				return E_POINTER;
-			*pChannels = _channelCount;
-			return S_OK;
-		}
-		STDMETHODIMP put_ChannelCount(UINT32 channels)
-		{
-			auto lock = _lock.LockExclusive();
-			_channelCount = channels;
-			ResizeControl();
-			return S_OK;
-		}
-
-		STDMETHODIMP get_ChannelMapping(UINT32 *pcCount, float **ppValue)
-		{
-			if (pcCount == nullptr || ppValue == nullptr)
-				return E_POINTER;
-			*pcCount = 0;
-			*ppValue = nullptr;
-			return S_OK;
-		}
-		STDMETHODIMP put_ChannelMapping(UINT32 cCount, float *pValue)
-		{
-			std::vector<float> mapping(cCount);
 			return S_OK;
 		}
 

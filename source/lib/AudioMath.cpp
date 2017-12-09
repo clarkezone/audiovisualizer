@@ -169,7 +169,8 @@ namespace AudioVisualizer
 				XMVECTOR sum = XMVectorZero();
 				for (size_t sourceIndex = 0; sourceIndex < sourceCount; sourceIndex++)
 				{
-					sum += XMVectorScale(pSource[sourceIndex][index], pMap[sourceIndex]);
+					if (pSource != nullptr)
+						sum += XMVectorScale(pSource[sourceIndex][index], pMap[sourceIndex]);
 				}
 				pDest[index] = sum;
 			}
