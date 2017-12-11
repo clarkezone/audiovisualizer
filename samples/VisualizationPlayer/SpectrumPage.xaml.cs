@@ -27,6 +27,7 @@ namespace VisualizationPlayer
         public SpectrumPage()
         {
             this.InitializeComponent();
+            spectrum.BarCount = 20;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

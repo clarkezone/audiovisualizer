@@ -46,7 +46,7 @@ namespace AudioVisualizer
 		bool m_bIsSuspended;	// Is analyzer in a suspended state
 		ComPtr<IThreadPoolStatics> _threadPoolStatics;
 		HANDLE _threadPoolSemaphore;	// Controls threadpool execution - schedule only one instance of execution
-		bool _bResetAnalyzer;
+		bool _bFlushPending;
 
 		const size_t cMaxOutputQueueSize = 600;	// Keep 10sec worth of data for 60fps output
 

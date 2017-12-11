@@ -9,6 +9,6 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <vis:SpectrumVisualizer x:Name="spectrum"></vis:SpectrumVisualizer>
+        <vis:SpectrumVisualizer x:Name="spectrum" ></vis:SpectrumVisualizer>
     </Grid>
 </Page>

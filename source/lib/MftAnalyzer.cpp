@@ -24,7 +24,7 @@ namespace AudioVisualizer
 	CAnalyzerEffect::CAnalyzerEffect() :
 		m_FramesPerSecond(0),
 		m_nChannels(0),
-		_bResetAnalyzer(false),
+		_bFlushPending(false),
 		_threadPoolSemaphore(NULL),
 		m_StepFrameCount(0),
 		m_StepFrameOverlap(0),
@@ -86,25 +86,17 @@ namespace AudioVisualizer
 		if (currentPosition != -1)	// If no presentation position then return nullptr
 		{
 			ComPtr<IVisualizationDataFrame> spFrameFound;
-#ifdef _TRACE_LOCKS
-			AudioVisualizer::Diagnostics::Trace::Trace_Lock(&m_csOutputQueueAccess,L"OutputQueue",
-				[&hr,this,currentPosition,&spFrameFound]
-			{
-				hr = Analyzer_FFwdQueueTo(currentPosition, &spFrameFound);
-			}
-			);
-#else
 			auto lock = m_csOutputQueueAccess.Lock();	
 			hr = Analyzer_FFwdQueueTo(currentPosition, &spFrameFound);
-#endif
 			if (spFrameFound != nullptr)
 			{
 				spFrameFound.CopyTo(ppData);
+				
 			}
 		}
 
 #ifdef _TRACE
-		AudioVisualizer::Diagnostics::Trace::Log_GetData(currentPosition, *ppData,m_AnalyzerOutput.empty() ? nullptr : m_AnalyzerOutput.front().Get(), m_AnalyzerOutput.size(),hr);
+		AudioVisualizer::Diagnostics::Trace::Log_GetData(currentPosition, *ppData,m_AnalyzerOutput.size());
 #endif
 		return hr;
 	}
@@ -666,14 +658,14 @@ namespace AudioVisualizer
 
 		HRESULT hr = S_OK;
 
-		Diagnostics::Trace::Log_MftProcessMessage(eMessage);
+		Diagnostics::Trace::Log_MftProcessMessage(eMessage,ulParam);
 
 		switch (eMessage)
 		{
 		case MFT_MESSAGE_COMMAND_FLUSH:
 			// Flush the MFT. Flush might happen at the end of stream - keep the existing samples and
 			// Flush the MFT at STREAM_STARTING instead
-			// hr = Analyzer_Flush();
+			Analyzer_Flush();
 			break;
 
 		case MFT_MESSAGE_COMMAND_DRAIN:
@@ -699,7 +691,6 @@ namespace AudioVisualizer
 			break;
 
 		case MFT_MESSAGE_NOTIFY_BEGIN_STREAMING:
-			hr = Analyzer_Flush();	// New stream starts, flush any state
 			break;
 
 		case MFT_MESSAGE_NOTIFY_END_STREAMING:
@@ -711,6 +702,7 @@ namespace AudioVisualizer
 			break;
 
 		case MFT_MESSAGE_NOTIFY_START_OF_STREAM:
+			hr = Analyzer_ClearOutputQueue();	// New streaming starts, clean output
 			break;
 		}
 
@@ -874,8 +866,8 @@ namespace AudioVisualizer
 		Diagnostics::Trace::Log_ProcessSample(pSample);
 #endif
 
-		// Allow processing after a reset event.
-		_bResetAnalyzer = false;
+		// Allow processing after a flush event.
+		_bFlushPending = false;
 
 		auto lock = m_csAnalyzerAccess.Lock();
 		HRESULT hr = S_OK;
@@ -950,7 +942,7 @@ namespace AudioVisualizer
 	void CAnalyzerEffect::Analyzer_ProcessData()
 	{
 		// Process data until not suspended, not in a reset and output is available
-		while (!m_bIsSuspended && !_bResetAnalyzer && _analyzer->IsOutputAvailable())
+		while (!m_bIsSuspended && !_bFlushPending && _analyzer->IsOutputAvailable())
 		{
 			auto lock = m_csAnalyzerAccess.Lock();
 			ComPtr<ScalarData> rms;
@@ -965,13 +957,16 @@ namespace AudioVisualizer
 			if ((int)_analyzerTypes & (int)AnalyzerType::Spectrum)
 			{
 				float maxFreq = (float)(m_FramesPerSecond >> 1) / (float)_analyzer->GetDownsampleRate();
-				spectrum = Make<SpectrumData>(m_nChannels,
+
+				MakeAndInitialize<SpectrumData>(
+					&spectrum,
+					m_nChannels,
 					m_FftLength >> 1,
 					ScaleType::Linear,
 					ScaleType::Linear,
 					0.0f,
 					maxFreq,
-					maxFreq / (float)(m_FftLength >> 1));	// Spectrum is half fft length
+					false);
 			}
 			long position = -1;
 
@@ -988,7 +983,7 @@ namespace AudioVisualizer
 				);
 			
 			// Only push the result if reset is not pending
-			if (!_bResetAnalyzer && bStepSuccess)
+			if (!_bFlushPending && bStepSuccess)
 			{
 #ifdef _TRACE_LOCKS
 				AudioVisualizer::Diagnostics::Trace::Trace_Lock(&m_csOutputQueueAccess,L"OutputQueue",
@@ -1009,12 +1004,11 @@ namespace AudioVisualizer
 	HRESULT CAnalyzerEffect::Analyzer_Flush()
 	{
 		// Dissallow processing and discard any output until new samples 
-		_bResetAnalyzer = true;
+		_bFlushPending = true;
 		// Release input sample and reset the analyzer and queues
 		// Clean up any state from buffer copying
 		auto analyzerLock = m_csAnalyzerAccess.Lock();
 		_analyzer->Flush();
-		Analyzer_ClearOutputQueue();	// This call locks the output queue
 		m_spSample.Reset();
 		return S_OK;
 	}

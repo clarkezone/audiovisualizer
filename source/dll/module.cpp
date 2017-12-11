@@ -2,6 +2,7 @@
 #include <wrl/module.h>
 
 using namespace Microsoft::WRL;
+extern void InitializeTrace();
 
 BOOL APIENTRY DllMain(HMODULE /* hModule */, DWORD ul_reason_for_call, LPVOID /* lpReserved */)
 {
@@ -9,6 +10,7 @@ BOOL APIENTRY DllMain(HMODULE /* hModule */, DWORD ul_reason_for_call, LPVOID /*
 	{
 	case DLL_PROCESS_ATTACH:
 		// TODO: Initialize trace
+		InitializeTrace();
 		break;
 	case DLL_THREAD_ATTACH:
 		break;

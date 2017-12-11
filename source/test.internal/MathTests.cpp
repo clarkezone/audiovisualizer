@@ -38,7 +38,7 @@ namespace AnalyzerTest
 			Assert::AreEqual(0.663591921f, XMVectorGetByIndex(vResult2, 2), 0.001f);
 			Assert::AreEqual(4.62788391f, XMVectorGetByIndex(vResult2, 3), 0.001f);
 		}
-		TEST_METHOD(Math_ConvertToLog)
+		TEST_METHOD(Math_ConvertToLogAmp)
 		{
 			using namespace DirectX;
 			XMVECTOR vInput[2] = { XMVectorSet(-1.0f,0.0f,1e-6f,0.1f),XMVectorSet(1.0f,10.0f,std::numeric_limits<float>::max(),INFINITY) };
@@ -86,6 +86,39 @@ namespace AnalyzerTest
 				vector<float>() = { 4.5f,4.5f,0.0f, 0.0f },
 				9.0f, 11.0f, true
 			);
+		}
+
+		TEST_METHOD(Math_CombineChannels)
+		{
+			using namespace DirectX;
+			XMVECTOR src[2] = { 
+				XMVectorSet(1,2,3,4),
+				XMVectorSet(5,6,7,8)
+			};
+			XMVECTOR *src_ptrs[2] = { src,src+1 };
+
+			XMVECTOR dst;
+			float map[2] = { 0.1f,0.2f };
+			AudioVisualizer::Math::CombineChannels(src_ptrs, 2, 1, map, &dst);
+
+			Assert::AreEqual(1.1f, XMVectorGetByIndex(dst, 0),1e-5f);
+			Assert::AreEqual(1.4f, XMVectorGetByIndex(dst, 1),1e-5f);
+			Assert::AreEqual(1.7f, XMVectorGetByIndex(dst, 2),1e-5f);
+			Assert::AreEqual(2.0f, XMVectorGetByIndex(dst, 3),1e-5f);
+		}
+
+		TEST_METHOD(Math_SeriesAreas)
+		{
+			using namespace AudioVisualizer::Math::Internal;
+			float testData[3] = { 1.0,2.0,3.0 };
+			Assert::AreEqual(0.0f,_AreaOfElementFromStart(testData, 3, 0, 0.0f));
+			Assert::AreEqual(0.625f,_AreaOfElementFromStart(testData, 3, 0, 0.5f));
+			Assert::AreEqual(1.5f,_AreaOfElementFromStart(testData, 3, 0, 1.0f));
+			Assert::AreEqual(0.0f, _AreaOfElementFromStart(testData, 3, 2, 0.0f));
+			Assert::AreEqual(1.125f, _AreaOfElementFromStart(testData, 3, 2, 0.5f));
+			Assert::AreEqual(1.5f, _AreaOfElementFromStart(testData, 3, 2, 1.0f));
+			Assert::AreEqual(0.0f, _AreaOfElementFromStart(testData, 3, 4, 0.1f));
+			Assert::AreEqual(0.0f, _AreaOfElementFromStart(testData, 3, -1, 0.1f));
 		}
 	};
 }

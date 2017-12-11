@@ -142,6 +142,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <PackageCertificateKeyFile>test.internal_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateThumbprint>1909783FA2F3BD1F7BB31115D65AF5CE3A6D05B8</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\lib</IncludePath>
@@ -228,7 +229,6 @@
     <ClInclude Include="FakeClock.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SignalGenerator.h" />
-
     <ClInclude Include="UnitTestApp.xaml.h">
       <DependentUpon>UnitTestApp.xaml</DependentUpon>
     </ClInclude>
@@ -256,7 +256,6 @@
   <ItemGroup>
     <ClCompile Include="AnalyzerMftTests.cpp" />
     <ClCompile Include="AudioAnalyzerTests.cpp" />
-
     <ClCompile Include="AudioBufferTests.cpp" />
     <ClCompile Include="UnitTestApp.xaml.cpp">
       <DependentUpon>UnitTestApp.xaml</DependentUpon>

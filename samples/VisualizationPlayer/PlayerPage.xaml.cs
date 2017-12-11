@@ -70,7 +70,7 @@ namespace VisualizationPlayer
         }
 
         const uint spectrumBarCount = 50;
-        SpectrumData _emptySpectrum = new SpectrumData(2, spectrumBarCount,20000);
+        SpectrumData _emptySpectrum = new SpectrumData(2, spectrumBarCount,ScaleType.Linear,ScaleType.Linear,0, 20000);
         SpectrumData _previousSpectrum;
         SpectrumData _previousPeakSpectrum;
 

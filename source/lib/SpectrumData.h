@@ -14,46 +14,9 @@ using namespace wrl_util;
 
 namespace AudioVisualizer
 {
-	class ArrayValueView : public RuntimeClass<IVectorView<float>,IIterable<float>>
-	{
-		InspectableClass(IVectorView<float>::z_get_rc_name_impl(),BaseTrust)
-		size_t _size;
-		float *_pData;
-	public:
-		ArrayValueView(DirectX::XMVECTOR *pBuffer, size_t cElements)
-		{
-			_pData = reinterpret_cast<float *>(pBuffer);
-			_size = cElements;
-		}
-		STDMETHODIMP GetAt(unsigned int index, float *pResult)
-		{
-			if (pResult == nullptr)
-				return E_INVALIDARG;
-			if (index >= _size)
-				return E_INVALIDARG;
-			*pResult = _pData[index];
-			return S_OK;
-		}
-		STDMETHODIMP get_Size(unsigned int *pSize)
-		{
-			if (pSize == nullptr)
-				return E_INVALIDARG;
-			*pSize = (unsigned int)_size;
-			return S_OK;
-		}
-		STDMETHODIMP IndexOf(float, unsigned int *, boolean *)
-		{
-			return E_NOTIMPL;
-		}
-		STDMETHODIMP First(IIterator<float> **ppIterator)
-		{
-			auto iterator = Make<IteratorImpl<float>>((float *)_pData, _size);
-			return iterator.CopyTo(ppIterator);
-		}
-	};
-
-	class SpectrumData : public RuntimeClass<ISpectrumData,IVectorView<IVectorView<float>*>>, 
-		public Implements<IVectorView<IVectorView<float>*>>
+	class SpectrumData : public RuntimeClass<ISpectrumData,
+		IVectorView<IVectorView<float>*>, 
+		IIterable<IVectorView<float> *>>, public LifespanTracker<SpectrumData>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_SpectrumData, BaseTrust);
 
@@ -68,10 +31,13 @@ namespace AudioVisualizer
 		float _maxFrequency;
 		float _frequencyStep;
 	public:
-		SpectrumData(size_t cChannels, size_t cElements, ScaleType ampScaleType,ScaleType fScaleType,float minFrequency,float maxFrequency,float fStep,bool bInit=false);
+		SpectrumData();
 		~SpectrumData();
+		HRESULT RuntimeClassInitialize(size_t cChannels, size_t cElements, ScaleType ampScaleType, ScaleType fScaleType, float minFrequency, float maxFrequency, bool bInit);
 
 		DirectX::XMVECTOR *GetBuffer() { return _pData; }
+
+		const std::vector<ComPtr<IVectorView<float>>> & GetValues() { return _values; }
 
 		STDMETHODIMP get_AmplitudeScale(ScaleType *pScale)
 		{
@@ -109,14 +75,42 @@ namespace AudioVisualizer
 			*pValue = _frequencyStep;
 			return S_OK;
 		}
-		STDMETHODIMP get_FrequencyCount(UINT32 *pCount)
+		STDMETHODIMP get_FrequencyCount(UINT32 *pValue)
 		{
-			if (pCount == nullptr)
+			if (pValue == nullptr)
 				return E_INVALIDARG;
-			*pCount = (UINT32) _size;
+			*pValue = _size;
+			return S_OK;
+		}
+		STDMETHODIMP TransformLinearFrequency(UINT32 cElements, ISpectrumData **ppResult);
+		STDMETHODIMP TransformLinearFrequencyWithRange(UINT32 cElements, float fromFrequency, float toFrequency, ISpectrumData **result);
+		STDMETHODIMP TransformLogFrequency(UINT32 cElements, float minFrequency, float maxFrequency, ISpectrumData **ppResult);
+		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, ISpectrumData **ppResult);
+		STDMETHODIMP ApplyRiseAndFall(ISpectrumData *pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, ISpectrumData **ppResult);
+		STDMETHODIMP CombineChannels(UINT32 elementCount, float *pMap, ISpectrumData **result);
+		STDMETHODIMP GetFrequency(UINT32 elementIndex, float *pValue)
+		{
+			if (pValue == nullptr)
+				return E_POINTER;
+			*pValue = _frequencyScale == ScaleType::Linear ?
+				_minFrequency + _frequencyStep * elementIndex :
+				_minFrequency * powf(_frequencyStep, (float)elementIndex);
+			return S_OK;
+		}
+		STDMETHODIMP GetCenterFrequency(UINT32 elementIndex, float *pValue)
+		{
+			if (pValue == nullptr)
+				return E_POINTER;
+			float baseFrequency = _frequencyScale == ScaleType::Linear ?
+				_minFrequency + _frequencyStep / 2 :
+				_minFrequency * sqrtf(_frequencyStep);
+			*pValue = _frequencyScale == ScaleType::Linear ?
+				baseFrequency + _frequencyStep * elementIndex :
+				baseFrequency * powf(_frequencyStep, (float)elementIndex);
 			return S_OK;
 		}
 
+		/* IVectorView interfaces */
 		STDMETHODIMP GetAt(unsigned int index, IVectorView<float> **ppValue)
 		{
 			if (ppValue == nullptr)
@@ -137,12 +131,8 @@ namespace AudioVisualizer
 		{
 			return E_NOTIMPL;
 		}
-		STDMETHODIMP TransformLinearFrequency(UINT32 cElements, ISpectrumData **ppResult);
-		STDMETHODIMP TransformLinearFrequencyWithRange(UINT32 cElements,float fromFrequency, float toFrequency, ISpectrumData **result);
-		STDMETHODIMP TransformLogFrequency(UINT32 cElements, float minFrequency, float maxFrequency, ISpectrumData **ppResult);
-		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, ISpectrumData **ppResult);
-		STDMETHODIMP ApplyRiseAndFall(ISpectrumData *pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, ISpectrumData **ppResult);
-
+		/* IIterable interfaces */
+		STDMETHODIMP First(IIterator<IVectorView<float>*> **ppIterator);
 	};
 }
 

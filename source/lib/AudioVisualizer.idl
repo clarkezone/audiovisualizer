@@ -182,10 +182,8 @@ namespace AudioVisualizer
 		[propput] HRESULT Levels([in] UINT32 elementCount, [in][size_is(elementCount)] MeterBarLevel* levels);
 		[propget] HRESULT Orientation([out, retval] Windows.UI.Xaml.Controls.Orientation *orientation);
 		[propput] HRESULT Orientation([in] Windows.UI.Xaml.Controls.Orientation orientation);
-		[propget] HRESULT ChannelCount([out, retval] UINT32* pChannels);
-		[propput] HRESULT ChannelCount([in] UINT32 channels);
-		[propget] HRESULT ChannelMapping([out] UINT32* elementCount, [out][retval][size_is(, *elementCount)] float **mapping);
-		[propput] HRESULT ChannelMapping([in] UINT32 elementCount, [in][size_is(elementCount)] float *mapping);
+		[propget] HRESULT ChannelIndex([out, retval] UINT32 *pIndex);
+		[propput] HRESULT ChannelIndex([in] UINT32 index);
 		[propget] HRESULT ElementSize([out, retval] Windows.Foundation.Size *pSize);
 		[propput] HRESULT ElementSize([in] Windows.Foundation.Size size);
 		[propget] HRESULT ElementMargin([out, retval] Windows.UI.Xaml.Thickness *pValue);
@@ -267,6 +265,9 @@ namespace AudioVisualizer
 		HRESULT TransformLogFrequency([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency,[out, retval] SpectrumData **result);
 		HRESULT ApplyRiseAndFall([in] SpectrumData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] SpectrumData **result);
 		HRESULT ConvertToLogAmplitude([in] float minValue,[in] float maxValue, [out, retval] SpectrumData **result );
+		HRESULT CombineChannels([in] UINT32 elementCount, [in, size_is(elementCount)] float *pMap, [out, retval] SpectrumData **result);
+		HRESULT GetFrequency([in] UINT32 elementIndex, [out, retval] float *pFrequency);
+		HRESULT GetCenterFrequency([in] UINT32 elementIndex, [out, retval] float *pFrequency);
 	};
 
 
@@ -299,12 +300,23 @@ namespace AudioVisualizer
 	[version(1.0), uuid(D2E78F9C-8EE6-441B-85A6-A87E6DCE2114), exclusiveto(SpectrumData)]
 	interface ISpectrumDataFactory : IInspectable
 	{
-		HRESULT CreateLinear(
-			[in] UINT32 channels,
+		HRESULT Create(
+			[in] UINT32 cChannels,
 			[in] UINT32 cElements,
-			[in] float upperFrequency,
-			[out, retval] SpectrumData** data
-		);
+			[in] ScaleType amplitudeScale,
+			[in] ScaleType frequencyScale,
+			[in] float minFrequency,
+			[in] float maxFrequency,
+			[out, retval] SpectrumData **ppResult);
+
+		HRESULT CreateWithValues(
+			[in] Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float> *> *pValues,
+			[in] ScaleType amplitudeScale,
+			[in] ScaleType frequencyScale,
+			[in] float minFrequency,
+			[in] float maxFrequency,
+			[out, retval] SpectrumData **ppResult);
+		
 	};
 	[version(1.0), marshaling_behavior(agile), threading(both)]
 	[activatable(ISpectrumDataFactory,1.0)]
