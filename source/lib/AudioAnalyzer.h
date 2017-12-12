@@ -36,6 +36,8 @@ namespace AudioVisualizer
 			CAudioAnalyzer(size_t inputBufferSize);
 			~CAudioAnalyzer();
 
+			UINT32 GetFftLength() const { return _fftLength; }
+
 			void ConfigureInput(UINT32 inputChannels)
 			{
 				_inputChannels = inputChannels;

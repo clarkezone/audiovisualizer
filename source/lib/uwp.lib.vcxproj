@@ -356,6 +356,7 @@
     <Exec Command="$(MdMergeExe) -v @(MetaDataDir -> '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(MergedWinmdDirectory)&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial" />
   </Target>
   <ItemGroup>
+    <ClInclude Include="SourceConverter.h" />
     <ClInclude Include="SpectrumData.h" />
     <ClInclude Include="AudioAnalyzer.h" />
     <ClInclude Include="AudioBuffer.h" />
@@ -381,11 +382,11 @@
     <ClInclude Include="XDSP.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="SourceConverter.cpp" />
     <ClCompile Include="SpectrumData.cpp" />
     <ClCompile Include="AudioAnalyzer.cpp" />
     <ClCompile Include="AudioBuffer.cpp" />
     <ClCompile Include="AudioMath.cpp" />
-    <ClCompile Include="CreateResourcesEventArgs.cpp" />
     <ClCompile Include="CustomVisualizer.cpp" />
     <ClCompile Include="DiscreteVUBar.cpp" />
     <ClCompile Include="LifespanTracker.cpp" />

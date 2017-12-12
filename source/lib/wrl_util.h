@@ -12,7 +12,7 @@ using namespace ABI::Windows::UI::Xaml;
 namespace wrl_util
 {
 	template<typename T>
-	class Nullable : public Microsoft::WRL::RuntimeClass<ABI::Windows::Foundation::IReference<T>>
+	class Nullable : public RuntimeClass<ABI::Windows::Foundation::IReference<T>>
 	{
 		InspectableClass(ABI::Windows::Foundation::IReference<T>::z_get_rc_name_impl(), BaseTrust);
 

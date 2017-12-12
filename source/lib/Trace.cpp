@@ -67,26 +67,11 @@ namespace AudioVisualizer
 			auto durationTitle = HStringReference(szDuration);
 			if (pFrame != nullptr)
 			{
-				ComPtr<IReference<TimeSpan>> time = 0;
+				TimeSpan time = { -1 };
 				pFrame->get_Time(&time);
-				if (time != nullptr)
-				{
-					TimeSpan value;
-					time->get_Value(&value);
-					pFields->AddTimeSpan(timeTitle.Get(), value);
-				}
-				else
-					pFields->AddEmpty(timeTitle.Get());
-
+				pFields->AddTimeSpan(timeTitle.Get(), time);
 				pFrame->get_Duration(&time);
-				if (time != nullptr)
-				{
-					TimeSpan value;
-					time->get_Value(&value);
-					pFields->AddTimeSpan(durationTitle.Get(), value);
-				}
-				else
-					pFields->AddEmpty(durationTitle.Get());
+				pFields->AddTimeSpan(durationTitle.Get(), time);
 			}
 			else
 			{
@@ -339,16 +324,9 @@ namespace AudioVisualizer
 				return hr;
 			if (pFrame != nullptr)
 			{
-				ComPtr<IReference<TimeSpan>> time = 0;
+				TimeSpan time = { 0 };
 				pFrame->get_Time(&time);
-				if (time != nullptr)
-				{
-					TimeSpan value;
-					time->get_Value(&value);
-					spFields->AddTimeSpan(HStringReference(L"Time").Get(), value);
-				}
-				else
-					spFields->AddEmpty(HStringReference(L"Time").Get());
+					spFields->AddTimeSpan(HStringReference(L"Time").Get(), time);
 			}
 			else
 				spFields->AddEmpty(HStringReference(L"Time").Get());

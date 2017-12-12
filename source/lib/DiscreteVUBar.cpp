@@ -76,8 +76,7 @@ namespace AudioVisualizer
 
 		if (pDataFrame != nullptr)
 		{
-			pDataFrame->get_Duration(&ref_duration);
-			ref_duration->get_Value(&duration);
+			pDataFrame->get_Duration(&duration);
 		}
 		ComPtr<IScalarData> prevValue;
 		rms->ApplyRiseAndFall(_previousValues.Get(), _riseTime, _fallTime, duration, &prevValue);
