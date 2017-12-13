@@ -4,6 +4,27 @@
 
 namespace AudioVisualizer
 {
+	class ScalarDataStatics : public AgileActivationFactory<IScalarDataStatics>
+	{
+		InspectableClassStatic(RuntimeClass_AudioVisualizer_ScalarData, BaseTrust);
+	public:
+		// IScalarDataStatics
+		IFACEMETHODIMP CreateEmpty(UINT32 channels, IScalarData **ppResult)
+		{
+			ComPtr<ScalarData> data = Make<ScalarData>(channels, ScaleType::Linear, true);
+			return data.CopyTo(ppResult);
+		}
+		STDMETHODIMP Create(UINT32 channels, float *pValues, IScalarData **ppResult)
+		{
+			ComPtr<ScalarData> data = Make<ScalarData>(channels, ScaleType::Linear, true);
+			memcpy(data->GetBuffer(), pValues, channels * sizeof(float));
+			return data.CopyTo(ppResult);
+		}
+	};
+
+	ActivatableStaticOnlyFactory(ScalarDataStatics);
+	
+
 	ScalarData::ScalarData(size_t cElements, ScaleType scaleType,bool bInit)
 	{
 		_amplitudeScale = scaleType;
@@ -22,6 +43,10 @@ namespace AudioVisualizer
 	}
 	STDMETHODIMP ScalarData::ConvertToLogAmplitude(float minValue, float maxValue, IScalarData **ppResult)
 	{
+		if (_amplitudeScale == ScaleType::Logarithmic)
+			return E_NOT_VALID_STATE;
+		if (maxValue <= minValue)
+			return E_INVALIDARG;
 		auto returnValue = Make<ScalarData>(_size, ScaleType::Logarithmic);
 		size_t vSize = (_size + 3) >> 2;
 		Math::ConvertToLogarithmic(_pData, returnValue->_pData, vSize, minValue, maxValue);
@@ -32,6 +57,15 @@ namespace AudioVisualizer
 	{
 		if (_amplitudeScale != ScaleType::Linear || timeDelta.Duration == 0)
 			return E_INVALIDARG;
+		if (pPrevious != nullptr)
+		{
+			ComPtr<IVectorView<float>> vector;
+			ComPtr<IScalarData>(pPrevious).As(&vector);
+			UINT32 size = 0;
+			vector->get_Size(&size);
+			if (size != _size)
+				return E_INVALIDARG;
+		}
 
 		ComPtr<ScalarData> result = Make<ScalarData>(_size, _amplitudeScale);
 
@@ -48,4 +82,5 @@ namespace AudioVisualizer
 		Math::ApplyRiseAndFall(pLastData, GetBuffer(), result->GetBuffer(), vSize, riseT, fallT);
 		return result.CopyTo(ppResult);
 	}
+
 }
