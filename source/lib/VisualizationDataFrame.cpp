@@ -3,6 +3,18 @@
 
 namespace AudioVisualizer
 {
+	class VisualizationDataFrameFactory : public AgileActivationFactory<IVisualizationDataFrameFactory>
+	{
+	public:
+		STDMETHODIMP Create(TimeSpan time, TimeSpan duration, IScalarData *pRms, IScalarData *pPeak, ISpectrumData *pSpectrum,IVisualizationDataFrame **ppResult)
+		{
+			if (ppResult == nullptr)
+				return E_POINTER;
+			ComPtr<VisualizationDataFrame> frame = Make<VisualizationDataFrame>(time.Duration, duration.Duration, pRms, pPeak, pSpectrum);
+			return frame.CopyTo(ppResult);
+		}
+	};
+
 	VisualizationDataFrame::VisualizationDataFrame(REFERENCE_TIME time, REFERENCE_TIME duration, IScalarData *pRms, IScalarData *pPeak, ISpectrumData *pSpectrum)
 	{
 		_time.Duration = time;
@@ -19,4 +31,5 @@ namespace AudioVisualizer
 		_spectrum = nullptr;
 	}
 
+	ActivatableClassWithFactory(VisualizationDataFrame, VisualizationDataFrameFactory);
 }

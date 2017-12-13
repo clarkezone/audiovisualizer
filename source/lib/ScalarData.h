@@ -16,7 +16,7 @@ using namespace wrl_util;
 
 namespace AudioVisualizer
 {
-	class ScalarData : public RuntimeClass<IVectorView<float>,IIterable<float>,IScalarData>
+	class ScalarData : public RuntimeClass<IVectorView<float>,IIterable<float>,IScalarData,IScalarDataStatics>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_ScalarData, BaseTrust);
 
@@ -66,5 +66,18 @@ namespace AudioVisualizer
 
 		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, IScalarData **ppResult);
 		STDMETHODIMP ApplyRiseAndFall(IScalarData *pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, IScalarData **ppResult);
+
+		// IScalarDataStatics
+		IFACEMETHODIMP CreateEmpty(UINT32 channels, IScalarData **ppResult)
+		{
+			ComPtr<ScalarData> data = Make<ScalarData>(channels, ScaleType::Linear, true);
+			return data.CopyTo(ppResult);
+		}
+		STDMETHODIMP Create(UINT32 channels, float *pValues, IScalarData **ppResult)
+		{
+			ComPtr<ScalarData> data = Make<ScalarData>(channels, ScaleType::Linear, true);
+			memcpy(data->GetBuffer(), pValues, channels * sizeof(float));
+			return data.CopyTo(ppResult);
+		}
 	};
 }

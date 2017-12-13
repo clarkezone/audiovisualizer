@@ -12,9 +12,9 @@ namespace test.managed
     public class DataClassTests
     {
         [TestMethod]
-        public void ScalarData()
+        public void ScalarData_CreateEmpty()
         {
-            var data = new ScalarData(2);
+            var data = ScalarData.CreateEmpty(2);
             Assert.AreEqual(2, data.Count());
             Assert.AreEqual(2, data.Count);
             Assert.AreEqual(ScaleType.Linear, data.AmplitudeScale);
@@ -33,7 +33,7 @@ namespace test.managed
 
         
         [TestMethod()]
-        public void SpectrumData_ctor_zero()
+        public void SpectrumData_CreateEmpty()
         { 
             var data = new SpectrumData(2, 10,ScaleType.Linear,ScaleType.Linear,0,20000);
             foreach (var channelData in data)

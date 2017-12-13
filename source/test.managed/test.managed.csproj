@@ -105,6 +105,7 @@
       <DependentUpon>UnitTestApp.xaml</DependentUpon>
     </Compile>
     <Compile Include="PlayerSourceTests.cs" />
+    <Compile Include="VisualizationDataFrameTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="UnitTestApp.xaml">

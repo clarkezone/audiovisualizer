@@ -271,14 +271,11 @@ namespace AudioVisualizer
 		HRESULT GetCenterFrequency([in] UINT32 elementIndex, [out, retval] float *pFrequency);
 	};
 
-
-	[version(1.0), uuid(EB2CBCA8-2345-4CEE-9CC7-688B66AE76D3), exclusiveto(ScalarData)]
-	interface IScalarDataFactory : IInspectable
+	[version(1.0), uuid(3CD2FCBD-B59B-4766-8077-BC5097C8AC7E), exclusiveto(ScalarData)]
+	interface IScalarDataStatics : IInspectable
 	{
-		HRESULT Create(
-			[in] UINT32 channels,
-			[out, retval] ScalarData** data
-		);
+		HRESULT CreateEmpty([in] UINT32 channels, [out, retval] ScalarData **ppResult);
+		HRESULT Create([in] UINT32 channels, [in, size_is(channels)] float *pValues, [out, retval] ScalarData **data);
 	};
 
 	[uuid(FA6EDA25-96DC-473E-AA4C-5F67C2307134),version(1.0)]
@@ -290,7 +287,7 @@ namespace AudioVisualizer
 	};
 
 	[version(1.0), marshaling_behavior(agile), threading(both)]
-	[activatable(IScalarDataFactory, 1.0)]
+	[static(IScalarDataStatics,1.0)]
 	runtimeclass ScalarData
 	{
 		[default] interface IScalarData;
@@ -327,6 +324,20 @@ namespace AudioVisualizer
 		interface Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float>*>;
 	}
 
+	[uuid(79A21169-19CE-4E2A-B86E-0000D6A89663)]
+	[version(1.0)]
+	[exclusiveto(VisualizationDataFrame)]
+	interface IVisualizationDataFrameFactory : IInspectable
+	{
+		HRESULT Create(
+			[in] Windows.Foundation.TimeSpan time,
+			[in] Windows.Foundation.TimeSpan duration,
+			[in] ScalarData *pRMS,
+			[in] ScalarData *pPeak,
+			[in] SpectrumData *pSpectrum,
+			[out, retval] VisualizationDataFrame **ppResult);
+	};
+
 	[uuid(E4C11BE5-112E-49AD-A565-EE713089C447)]
 	[version(1.0)]
 	interface IVisualizationDataFrame : IInspectable {
@@ -339,6 +350,7 @@ namespace AudioVisualizer
 
 	 
 	[version(1.0), marshaling_behavior(agile), threading(both)]
+	[activatable(IVisualizationDataFrameFactory, 1.0)]
 	runtimeclass VisualizationDataFrame
 	{
 		[default] interface IVisualizationDataFrame; 

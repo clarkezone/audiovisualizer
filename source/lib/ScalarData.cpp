@@ -4,16 +4,6 @@
 
 namespace AudioVisualizer
 {
-	class ScalarDataFactory : public AgileActivationFactory<IScalarDataFactory>
-	{
-	public:
-		IFACEMETHODIMP Create(UINT32 channels,IScalarData **ppResult)
-		{
-			ComPtr<ScalarData> data = Make<ScalarData>(channels, ScaleType::Linear,true);
-			return data.CopyTo(ppResult);
-		}
-	};
-
 	ScalarData::ScalarData(size_t cElements, ScaleType scaleType,bool bInit)
 	{
 		_amplitudeScale = scaleType;
@@ -58,7 +48,4 @@ namespace AudioVisualizer
 		Math::ApplyRiseAndFall(pLastData, GetBuffer(), result->GetBuffer(), vSize, riseT, fallT);
 		return result.CopyTo(ppResult);
 	}
-
-	ActivatableClassWithFactory(ScalarData, ScalarDataFactory);
-
 }
