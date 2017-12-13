@@ -134,10 +134,11 @@ namespace AudioVisualizer
 		}
 	};
 
-	class SpectrumDataFactory : public AgileActivationFactory<ISpectrumDataFactory>
+	class SpectrumDataStatics : public AgileActivationFactory<ISpectrumDataStatics>
 	{
+		InspectableClassStatic(RuntimeClass_AudioVisualizer_SpectrumData,BaseTrust);
 	public:
-		STDMETHODIMP Create(	UINT32 channels,
+		STDMETHODIMP CreateEmpty(	UINT32 channels,
 								UINT32 cElements,
 								ScaleType amplitudeScaleType,
 								ScaleType frequencyScaleType,
@@ -171,7 +172,8 @@ namespace AudioVisualizer
 
 			return result.CopyTo(ppResult);
 		}
-		STDMETHODIMP CreateWithValues(
+
+		STDMETHODIMP Create(
 			IVectorView<IVectorView<float> *> *pData,
 			ScaleType amplitudeScaleType,
 			ScaleType frequencyScaleType,
@@ -250,6 +252,8 @@ namespace AudioVisualizer
 			return result.CopyTo(ppResult);
 		}
 	};
+
+	ActivatableStaticOnlyFactory(SpectrumDataStatics);
 
 	SpectrumData::SpectrumData() :
 		_pData(nullptr), 
@@ -501,8 +505,5 @@ namespace AudioVisualizer
 
 		return result.CopyTo(ppResult);
 	}
-
-	ActivatableClassWithFactory(SpectrumData, SpectrumDataFactory);
-
 }
 

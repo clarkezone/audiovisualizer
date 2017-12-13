@@ -20,12 +20,41 @@ namespace AudioVisualizer
 			memcpy(data->GetBuffer(), pValues, channels * sizeof(float));
 			return data.CopyTo(ppResult);
 		}
+		STDMETHODIMP ApplyRiseAndFallToEmpty(IScalarData * pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, IScalarData ** ppResult)
+		{
+			if (timeDelta.Duration == 0 || pPrevious == nullptr)
+				return E_INVALIDARG;
+			ScaleType scale;
+			pPrevious->get_AmplitudeScale(&scale);
+			if (scale == ScaleType::Logarithmic)
+				return E_INVALIDARG;
+			ComPtr<IVectorView<float>> vector;
+			ComPtr<IScalarData>(pPrevious).As(&vector);
+			UINT32 size = 0;
+			vector->get_Size(&size);
+
+			ComPtr<ScalarData> result = Make<ScalarData>(size,ScaleType::Linear);
+
+			size_t vSize = (size + 3) >> 2;
+			DirectX::XMVECTOR *pLastData = nullptr;
+			if (pPrevious != nullptr)
+			{
+				ScalarData *pPreviousData = dynamic_cast<ScalarData *>(pPrevious);
+				pLastData = pPreviousData->GetBuffer();
+			}
+			float riseT = riseTime.Duration != 0 ? (float)timeDelta.Duration / riseTime.Duration : std::numeric_limits<float>::infinity();
+			float fallT = fallTime.Duration != 0 ? (float)timeDelta.Duration / fallTime.Duration : std::numeric_limits<float>::infinity();
+
+			Math::ApplyRiseAndFall(pLastData, nullptr, result->GetBuffer(), vSize, riseT, fallT);
+			return result.CopyTo(ppResult);
+		}
+
 	};
 
 	ActivatableStaticOnlyFactory(ScalarDataStatics);
-	
 
-	ScalarData::ScalarData(size_t cElements, ScaleType scaleType,bool bInit)
+
+	ScalarData::ScalarData(size_t cElements, ScaleType scaleType, bool bInit)
 	{
 		_amplitudeScale = scaleType;
 		size_t vLength = (cElements + 3) >> 2;	// Vector size of the allocated buffer
@@ -59,6 +88,11 @@ namespace AudioVisualizer
 			return E_INVALIDARG;
 		if (pPrevious != nullptr)
 		{
+			ScaleType scale;
+			pPrevious->get_AmplitudeScale(&scale);
+			if (scale == ScaleType::Logarithmic)
+				return E_INVALIDARG;
+
 			ComPtr<IVectorView<float>> vector;
 			ComPtr<IScalarData>(pPrevious).As(&vector);
 			UINT32 size = 0;

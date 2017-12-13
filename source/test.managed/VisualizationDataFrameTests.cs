@@ -16,7 +16,7 @@ namespace test.managed
         {
             var rms = ScalarData.CreateEmpty(2);
             var peak = ScalarData.CreateEmpty(2);
-            var spectrum = new SpectrumData(2, 100, ScaleType.Linear, ScaleType.Linear, 0, 20000.0f);
+            var spectrum = SpectrumData.CreateEmpty(2, 100, ScaleType.Linear, ScaleType.Linear, 0, 20000.0f);
             var frame = new VisualizationDataFrame(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1.0 / 60.0), rms, peak, spectrum);
 
             Assert.IsNotNull(frame);

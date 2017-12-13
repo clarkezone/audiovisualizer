@@ -96,7 +96,7 @@ namespace test.managed
         [TestMethod()]
         public void SpectrumData_CreateEmpty()
         { 
-            var data = new SpectrumData(2, 10,ScaleType.Linear,ScaleType.Linear,0,20000);
+            var data = SpectrumData.CreateEmpty(2, 10,ScaleType.Linear,ScaleType.Linear,0,20000);
             foreach (var channelData in data)
             {
                 foreach (var item in channelData)
@@ -108,7 +108,7 @@ namespace test.managed
         [TestMethod()]
         public void SpectrumData_ctor_properties()
         {
-            var data = new SpectrumData(2, 10, ScaleType.Linear, ScaleType.Linear, 0, 20000);
+            var data = SpectrumData.CreateEmpty(2, 10, ScaleType.Linear, ScaleType.Linear, 0, 20000);
             Assert.AreEqual(2, data.Count());
             Assert.AreEqual(2, data.Count, "Channel count property init");
             foreach (var item in data)
@@ -121,7 +121,7 @@ namespace test.managed
             Assert.AreEqual(2000.0f, data.FrequencyStep);
             Assert.AreEqual(ScaleType.Linear, data.AmplitudeScale);
 
-            data = new SpectrumData(2,10, ScaleType.Linear, ScaleType.Logarithmic, 20, 20000);
+            data = SpectrumData.CreateEmpty(2,10, ScaleType.Linear, ScaleType.Logarithmic, 20, 20000);
             Assert.AreEqual(20, data.MinFrequency);
             Assert.AreEqual(20000, data.MaxFrequency);
             Assert.AreEqual(ScaleType.Linear, data.AmplitudeScale);
@@ -135,32 +135,32 @@ namespace test.managed
             Assert.ThrowsException<ArgumentException>(
                 ()=> 
                 {
-                    var data = new SpectrumData(0, 10, ScaleType.Linear, ScaleType.Linear, 0.0f, 20000f);
+                    var data = SpectrumData.CreateEmpty(0, 10, ScaleType.Linear, ScaleType.Linear, 0.0f, 20000f);
                 },"Zero channels value");
             Assert.ThrowsException<ArgumentException>(
                 () =>
                 {
-                    var data = new SpectrumData(2, 0, ScaleType.Linear, ScaleType.Linear, 0.0f, 20000f);
+                    var data = SpectrumData.CreateEmpty(2, 0, ScaleType.Linear, ScaleType.Linear, 0.0f, 20000f);
                 },"Zero elements value");
             Assert.ThrowsException<ArgumentException>(
                 () =>
                 {
-                    var data = new SpectrumData(0, 10, ScaleType.Linear, ScaleType.Linear, 30000.0f, 20000f);
+                    var data = SpectrumData.CreateEmpty(0, 10, ScaleType.Linear, ScaleType.Linear, 30000.0f, 20000f);
                 },"MinFrequency > MaxFrequency");
             Assert.ThrowsException<ArgumentException>(
                 () =>
                 {
-                    var data = new SpectrumData(0, 10, ScaleType.Linear, ScaleType.Linear, 20000f, 20000f);
+                    var data = SpectrumData.CreateEmpty(0, 10, ScaleType.Linear, ScaleType.Linear, 20000f, 20000f);
                 }, "MinFrequency == MaxFrequency");
             Assert.ThrowsException<ArgumentException>(
                 () =>
                 {
-                    var data = new SpectrumData(0, 10, ScaleType.Linear, ScaleType.Linear, -1.0f, 20000f);
+                    var data = SpectrumData.CreateEmpty(0, 10, ScaleType.Linear, ScaleType.Linear, -1.0f, 20000f);
                 }, "MinFrequency < 0");
             Assert.ThrowsException<ArgumentException>(
                 () =>
                 {
-                    var data = new SpectrumData(0, 10, ScaleType.Linear, ScaleType.Logarithmic, 0.0f, 20000f);
+                    var data = SpectrumData.CreateEmpty(0, 10, ScaleType.Linear, ScaleType.Logarithmic, 0.0f, 20000f);
                 }, "MinFrequency == 0 while FrequencyScale == Logarithmic");
         }
 
@@ -171,7 +171,7 @@ namespace test.managed
                 new float[] { 0.0f, 0.1f, 0.2f, 0.3f, 0.4f },
                 new float[] { 0.5f, 0.6f, 0.7f, 0.8f, 0.9f }
                 };
-            var data = new SpectrumData(initialValues, ScaleType.Linear, ScaleType.Logarithmic, 20, 20000);
+            var data = SpectrumData.Create(initialValues, ScaleType.Linear, ScaleType.Logarithmic, 20, 20000);
             CollectionAssert.AreEqual(initialValues[0], data[0].ToArray());
             CollectionAssert.AreEqual(initialValues[1], data[1].ToArray());
         }
@@ -179,7 +179,7 @@ namespace test.managed
         [TestMethod()]
         public void SpectrumData_TranformToLogFrequency()
         {
-            SpectrumData data = new SpectrumData(
+            SpectrumData data = SpectrumData.Create(
                 new float[][]
                 {
                     new float[] { 0.1f,0.2f,0.3f,0.4f,0.5f,0.6f,0.7f,0.8f,0.9f,1.0f }
@@ -200,7 +200,7 @@ namespace test.managed
         [TestMethod()]
         public void SpectrumData_CombineChannels()
         {
-            SpectrumData data = new SpectrumData(
+            SpectrumData data = SpectrumData.Create(
                     new float[][] 
                     {
                         new float[] { 1,0,0,0,0 },
@@ -220,7 +220,7 @@ namespace test.managed
             Assert.ThrowsException<ArgumentException>(() => { data.CombineChannels(new float[] { 0,0,0,0 }); }, "Too few elements");
             Assert.ThrowsException<ArgumentException>(() => 
             {
-                var logData = new SpectrumData(2, 10, ScaleType.Logarithmic, ScaleType.Linear, 0, 20000);
+                var logData = SpectrumData.CreateEmpty(2, 10, ScaleType.Logarithmic, ScaleType.Linear, 0, 20000);
                 data.CombineChannels(new float[] { 0.5f, 0.5f });
             },"Combine log amp data");
 

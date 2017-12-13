@@ -248,6 +248,27 @@ namespace AudioVisualizer
 		interface ISpectrumVisualizer;
 	}
 	
+	[uuid(6407028A-43B7-4DB5-A4BE-108DC810904D),version(1.0)]
+	[exclusiveto(SpectrumData)]
+	interface ISpectrumDataStatics : IInspectable
+	{
+		HRESULT CreateEmpty(
+			[in] UINT32 cChannels,
+			[in] UINT32 cElements,
+			[in] ScaleType amplitudeScale,
+			[in] ScaleType frequencyScale,
+			[in] float minFrequency,
+			[in] float maxFrequency,
+			[out, retval] SpectrumData **ppResult);
+
+		HRESULT Create(
+			[in] Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float> *> *pValues,
+			[in] ScaleType amplitudeScale,
+			[in] ScaleType frequencyScale,
+			[in] float minFrequency,
+			[in] float maxFrequency,
+			[out, retval] SpectrumData **ppResult);
+	};
 
 	[uuid(199F41A4-8EF0-4E0B-AAD3-9E0666511F6A),version(1.0)]
 	interface ISpectrumData : IInspectable
@@ -271,11 +292,20 @@ namespace AudioVisualizer
 		HRESULT GetCenterFrequency([in] UINT32 elementIndex, [out, retval] float *pFrequency);
 	};
 
+	[version(1.0), marshaling_behavior(agile), threading(both)]
+	[static(ISpectrumDataStatics, 1.0)]
+	runtimeclass SpectrumData
+	{
+		[default]interface ISpectrumData;
+		interface Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float>*>;
+	}
+
 	[version(1.0), uuid(3CD2FCBD-B59B-4766-8077-BC5097C8AC7E), exclusiveto(ScalarData)]
 	interface IScalarDataStatics : IInspectable
 	{
 		HRESULT CreateEmpty([in] UINT32 channels, [out, retval] ScalarData **ppResult);
 		HRESULT Create([in] UINT32 channels, [in, size_is(channels)] float *pValues, [out, retval] ScalarData **data);
+		HRESULT ApplyRiseAndFallToEmpty([in] ScalarData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] ScalarData **result);
 	};
 
 	[uuid(FA6EDA25-96DC-473E-AA4C-5F67C2307134),version(1.0)]
@@ -293,35 +323,6 @@ namespace AudioVisualizer
 		[default] interface IScalarData;
 		interface Windows.Foundation.Collections.IVectorView<float>;
 		interface Windows.Foundation.Collections.IIterable<float>;
-	}
-
-	[version(1.0), uuid(D2E78F9C-8EE6-441B-85A6-A87E6DCE2114), exclusiveto(SpectrumData)]
-	interface ISpectrumDataFactory : IInspectable
-	{
-		HRESULT Create(
-			[in] UINT32 cChannels,
-			[in] UINT32 cElements,
-			[in] ScaleType amplitudeScale,
-			[in] ScaleType frequencyScale,
-			[in] float minFrequency,
-			[in] float maxFrequency,
-			[out, retval] SpectrumData **ppResult);
-
-		HRESULT CreateWithValues(
-			[in] Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float> *> *pValues,
-			[in] ScaleType amplitudeScale,
-			[in] ScaleType frequencyScale,
-			[in] float minFrequency,
-			[in] float maxFrequency,
-			[out, retval] SpectrumData **ppResult);
-		
-	};
-	[version(1.0), marshaling_behavior(agile), threading(both)]
-	[activatable(ISpectrumDataFactory,1.0)]
-	runtimeclass SpectrumData 
-	{
-		[default]interface ISpectrumData;
-		interface Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<float>*>;
 	}
 
 	[uuid(79A21169-19CE-4E2A-B86E-0000D6A89663)]
