@@ -101,9 +101,9 @@ namespace AudioVisualizer
 
 		ComPtr<ISpectrumData> convertedData;
 		if (fScale == ScaleType::Linear)
-			data->TransformLinearFrequencyWithRange(elementCount, minFrequency, maxFrequency, &convertedData);
+			data->LinearTransform(elementCount, minFrequency, maxFrequency, &convertedData);
 		else
-			data->TransformLogFrequency(elementCount, minFrequency, maxFrequency, &convertedData);
+			data->LogarithmicTransform(elementCount, minFrequency, maxFrequency, &convertedData);
 
 		data = convertedData;
 

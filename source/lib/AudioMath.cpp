@@ -79,7 +79,7 @@ namespace AudioVisualizer
 
 		void SpectrumTransform(const float *pInput, size_t inputSize, float fromIndex, float toIndex, float *pOutput, size_t outputSize,bool bLinear)
 		{
-			float inStep = bLinear == true ? (toIndex - fromIndex) / (float)outputSize : powf(toIndex/fromIndex,1/(float)(outputSize -1));
+			float inStep = bLinear == true ? (toIndex - fromIndex) / (float)outputSize : powf(toIndex/fromIndex,1.0f/(float)(outputSize));
 			float inIndex = fromIndex;
 			float nextInIndex = bLinear == true ? inIndex + inStep : inIndex * inStep;
 
@@ -87,27 +87,36 @@ namespace AudioVisualizer
 			{
 				int inValueIntIndex = (int)floor(inIndex);
 				int inValueIntNextIndex = (int)floor(nextInIndex);
-
+				float fraction = inIndex - inValueIntIndex;
 				float outValue = 0;
 
-				if (inValueIntNextIndex > inValueIntIndex)
+				for (int inputIndex = inValueIntIndex; inputIndex <= inValueIntNextIndex && inputIndex < (int)inputSize; inputIndex++)
 				{
-					// Add up the full elements
-					for (int index = inValueIntIndex + 1; index < inValueIntNextIndex && index < (int)inputSize; index++)
+					if (inputIndex == inValueIntIndex)
 					{
-						outValue += index < (int)inputSize && index >= 0 ? pInput[index] : 0;
+						// First element
+						// If step covers just one element
+						if (inValueIntIndex == inValueIntNextIndex)
+						{
+							outValue = Internal::_AreaOfElement(pInput, inputSize, inputIndex, fraction, nextInIndex - inValueIntIndex);
+						}
+						else
+						{
+							outValue += Internal::_AreaOfElementToEnd(pInput, inputSize, inputIndex, fraction);
+						}
 					}
-					// Add fractional parts
-					outValue += Internal::_AreaOfElementToEnd(pInput, inputSize, inValueIntIndex, inIndex - inValueIntIndex);
-					outValue += Internal::_AreaOfElementFromStart(pInput, inputSize, inValueIntNextIndex, nextInIndex - inValueIntNextIndex);
-				}
-				else
-				{
-					// Result contains only fractional parts
-					outValue = Internal::_AreaOfElement(pInput, inputSize, inValueIntIndex, inIndex, nextInIndex);
+					else if (inputIndex == inValueIntNextIndex)
+					{
+						// Last element
+						outValue += Internal::_AreaOfElementFromStart(pInput, inputSize, inValueIntNextIndex, nextInIndex - inValueIntNextIndex);
+					}
+					else
+					{
+						// Full element
+						outValue += Internal::_AreaOfElementFromStart(pInput, inputSize, inputIndex, 1.0f);
+					}
 				}
 				pOutput[outIndex] = outValue;
-
 				inIndex = nextInIndex;
 				nextInIndex = bLinear == true ? inIndex + inStep : inIndex * inStep;
 			}

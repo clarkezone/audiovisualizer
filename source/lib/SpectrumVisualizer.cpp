@@ -82,9 +82,9 @@ namespace AudioVisualizer
 			{
 				ComPtr<ISpectrumData> spectrumData;	// This is a spectrum the right spectrum count and scale
 				if (_frequencyScale == ScaleType::Linear)
-					hr = frameData->TransformLinearFrequencyWithRange(_barCount, _minFrequency, _maxFrequency, &spectrumData);
+					hr = frameData->LinearTransform(_barCount, _minFrequency, _maxFrequency, &spectrumData);
 				else
-					hr = frameData->TransformLogFrequency(_barCount, _minFrequency, _maxFrequency, &spectrumData);
+					hr = frameData->LogarithmicTransform(_barCount, _minFrequency, _maxFrequency, &spectrumData);
 				if (FAILED(hr))
 					return hr;
 
@@ -110,7 +110,7 @@ namespace AudioVisualizer
 		_previousSpectrum = data;
 
 		ComPtr<ISpectrumData> logData;
-		data->ConvertToLogAmplitude(-100, 0, &logData);
+		data->ConvertToDecibels(-100, 0, &logData);
 
 		ComPtr<IVectorView<IVectorView<float>*>> channels;
 		logData.As(&channels);

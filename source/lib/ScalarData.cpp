@@ -70,7 +70,7 @@ namespace AudioVisualizer
 		if (_pData != nullptr)
 			_aligned_free(_pData);
 	}
-	STDMETHODIMP ScalarData::ConvertToLogAmplitude(float minValue, float maxValue, IScalarData **ppResult)
+	STDMETHODIMP ScalarData::ConvertToDecibels(float minValue, float maxValue, IScalarData **ppResult)
 	{
 		if (_amplitudeScale == ScaleType::Logarithmic)
 			return E_NOT_VALID_STATE;

@@ -268,6 +268,7 @@ namespace AudioVisualizer
 			[in] float minFrequency,
 			[in] float maxFrequency,
 			[out, retval] SpectrumData **ppResult);
+		HRESULT ApplyRiseAndFallToEmpty([in] SpectrumData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] SpectrumData **result);
 	};
 
 	[uuid(199F41A4-8EF0-4E0B-AAD3-9E0666511F6A),version(1.0)]
@@ -280,13 +281,10 @@ namespace AudioVisualizer
 		[propget] HRESULT FrequencyStep([out, retval] float *value);
 		[propget] HRESULT FrequencyCount([out, retval] UINT32 *value);
 
-		[overload("TransformLinearFrequency")]
-		HRESULT TransformLinearFrequency([in] UINT32 elementCount, [out, retval] SpectrumData **result);
-		[overload("TransformLinearFrequency")]
-		HRESULT TransformLinearFrequencyWithRange([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [out, retval] SpectrumData **result);
-		HRESULT TransformLogFrequency([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency,[out, retval] SpectrumData **result);
+		HRESULT LinearTransform([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency, [out, retval] SpectrumData **result);
+		HRESULT LogarithmicTransform([in] UINT32 elementCount, [in] float fromFrequency, [in] float toFrequency,[out, retval] SpectrumData **result);
 		HRESULT ApplyRiseAndFall([in] SpectrumData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] SpectrumData **result);
-		HRESULT ConvertToLogAmplitude([in] float minValue,[in] float maxValue, [out, retval] SpectrumData **result );
+		HRESULT ConvertToDecibels([in] float minValue,[in] float maxValue, [out, retval] SpectrumData **result );
 		HRESULT CombineChannels([in] UINT32 elementCount, [in, size_is(elementCount)] float *pMap, [out, retval] SpectrumData **result);
 		HRESULT GetFrequency([in] UINT32 elementIndex, [out, retval] float *pFrequency);
 		HRESULT GetCenterFrequency([in] UINT32 elementIndex, [out, retval] float *pFrequency);
@@ -311,7 +309,7 @@ namespace AudioVisualizer
 	[uuid(FA6EDA25-96DC-473E-AA4C-5F67C2307134),version(1.0)]
 	interface IScalarData : IInspectable
 	{
-		HRESULT ConvertToLogAmplitude([in] float minValue, [in] float maxValue, [out, retval] ScalarData **result);
+		HRESULT ConvertToDecibels([in] float minValue, [in] float maxValue, [out, retval] ScalarData **result);
 		HRESULT ApplyRiseAndFall([in] ScalarData *previous, [in] Windows.Foundation.TimeSpan riseTime, [in] Windows.Foundation.TimeSpan fallTime, [in] Windows.Foundation.TimeSpan timeFromPrevious, [out, retval] ScalarData **result);
 		[propget] HRESULT AmplitudeScale([out, retval] AudioVisualizer.ScaleType *scale);
 	};
