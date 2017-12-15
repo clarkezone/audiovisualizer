@@ -24,7 +24,11 @@ namespace AudioVisualizer
 		ComPtr<IReference<float>> _minFrequency;
 		ComPtr<IReference<float>> _maxFrequency;
 		ComPtr<IReference<ScaleType>> _frequencyScale;
-		ComPtr<IVisualizationDataFrame> _cachedFrame;
+		ComPtr<IVisualizationDataFrame> _cachedSourceFrame;
+		ComPtr<IVisualizationDataFrame> _cachedOutputFrame;
+		bool _bCacheData;
+
+		ComPtr<ISpectrumData> _previousSpectrum;
 
 		CriticalSection _csLock;
 
@@ -36,7 +40,13 @@ namespace AudioVisualizer
 
 		InspectableClass(RuntimeClass_AudioVisualizer_SourceConverter, BaseTrust);
 
+		HRESULT ProcessFrame(IVisualizationDataFrame *pSource, IVisualizationDataFrame **ppResult);
+		HRESULT TryConstructingSourceFrame(IVisualizationDataFrame **ppResult);
+		HRESULT CloneSpectrum(ISpectrumData *pSource, ISpectrumData **ppResult);
+		HRESULT CloneScalarData(IScalarData *pSource, IScalarData **ppResult);
+		HRESULT CloneFromFrame(IVisualizationDataFrame *pSource, IVisualizationDataFrame **ppTarget);
 		HRESULT ApplyFrequencyTransforms(ComPtr<ISpectrumData> &data);
+		HRESULT ApplyRiseAndFall(ComPtr<ISpectrumData> &data);
 
 	public:
 		SourceConverter();
@@ -117,6 +127,8 @@ namespace AudioVisualizer
 			if (pSource == nullptr)
 				return E_POINTER;
 			_source = pSource;
+			_cachedOutputFrame = nullptr;
+			_cachedOutputFrame = nullptr;
 			RaiseConfigurationChanged(L"Source");
 			return S_OK;
 		}

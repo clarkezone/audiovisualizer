@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "SourceConverter.h"
 #include "VisualizationDataFrame.h"
+#include "ScalarData.h"
+#include "SpectrumData.h"
+
 #include <vector>
 
 namespace AudioVisualizer
@@ -12,11 +15,25 @@ namespace AudioVisualizer
 	SourceConverter::SourceConverter()
 	{
 		_analyzerTypes = AnalyzerType::All;
+		_bCacheData = true;
 	}
 
 	SourceConverter::~SourceConverter()
 	{
 	}
+
+	/*
+		This method proxies a call to data source and the logic works as follows
+		1. If source is nullptr return nullptr
+		2. Obtain frame from source.
+		3.a If frame is not null
+			3.a.1 if the frame matches cached frame, caching is allowed then return cached output frame
+			3.a.2 Process the frame
+		3.b If frame is null
+			3.b.1 If previous frame exists then do processing as if input was empty
+			3.b.2 If previous frame exists try to construct empty frame and return it
+
+	*/
 	STDMETHODIMP SourceConverter::GetData(IVisualizationDataFrame **ppResult)
 	{
 		if (ppResult == nullptr)
@@ -34,12 +51,28 @@ namespace AudioVisualizer
 		HRESULT hr = _source->GetData(&sourceFrame);
 		if (FAILED(hr))
 			return hr;
-
-		if (sourceFrame == nullptr)
+		if (sourceFrame.Get() == _cachedSourceFrame.Get() && _bCacheData && _cachedOutputFrame != nullptr)
 		{
-			*ppResult = nullptr;
-			return S_OK;
+			// As it is the same input bypass calculations and return last calculated output frame
+			return _cachedOutputFrame.CopyTo(ppResult);
 		}
+
+		if (sourceFrame != nullptr)
+		{
+			hr = TryConstructingSourceFrame(&sourceFrame);
+			if (hr != S_OK)
+			{
+				*ppResult = nullptr;
+				return S_OK;
+			}
+		}
+
+		ComPtr<IVisualizationDataFrame> result;
+		hr = ProcessFrame(sourceFrame.Get(), &result);
+		if (FAILED(hr))
+			return hr;
+		_cachedOutputFrame = result;
+		return result.CopyTo(&ppResult);
 
 		TimeSpan frameTime;
 		sourceFrame->get_Time(&frameTime);
@@ -53,9 +86,12 @@ namespace AudioVisualizer
 		ComPtr<IScalarData> peak;
 		sourceFrame->get_Peak(&peak);
 
-		if ((_analyzerTypes & AnalyzerType::Spectrum) == AnalyzerType::Spectrum)
+		if ((_analyzerTypes & AnalyzerType::Spectrum) == AnalyzerType::Spectrum && spectrum != nullptr)
 		{
 			hr = ApplyFrequencyTransforms(spectrum);
+			if (FAILED(hr))
+				return hr;
+			hr = ApplyRiseAndFall(spectrum);
 		}
 
 		ComPtr<VisualizationDataFrame> resultFrame = Make<VisualizationDataFrame>(
@@ -67,6 +103,95 @@ namespace AudioVisualizer
 			);
 
 		return resultFrame.CopyTo(ppResult);
+	}
+
+	HRESULT SourceConverter::ProcessFrame(IVisualizationDataFrame * pSource, IVisualizationDataFrame ** ppResult)
+	{
+		return E_NOTIMPL;
+	}
+
+	// Creates an empty source frame based on input properties
+	HRESULT SourceConverter::TryConstructingSourceFrame(IVisualizationDataFrame ** ppResult)
+	{
+		
+		// Use cached output frame as template, otherwise look at source properties
+		if (_cachedOutputFrame != nullptr)
+		{
+			return CloneFromFrame(_cachedOutputFrame.Get(), ppResult);
+		}
+		else
+		{
+
+		}
+		return E_FAIL;
+	}
+
+	HRESULT SourceConverter::CloneSpectrum(ISpectrumData * pSource, ISpectrumData **ppResult)
+	{
+		if (pSource == nullptr)
+		{
+			*ppResult = nullptr;
+			return S_OK;
+		}
+		ComPtr<IVectorView<IVectorView<float>*>> vv;
+		HRESULT hr = pSource->QueryInterface<IVectorView<IVectorView<float>*>>(&vv);
+		if (FAILED(hr))
+			return hr;
+		UINT32 channels = 0;
+		vv->get_Size(&channels);
+		UINT32 elements = 0;
+		pSource->get_FrequencyCount(&elements);
+		ScaleType ampScale, fScale;
+		pSource->get_AmplitudeScale(&ampScale);
+		pSource->get_FrequencyScale(&fScale);
+		float minFreq = 0.0, maxFreq = 0.0;
+		pSource->get_MinFrequency(&minFreq);
+		pSource->get_MaxFrequency(&maxFreq);
+		ComPtr<SpectrumData> result;
+		hr = MakeAndInitialize<SpectrumData>(&result,channels, elements, ampScale, fScale, minFreq, maxFreq, true);
+		if (FAILED(hr))
+			return hr;
+		return result.CopyTo(ppResult);
+	}
+	HRESULT SourceConverter::CloneScalarData(IScalarData *pSource, IScalarData **ppResult)
+	{
+		if (pSource == nullptr)
+		{
+			*ppResult = nullptr;
+			return S_OK;
+		}
+		ComPtr<IVectorView<float>> vv;
+		HRESULT hr = pSource->QueryInterface<IVectorView<float>>(&vv);
+		if (FAILED(hr))
+			return hr;
+		UINT32 elements = 0;
+		vv->get_Size(&elements);
+		ComPtr<ScalarData> result = Make<ScalarData>(elements);
+		return result.CopyTo(ppResult);
+	}
+
+	HRESULT SourceConverter::CloneFromFrame(IVisualizationDataFrame * pSource, IVisualizationDataFrame ** ppResult)
+	{
+		ComPtr<IScalarData> rms;
+		ComPtr<IScalarData> peak;
+		ComPtr<ISpectrumData> spectrum;
+
+		TimeSpan time = { -1 }, duration = { 0 };
+		_cachedOutputFrame->get_Time(&time);
+		_cachedOutputFrame->get_Duration(&duration);
+
+		ComPtr<ISpectrumData> s;
+		_cachedOutputFrame->get_Spectrum(&s);
+		CloneSpectrum(s.Get(), &spectrum);
+		ComPtr<IScalarData> r;
+		_cachedOutputFrame->get_RMS(&r);
+		CloneScalarData(r.Get(), &rms);
+		ComPtr<IScalarData> p;
+		_cachedOutputFrame->get_Peak(&p);
+		CloneScalarData(p.Get(), &peak);		
+
+		ComPtr<IVisualizationDataFrame> frame = Make<VisualizationDataFrame>(time.Duration, duration.Duration, rms.Get(), peak.Get(), spectrum.Get());
+		return frame.CopyTo(ppResult);
 	}
 
 	HRESULT SourceConverter::ApplyFrequencyTransforms(ComPtr<ISpectrumData>& data)
@@ -107,6 +232,27 @@ namespace AudioVisualizer
 
 		data = convertedData;
 
+		return S_OK;
+	}
+
+	HRESULT SourceConverter::ApplyRiseAndFall(ComPtr<ISpectrumData> &data)
+	{
+		if (_riseTime == nullptr && _fallTime == nullptr)
+			return S_OK;
+
+		TimeSpan riseTime = { 1 };	// Init with very fast rise and fall times
+		if (_riseTime != nullptr)
+			_riseTime->get_Value(&riseTime);
+		TimeSpan fallTime = { 1 };
+		if (_fallTime != nullptr)
+			_fallTime->get_Value(&fallTime);
+		TimeSpan time = { 166667 };	// 60fps as default
+
+		ComPtr<ISpectrumData> filtered;
+		HRESULT hr = data->ApplyRiseAndFall(_previousSpectrum.Get(), riseTime, fallTime, time, &filtered);
+		if (FAILED(hr))
+			return hr;
+		data = filtered;
 		return S_OK;
 	}
 	ActivatableClass(SourceConverter);
