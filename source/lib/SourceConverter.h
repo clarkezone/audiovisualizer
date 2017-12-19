@@ -29,8 +29,11 @@ namespace AudioVisualizer
 		bool _bCacheData;
 
 		ComPtr<ISpectrumData> _previousSpectrum;
+		ComPtr<IScalarData> _previousRMS;
+		ComPtr<IScalarData> _previousPeak;
 
 		CriticalSection _csLock;
+		TimeSpan _timeFromPrevious;
 
 		EventSource<ITypedEventHandler<IVisualizationSource*, HSTRING>> _configurationChangedList;
 		HRESULT RaiseConfigurationChanged(wchar_t *wszPropertyName)
@@ -45,8 +48,9 @@ namespace AudioVisualizer
 		HRESULT CloneSpectrum(ISpectrumData *pSource, ISpectrumData **ppResult);
 		HRESULT CloneScalarData(IScalarData *pSource, IScalarData **ppResult);
 		HRESULT CloneFromFrame(IVisualizationDataFrame *pSource, IVisualizationDataFrame **ppTarget);
-		HRESULT ApplyFrequencyTransforms(ComPtr<ISpectrumData> &data);
-		HRESULT ApplyRiseAndFall(ComPtr<ISpectrumData> &data);
+		HRESULT ApplyFrequencyTransforms(ISpectrumData *pSource, ISpectrumData **ppResult);
+		HRESULT ApplyRiseAndFall(ISpectrumData *pSource,ISpectrumData **ppResult);
+		HRESULT ApplyRiseAndFall(IScalarData *pSource,IScalarData **ppPrevious);
 
 	public:
 		SourceConverter();
@@ -124,8 +128,7 @@ namespace AudioVisualizer
 		STDMETHODIMP put_Source(IVisualizationSource *pSource)
 		{
 			auto lock = _csLock.Lock();
-			if (pSource == nullptr)
-				return E_POINTER;
+			
 			_source = pSource;
 			_cachedOutputFrame = nullptr;
 			_cachedOutputFrame = nullptr;
@@ -151,6 +154,7 @@ namespace AudioVisualizer
 					return E_INVALIDARG;
 			}
 			_elementCount = pcElements;
+			_cachedOutputFrame = nullptr;
 			RaiseConfigurationChanged(L"FrequencyCount");
 			return S_OK;
 		}
@@ -173,6 +177,7 @@ namespace AudioVisualizer
 					return E_INVALIDARG;
 			}
 			_channelCount = pcElements;
+			_cachedOutputFrame = nullptr;
 			RaiseConfigurationChanged(L"ChannelCount");
 			return S_OK;
 		}
@@ -203,6 +208,7 @@ namespace AudioVisualizer
 					return E_INVALIDARG;
 			}
 			_minFrequency = pValue;
+			_cachedOutputFrame = nullptr;
 			RaiseConfigurationChanged(L"MinFrequency");
 			return S_OK;
 		}
@@ -232,6 +238,7 @@ namespace AudioVisualizer
 				}
 			}
 			_maxFrequency = pValue;
+			_cachedOutputFrame = nullptr;
 			RaiseConfigurationChanged(L"MaxFrequency");
 			return S_OK;
 		}
@@ -260,6 +267,7 @@ namespace AudioVisualizer
 				}
 			}
 			_frequencyScale = pValue;
+			_cachedOutputFrame = nullptr;
 			RaiseConfigurationChanged(L"FrequencyScale");
 			return S_OK;
 		}
@@ -283,6 +291,7 @@ namespace AudioVisualizer
 					return E_INVALIDARG;
 			}
 			_riseTime = pTime;
+			_cachedOutputFrame = nullptr;
 			RaiseConfigurationChanged(L"RiseTime");
 			return S_OK;
 		}
@@ -306,6 +315,7 @@ namespace AudioVisualizer
 					return E_INVALIDARG;
 			}
 			_fallTime = pTime;
+			_cachedOutputFrame = nullptr;
 			RaiseConfigurationChanged(L"FallTime");
 			return S_OK;
 		}

@@ -16,6 +16,7 @@ namespace AudioVisualizer
 	{
 		_analyzerTypes = AnalyzerType::All;
 		_bCacheData = true;
+		_timeFromPrevious.Duration = 166667;
 	}
 
 	SourceConverter::~SourceConverter()
@@ -57,7 +58,7 @@ namespace AudioVisualizer
 			return _cachedOutputFrame.CopyTo(ppResult);
 		}
 
-		if (sourceFrame != nullptr)
+		if (sourceFrame == nullptr)
 		{
 			hr = TryConstructingSourceFrame(&sourceFrame);
 			if (hr != S_OK)
@@ -72,26 +73,46 @@ namespace AudioVisualizer
 		if (FAILED(hr))
 			return hr;
 		_cachedOutputFrame = result;
-		return result.CopyTo(&ppResult);
+		return result.CopyTo(ppResult);
+	}
 
+	HRESULT SourceConverter::ProcessFrame(IVisualizationDataFrame * pSource, IVisualizationDataFrame ** ppResult)
+	{
+		HRESULT hr = S_OK;
 		TimeSpan frameTime;
-		sourceFrame->get_Time(&frameTime);
+		pSource->get_Time(&frameTime);
 		TimeSpan frameDuration;
-		sourceFrame->get_Duration(&frameDuration);
-		
+		pSource->get_Duration(&frameDuration);
+
 		ComPtr<ISpectrumData> spectrum;
-		sourceFrame->get_Spectrum(&spectrum);
+		pSource->get_Spectrum(&spectrum);
 		ComPtr<IScalarData> rms;
-		sourceFrame->get_RMS(&rms);
+		pSource->get_RMS(&rms);
 		ComPtr<IScalarData> peak;
-		sourceFrame->get_Peak(&peak);
+		pSource->get_Peak(&peak);
 
 		if ((_analyzerTypes & AnalyzerType::Spectrum) == AnalyzerType::Spectrum && spectrum != nullptr)
 		{
-			hr = ApplyFrequencyTransforms(spectrum);
+			ComPtr<ISpectrumData> fTransformed;
+			hr = ApplyFrequencyTransforms(spectrum.Get(),&fTransformed);
 			if (FAILED(hr))
 				return hr;
-			hr = ApplyRiseAndFall(spectrum);
+
+			hr = ApplyRiseAndFall(fTransformed.Get(),&spectrum);
+			if (FAILED(hr))
+				return hr;
+		}
+		if ((_analyzerTypes & AnalyzerType::RMS) == AnalyzerType::RMS && rms != nullptr)
+		{
+			hr = ApplyRiseAndFall(rms.Get(), &_previousRMS);
+			if (FAILED(hr))
+				return hr;
+		}
+		if ((_analyzerTypes & AnalyzerType::Peak) == AnalyzerType::Peak && peak != nullptr)
+		{
+			hr = ApplyRiseAndFall(peak.Get(), &_previousPeak);
+			if (FAILED(hr))
+				return hr;
 		}
 
 		ComPtr<VisualizationDataFrame> resultFrame = Make<VisualizationDataFrame>(
@@ -103,11 +124,6 @@ namespace AudioVisualizer
 			);
 
 		return resultFrame.CopyTo(ppResult);
-	}
-
-	HRESULT SourceConverter::ProcessFrame(IVisualizationDataFrame * pSource, IVisualizationDataFrame ** ppResult)
-	{
-		return E_NOTIMPL;
 	}
 
 	// Creates an empty source frame based on input properties
@@ -194,66 +210,90 @@ namespace AudioVisualizer
 		return frame.CopyTo(ppResult);
 	}
 
-	HRESULT SourceConverter::ApplyFrequencyTransforms(ComPtr<ISpectrumData>& data)
+	HRESULT SourceConverter::ApplyFrequencyTransforms(ISpectrumData *pSource,ISpectrumData **ppResult)
 	{
 		// No conversion
 		if (_frequencyScale == nullptr && _minFrequency == nullptr && _maxFrequency == nullptr && _elementCount == nullptr)
-			return S_OK;
+		{
+			return ComPtr<ISpectrumData>(pSource).CopyTo(ppResult);
+		}
+
 		UINT32 elementCount = 0;
 		if (_elementCount != nullptr)
 			_elementCount->get_Value(&elementCount);
 		else
 		{
-			data->get_FrequencyCount(&elementCount);	// No change
+			pSource->get_FrequencyCount(&elementCount);	// No change
 		}
 		float minFrequency = 0.0f;
 		if (_minFrequency != nullptr)
 			_minFrequency->get_Value(&minFrequency);
 		else
-			data->get_MinFrequency(&minFrequency);
+			pSource->get_MinFrequency(&minFrequency);
 
 		float maxFrequency = 0.0f;
 		if (_maxFrequency != nullptr)
 			_maxFrequency->get_Value(&maxFrequency);
 		else
-			data->get_MaxFrequency(&maxFrequency);
+			pSource->get_MaxFrequency(&maxFrequency);
 
 		ScaleType fScale = ScaleType::Linear;
 		if (_frequencyScale != nullptr)
 			_frequencyScale->get_Value(&fScale);
 		else
-			data->get_FrequencyScale(&fScale);
+			pSource->get_FrequencyScale(&fScale);
 
-		ComPtr<ISpectrumData> convertedData;
 		if (fScale == ScaleType::Linear)
-			data->LinearTransform(elementCount, minFrequency, maxFrequency, &convertedData);
+			return pSource->LinearTransform(elementCount, minFrequency, maxFrequency, ppResult);
 		else
-			data->LogarithmicTransform(elementCount, minFrequency, maxFrequency, &convertedData);
-
-		data = convertedData;
-
-		return S_OK;
+			return pSource->LogarithmicTransform(elementCount, minFrequency, maxFrequency, ppResult);
 	}
 
-	HRESULT SourceConverter::ApplyRiseAndFall(ComPtr<ISpectrumData> &data)
+	HRESULT SourceConverter::ApplyRiseAndFall(ISpectrumData *pSource, ISpectrumData **ppResult)
 	{
 		if (_riseTime == nullptr && _fallTime == nullptr)
-			return S_OK;
-
+		{
+			return ComPtr<ISpectrumData>(pSource).CopyTo(ppResult);
+		}
+			
 		TimeSpan riseTime = { 1 };	// Init with very fast rise and fall times
 		if (_riseTime != nullptr)
 			_riseTime->get_Value(&riseTime);
 		TimeSpan fallTime = { 1 };
 		if (_fallTime != nullptr)
 			_fallTime->get_Value(&fallTime);
-		TimeSpan time = { 166667 };	// 60fps as default
 
-		ComPtr<ISpectrumData> filtered;
-		HRESULT hr = data->ApplyRiseAndFall(_previousSpectrum.Get(), riseTime, fallTime, time, &filtered);
-		if (FAILED(hr))
-			return hr;
-		data = filtered;
+		return pSource->ApplyRiseAndFall(_previousSpectrum.Get(), riseTime, fallTime, _timeFromPrevious, ppResult);
+	}
+
+	HRESULT SourceConverter::ApplyRiseAndFall(IScalarData *pData, IScalarData **ppPrevious)
+	{
+		if (ppPrevious == nullptr)
+			return E_POINTER;
+
+		if (_riseTime != nullptr || _fallTime != nullptr)
+		{
+			TimeSpan riseTime = { 1 }, fallTime = { 1 };
+			_riseTime->get_Value(&riseTime);
+			_fallTime->get_Value(&fallTime);			
+			if (pData != nullptr)
+			{
+				pData->ApplyRiseAndFall(*ppPrevious, riseTime, fallTime, _timeFromPrevious, ppPrevious);
+			}
+			else if (*ppPrevious != nullptr)
+			{
+				ComPtr<IScalarDataStatics> scalar;
+				HRESULT hr = GetActivationFactory(HStringReference(RuntimeClass_AudioVisualizer_ScalarData).Get(), &scalar);
+				scalar->ApplyRiseAndFallToEmpty(*ppPrevious, riseTime, fallTime, _timeFromPrevious, ppPrevious);
+			}
+		}
+		else
+		{
+			// Just passthrough
+			ComPtr<IScalarData>(pData).CopyTo(ppPrevious);
+		}
 		return S_OK;
 	}
+
 	ActivatableClass(SourceConverter);
 }

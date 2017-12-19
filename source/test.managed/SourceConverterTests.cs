@@ -12,10 +12,10 @@ namespace test.managed
 {
     class FakeVisualizationSource : IVisualizationSource
     {
-        
+        public VisualizationDataFrame Frame;  
         public IVisualizationDataFrame GetData()
         {
-            throw new NotImplementedException();
+            return Frame;
         }
         AnalyzerType _types = AnalyzerType.All;
         float _fps = 60.0f;
@@ -44,6 +44,7 @@ namespace test.managed
     [TestClass()]
     public class SourceConverterTests
     {
+        [TestCategory("SourceConverter")]
         [TestMethod()]
         public void SourceConverter_props()
         {
@@ -138,6 +139,36 @@ namespace test.managed
                 );
             converter = null;
             GC.Collect();
+        }
+
+
+        [TestCategory("SourceConverter")]
+        [TestMethod()]
+        public void SourceConverter_GetData()
+        {
+            SourceConverter converter = new SourceConverter();
+            FakeVisualizationSource source = new FakeVisualizationSource();
+
+            converter.Source = source;
+
+            var frame = new VisualizationDataFrame(
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromTicks(166667),
+                ScalarData.CreateEmpty(2),
+                ScalarData.CreateEmpty(2),
+                SpectrumData.CreateEmpty(2,1024,ScaleType.Linear,ScaleType.Linear,0.0f,22100.0f)
+                );
+            source.Frame = frame;
+
+            // First step passthrough
+            var f = converter.GetData();
+            Assert.IsNotNull(f);
+            Assert.AreEqual(2, f.Spectrum.Count);
+            Assert.AreEqual(1024u, f.Spectrum.FrequencyCount);
+
+            source.Frame = null;
+            f = converter.GetData();
+            Assert.IsNotNull(f);
 
         }
     }
