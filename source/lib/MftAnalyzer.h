@@ -10,6 +10,7 @@
 #include <windows.system.threading.h>
 #include <AudioAnalyzer.h>
 #include "VisualizationDataFrame.h"
+#include "wrl_util.h"
 
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::System::Threading;
@@ -170,6 +171,11 @@ namespace AudioVisualizer
 		}
 #pragma endregion
 
+		EventSource<ITypedEventHandler<IVisualizationSource*, HSTRING>> _configurationChangedList;
+		HRESULT RaiseConfiguratonChanged(wchar_t *wszPropertyName)
+		{
+			return _configurationChangedList.InvokeAll(this, HStringReference(wszPropertyName).Get());
+		}
 	public:
 		CAnalyzerEffect();
 		~CAnalyzerEffect();
@@ -190,6 +196,96 @@ namespace AudioVisualizer
 			*pState = _playbackState;
 			return S_OK;
 		}
+		STDMETHODIMP get_FrequencyCount(IReference<UINT32> **ppcElements)
+		{
+			using namespace wrl_util;
+			if (ppcElements == nullptr)
+				return E_POINTER;
+			UINT32 frequencyCount = _analyzer->GetFftLength() / 2;
+			auto value = Make<Nullable<UINT32>>(frequencyCount);
+			return value.CopyTo(ppcElements);
+		}
+		STDMETHODIMP put_FrequencyCount(IReference<UINT32> *pcElements)
+		{
+			return E_NOTIMPL;
+		}
+		STDMETHODIMP get_ChannelCount(IReference<UINT32> **ppcElements)
+		{
+			if (ppcElements == nullptr)
+				return E_POINTER;
+			auto lock = m_csMft.Lock();
+			if (m_spOutputType != nullptr)
+			{
+				UINT32 channels;
+				m_spOutputType->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &channels);
+				auto value = Make<Nullable<UINT32>>(channels);
+				return value.CopyTo(ppcElements);
+			}
+			else
+				*ppcElements = nullptr;
+			return S_OK;
+		}
+		STDMETHODIMP put_ChannelCount(IReference<UINT32> *pcElements)
+		{
+			return E_NOTIMPL;
+		}
+
+		STDMETHODIMP get_MinFrequency(IReference<float> **ppValue)
+		{
+			if (ppValue == nullptr)
+				return E_POINTER;
+			auto minFreq = Make<Nullable<float>>(0.0f);
+			return minFreq.CopyTo(ppValue);
+		}
+		STDMETHODIMP put_MinFrequency(IReference<float> *pValue)
+		{
+			return E_NOTIMPL;
+		}
+		STDMETHODIMP get_MaxFrequency(IReference<float> **ppValue)
+		{
+			if (ppValue == nullptr)
+				return E_POINTER;
+			
+			auto lock = m_csMft.Lock();
+			if (m_spOutputType == nullptr)
+			{
+				*ppValue = nullptr;
+			}
+			UINT32 sampleRate = 0;
+			m_spOutputType->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND,&sampleRate);
+
+			auto maxFreq = Make<Nullable<float>>((float) sampleRate / (2.0f * (float)_analyzer->GetDownsampleRate() ) );
+			return maxFreq.CopyTo(ppValue);
+		}
+		STDMETHODIMP put_MaxFrequency(IReference<float> *pValue)
+		{
+			return E_NOTIMPL;
+		}
+
+		STDMETHODIMP get_FrequencyScale(IReference<ScaleType> **ppValue)
+		{
+			if (ppValue == nullptr)
+				return E_POINTER;
+			auto scale = Make<Nullable<ScaleType>>(ScaleType::Linear);
+			return scale.CopyTo(ppValue);
+		}
+		STDMETHODIMP put_FrequencyScale(IReference<ScaleType> *pValue)
+		{
+			return E_NOTIMPL;
+		}
+		
+		STDMETHODIMP add_ConfigurationChanged(
+			ITypedEventHandler<IVisualizationSource *, HSTRING> *value,
+			EventRegistrationToken *token)
+		{
+			return _configurationChangedList.Add(value, token);
+		}
+		STDMETHODIMP remove_ConfigurationChanged(
+			EventRegistrationToken token)
+		{
+			return _configurationChangedList.Remove(token);
+		}
+
 #pragma endregion
 		
 		STDMETHODIMP ConfigureSpectrum(UINT32 fftLength, float overlap);

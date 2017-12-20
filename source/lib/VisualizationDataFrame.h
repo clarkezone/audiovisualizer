@@ -24,27 +24,27 @@ namespace AudioVisualizer
 		InspectableClass(RuntimeClass_AudioVisualizer_VisualizationDataFrame, BaseTrust)
 		TimeSpan _time;
 		TimeSpan _duration;
-		ComPtr<ScalarData> _rms;
-		ComPtr<ScalarData> _peak;
-		ComPtr<SpectrumData> _spectrum;
+		ComPtr<IScalarData> _rms;
+		ComPtr<IScalarData> _peak;
+		ComPtr<ISpectrumData> _spectrum;
 
 	public:
-		VisualizationDataFrame(REFERENCE_TIME time,REFERENCE_TIME duration,ScalarData *pRms,ScalarData *pPeak,SpectrumData *pSpectrum);
+		VisualizationDataFrame(REFERENCE_TIME time,REFERENCE_TIME duration,IScalarData *pRms,IScalarData *pPeak,ISpectrumData *pSpectrum);
 		~VisualizationDataFrame();
 
-		STDMETHODIMP get_Time(IReference<TimeSpan> **ppTimeStamp)
+		STDMETHODIMP get_Time(TimeSpan *pTimeStamp)
 		{
-			if (ppTimeStamp == nullptr)
+			if (pTimeStamp == nullptr)
 				return E_INVALIDARG;
-			ComPtr<Nullable<TimeSpan>> spTime = Make<Nullable<TimeSpan>>(_time);		
-			return spTime.CopyTo(ppTimeStamp);
+			*pTimeStamp = _time;
+			return S_OK;
 		}
-		STDMETHODIMP get_Duration(IReference<TimeSpan> **ppTimeStamp)
+		STDMETHODIMP get_Duration(TimeSpan *pTimeStamp)
 		{
-			if (ppTimeStamp == nullptr)
+			if (pTimeStamp == nullptr)
 				return E_INVALIDARG;
-			ComPtr<Nullable<TimeSpan>> spTime = Make<Nullable<TimeSpan>>(_duration);
-			return spTime.CopyTo(ppTimeStamp);
+			*pTimeStamp = _duration;
+			return S_OK;
 		}
 		STDMETHODIMP get_RMS(IScalarData **ppData)
 		{
