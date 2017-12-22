@@ -49,6 +49,7 @@ namespace AudioVisualizer
 		}
 
 		ComPtr<IVisualizationDataFrame> sourceFrame;
+
 		HRESULT hr = _source->GetData(&sourceFrame);
 		if (FAILED(hr))
 			return hr;
@@ -73,7 +74,89 @@ namespace AudioVisualizer
 		if (FAILED(hr))
 			return hr;
 		_cachedOutputFrame = result;
+
 		return result.CopyTo(ppResult);
+	}
+
+	STDMETHODIMP SourceConverter::get_ActualFrequencyCount(IReference<UINT32>** ppcElements)
+	{
+		auto lock = _csLock.Lock();
+		ComPtr<IReference<UINT32>> result;
+		this->get_FrequencyCount(&result);
+
+		ComPtr<IVisualizationSource> source;
+		get_Source(&source);
+
+		while (source != nullptr && result == nullptr)
+		{
+			source->get_ActualFrequencyCount(&result);
+		}
+		return result.CopyTo(ppcElements);
+	}
+
+	STDMETHODIMP SourceConverter::get_ActualChannelCount(IReference<UINT32>** ppcElements)
+	{
+		auto lock = _csLock.Lock();
+		ComPtr<IReference<UINT32>> result;
+		this->get_ChannelCount(&result);
+
+		ComPtr<IVisualizationSource> source;
+		get_Source(&source);
+
+		while (source != nullptr && result == nullptr)
+		{
+			source->get_ActualChannelCount(&result);
+		}
+		return result.CopyTo(ppcElements);
+	}
+
+	STDMETHODIMP SourceConverter::get_ActualMinFrequency(IReference<float>** ppValue)
+	{
+		auto lock = _csLock.Lock();
+		ComPtr<IReference<float>> result;
+		this->get_MinFrequency(&result);
+
+		ComPtr<IVisualizationSource> source;
+		get_Source(&source);
+
+		while (source != nullptr && result == nullptr)
+		{
+			source->get_ActualMinFrequency(&result);
+		}
+		return result.CopyTo(ppValue);
+	}
+
+	STDMETHODIMP SourceConverter::get_ActualMaxFrequency(IReference<float>** ppValue)
+	{
+		auto lock = _csLock.Lock();
+		ComPtr<IReference<float>> result;
+		this->get_MaxFrequency(&result);
+
+		ComPtr<IVisualizationSource> source;
+		get_Source(&source);
+
+		while (source != nullptr && result == nullptr)
+		{
+			source->get_ActualMaxFrequency(&result);
+		}
+		return result.CopyTo(ppValue);
+	}
+
+	STDMETHODIMP SourceConverter::get_ActualFrequencyScale(IReference<ScaleType>** ppValue)
+	{
+		auto lock = _csLock.Lock();
+
+		ComPtr<IReference<ScaleType>> result;
+		this->get_FrequencyScale(&result);
+
+		ComPtr<IVisualizationSource> source;
+		get_Source(&source);
+
+		while (source != nullptr && result == nullptr)
+		{
+			source->get_ActualFrequencyScale(&result);
+		}
+		return result.CopyTo(ppValue);
 	}
 
 	HRESULT SourceConverter::ProcessFrame(IVisualizationDataFrame * pSource, IVisualizationDataFrame ** ppResult)
@@ -94,25 +177,28 @@ namespace AudioVisualizer
 		if ((_analyzerTypes & AnalyzerType::Spectrum) == AnalyzerType::Spectrum && spectrum != nullptr)
 		{
 			ComPtr<ISpectrumData> fTransformed;
-			hr = ApplyFrequencyTransforms(spectrum.Get(),&fTransformed);
+			hr = ApplyFrequencyTransforms(spectrum.Get(), &fTransformed);
 			if (FAILED(hr))
 				return hr;
 
-			hr = ApplyRiseAndFall(fTransformed.Get(),&spectrum);
+			hr = ApplyRiseAndFall(fTransformed.Get(), _previousSpectrum.Get(),_spectrumRiseTime.Get(),_spectrumFallTime.Get(), &spectrum);
 			if (FAILED(hr))
 				return hr;
+			spectrum.CopyTo(&_previousSpectrum);
 		}
 		if ((_analyzerTypes & AnalyzerType::RMS) == AnalyzerType::RMS && rms != nullptr)
 		{
-			hr = ApplyRiseAndFall(rms.Get(), &_previousRMS);
+			hr = ApplyRiseAndFall(rms.Get(), _previousRMS.Get(), _rmsRiseTime.Get(),_rmsFallTime.Get(), &rms);
 			if (FAILED(hr))
 				return hr;
+			rms.CopyTo(&_previousRMS);
 		}
 		if ((_analyzerTypes & AnalyzerType::Peak) == AnalyzerType::Peak && peak != nullptr)
 		{
-			hr = ApplyRiseAndFall(peak.Get(), &_previousPeak);
+			hr = ApplyRiseAndFall(peak.Get(), _previousPeak.Get(), _peakRiseTime.Get(),_peakFallTime.Get(), &peak);
 			if (FAILED(hr))
 				return hr;
+			peak.CopyTo(&_previousPeak);
 		}
 
 		ComPtr<VisualizationDataFrame> resultFrame = Make<VisualizationDataFrame>(
@@ -129,7 +215,7 @@ namespace AudioVisualizer
 	// Creates an empty source frame based on input properties
 	HRESULT SourceConverter::TryConstructingSourceFrame(IVisualizationDataFrame ** ppResult)
 	{
-		
+
 		// Use cached output frame as template, otherwise look at source properties
 		if (_cachedOutputFrame != nullptr)
 		{
@@ -164,7 +250,7 @@ namespace AudioVisualizer
 		pSource->get_MinFrequency(&minFreq);
 		pSource->get_MaxFrequency(&maxFreq);
 		ComPtr<SpectrumData> result;
-		hr = MakeAndInitialize<SpectrumData>(&result,channels, elements, ampScale, fScale, minFreq, maxFreq, true);
+		hr = MakeAndInitialize<SpectrumData>(&result, channels, elements, ampScale, fScale, minFreq, maxFreq, true);
 		if (FAILED(hr))
 			return hr;
 		return result.CopyTo(ppResult);
@@ -204,13 +290,13 @@ namespace AudioVisualizer
 		CloneScalarData(r.Get(), &rms);
 		ComPtr<IScalarData> p;
 		_cachedOutputFrame->get_Peak(&p);
-		CloneScalarData(p.Get(), &peak);		
+		CloneScalarData(p.Get(), &peak);
 
 		ComPtr<IVisualizationDataFrame> frame = Make<VisualizationDataFrame>(time.Duration, duration.Duration, rms.Get(), peak.Get(), spectrum.Get());
 		return frame.CopyTo(ppResult);
 	}
 
-	HRESULT SourceConverter::ApplyFrequencyTransforms(ISpectrumData *pSource,ISpectrumData **ppResult)
+	HRESULT SourceConverter::ApplyFrequencyTransforms(ISpectrumData *pSource, ISpectrumData **ppResult)
 	{
 		// No conversion
 		if (_frequencyScale == nullptr && _minFrequency == nullptr && _maxFrequency == nullptr && _elementCount == nullptr)
@@ -249,48 +335,57 @@ namespace AudioVisualizer
 			return pSource->LogarithmicTransform(elementCount, minFrequency, maxFrequency, ppResult);
 	}
 
-	HRESULT SourceConverter::ApplyRiseAndFall(ISpectrumData *pSource, ISpectrumData **ppResult)
+	HRESULT SourceConverter::ApplyRiseAndFall(ISpectrumData *pData, ISpectrumData *pPrevious, IReference<TimeSpan> *pRiseTime, IReference<TimeSpan> *pFallTime, ISpectrumData **ppResult)
 	{
-		if (_riseTime == nullptr && _fallTime == nullptr)
-		{
-			return ComPtr<ISpectrumData>(pSource).CopyTo(ppResult);
-		}
-			
-		TimeSpan riseTime = { 1 };	// Init with very fast rise and fall times
-		if (_riseTime != nullptr)
-			_riseTime->get_Value(&riseTime);
-		TimeSpan fallTime = { 1 };
-		if (_fallTime != nullptr)
-			_fallTime->get_Value(&fallTime);
-
-		return pSource->ApplyRiseAndFall(_previousSpectrum.Get(), riseTime, fallTime, _timeFromPrevious, ppResult);
-	}
-
-	HRESULT SourceConverter::ApplyRiseAndFall(IScalarData *pData, IScalarData **ppPrevious)
-	{
-		if (ppPrevious == nullptr)
+		if (ppResult == nullptr)
 			return E_POINTER;
 
-		if (_riseTime != nullptr || _fallTime != nullptr)
+		if (pRiseTime == nullptr && pFallTime == nullptr)
 		{
-			TimeSpan riseTime = { 1 }, fallTime = { 1 };
-			_riseTime->get_Value(&riseTime);
-			_fallTime->get_Value(&fallTime);			
-			if (pData != nullptr)
-			{
-				pData->ApplyRiseAndFall(*ppPrevious, riseTime, fallTime, _timeFromPrevious, ppPrevious);
-			}
-			else if (*ppPrevious != nullptr)
-			{
-				ComPtr<IScalarDataStatics> scalar;
-				HRESULT hr = GetActivationFactory(HStringReference(RuntimeClass_AudioVisualizer_ScalarData).Get(), &scalar);
-				scalar->ApplyRiseAndFallToEmpty(*ppPrevious, riseTime, fallTime, _timeFromPrevious, ppPrevious);
-			}
+			return ComPtr<ISpectrumData>(pData).CopyTo(ppResult);
 		}
-		else
+
+		TimeSpan riseTime = { 1 };	// Init with very fast rise and fall times
+		if (pRiseTime != nullptr)
+			pRiseTime->get_Value(&riseTime);
+		TimeSpan fallTime = { 1 };
+		if (pFallTime != nullptr)
+			pFallTime->get_Value(&fallTime);
+
+		if (pData != nullptr)
 		{
-			// Just passthrough
-			ComPtr<IScalarData>(pData).CopyTo(ppPrevious);
+			pData->ApplyRiseAndFall(pPrevious, riseTime, fallTime, _timeFromPrevious, ppResult);
+		}
+		else if (pPrevious != nullptr)
+		{
+			ComPtr<ISpectrumDataStatics> spectrumStatics;
+			HRESULT hr = GetActivationFactory(HStringReference(RuntimeClass_AudioVisualizer_SpectrumData).Get(), &spectrumStatics);
+			spectrumStatics->ApplyRiseAndFallToEmpty(pPrevious, riseTime, fallTime, _timeFromPrevious, ppResult);
+		}
+		return S_OK;
+	}
+
+	HRESULT SourceConverter::ApplyRiseAndFall(IScalarData *pData, IScalarData *pPrevious, IReference<TimeSpan> *pRiseTime, IReference<TimeSpan> *pFallTime, IScalarData **ppResult)
+	{
+		if (ppResult == nullptr)
+			return E_POINTER;
+
+		if (pRiseTime == nullptr && pFallTime == nullptr)
+		{
+			return ComPtr<IScalarData>(pData).CopyTo(ppResult);
+		}
+		TimeSpan riseTime = { 1 }, fallTime = { 1 };
+		pRiseTime->get_Value(&riseTime);
+		pFallTime->get_Value(&fallTime);
+		if (pData != nullptr)
+		{
+			pData->ApplyRiseAndFall(pPrevious, riseTime, fallTime, _timeFromPrevious, ppResult);
+		}
+		else if (pPrevious != nullptr)
+		{
+			ComPtr<IScalarDataStatics> scalar;
+			HRESULT hr = GetActivationFactory(HStringReference(RuntimeClass_AudioVisualizer_ScalarData).Get(), &scalar);
+			scalar->ApplyRiseAndFallToEmpty(pPrevious, riseTime, fallTime, _timeFromPrevious, ppResult);
 		}
 		return S_OK;
 	}

@@ -59,6 +59,7 @@ namespace VisualizationPlayer
             {
                 App.Player.VisualizationSource.IsSuspended = true;
             }
+            App.Player.VisualizationSourceChanged -= Player_VisualizationSourceChanged;
         }
 
         private void spectrum_CreateResources(object sender, AudioVisualizer.CreateResourcesEventArgs args)

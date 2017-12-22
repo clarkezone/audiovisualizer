@@ -14,12 +14,12 @@ using namespace ABI::Windows::UI::Xaml;
 using namespace ABI::Microsoft::Graphics::Canvas;
 using namespace ABI::Windows::Foundation;
 
+
 namespace AudioVisualizer
 {
 	class SpectrumVisualizer : public RuntimeClass<
 		IVisualizer,
 		IBarVisualizer,
-		ISpectrumVisualizer,
 		ComposableBase<>>,
 		BaseVisualizer<SpectrumVisualizer>
 	{
@@ -27,24 +27,24 @@ namespace AudioVisualizer
 
 		Orientation _orientation;
 		std::vector<MeterBarLevel> _levels;
-		Size _elementSize;
 		Thickness _elementMargin;
 		Color _unlitElement;
-		TimeSpan _riseTime;
-		TimeSpan _fallTime;
-		UINT32 _barCount;
+		UINT32 _expectedFrequencyCount;
 		UINT32 _channelIndex;
-		float _minFrequency;
-		float _maxFrequency;
-		ScaleType _frequencyScale;
+		float _minAmp;
+		float _maxAmp;
+		BarVisualizationStyle _style;
 		
-		Size _calculatedSize;
+		Size _controlSize;
 
 		SRWLock _lock;
 
-		ComPtr<ISpectrumData> _emptySpectrum;
-		ComPtr<ISpectrumData> _previousSpectrum;
+		EventRegistrationToken _sourceConfigurationChangedToken;
+		EventRegistrationToken _sizeChangedToken;
 
+		bool _bIsConfigurationValid;
+
+		void ReconfigureSpectrum(HSTRING propertyName);
 	public:
 		SpectrumVisualizer();
 		~SpectrumVisualizer();
@@ -57,11 +57,7 @@ namespace AudioVisualizer
 			return S_OK;
 		}
 
-		STDMETHODIMP put_Source(ABI::AudioVisualizer::IVisualizationSource *pSource)
-		{
-			_visualizationSource = pSource;
-			return S_OK;
-		}
+		STDMETHODIMP put_Source(ABI::AudioVisualizer::IVisualizationSource *pSource);
 
 		STDMETHODIMP get_BackgroundColor(Color *pColor)
 		{
@@ -85,9 +81,9 @@ namespace AudioVisualizer
 		}
 		STDMETHODIMP put_Orientation(Orientation value)
 		{
+			return E_NOTIMPL;	// TODO: Support other orientation
 			auto lock = _lock.LockExclusive();
 			_orientation = value;
-			ResizeControl();
 			return S_OK;
 		}
 
@@ -111,10 +107,12 @@ namespace AudioVisualizer
 			if (ppLevels == nullptr || pcElements == nullptr)
 				return E_POINTER;
 			auto lock = _lock.LockShared();
+			
 			*pcElements = _levels.size();
 			*ppLevels = (MeterBarLevel *)CoTaskMemAlloc(sizeof(MeterBarLevel) * _levels.size());
 			if (*ppLevels == nullptr)
 				return E_OUTOFMEMORY;
+
 			for (size_t i = 0; i < _levels.size(); i++)
 			{
 				*ppLevels[i] = _levels[i];
@@ -127,42 +125,38 @@ namespace AudioVisualizer
 			if (pLevels == nullptr)
 				return E_POINTER;
 			auto lock = _lock.LockExclusive();
+			
 			_levels.resize(cElements);
-			for (size_t i = 0; i < cElements; i++)
+			if (cElements != 0)
 			{
-				_levels[i] = pLevels[i];
+				_minAmp = std::numeric_limits<float>::max();
+				_maxAmp = std::numeric_limits<float>::min();
+				for (size_t i = 0; i < cElements; i++)
+				{
+					_levels[i] = pLevels[i];
+					_minAmp = std::min(_minAmp, _levels[i].Level);
+					_maxAmp = std::max(_maxAmp, _levels[i].Level);
+				}
 			}
-			ResizeControl();
+			else
+			{
+				_minAmp = -100.0f;
+				_maxAmp = 0.0f;
+			}			
 			return S_OK;
 		}
 
-		STDMETHODIMP get_ElementSize(Size *pElementSize)
-		{
-			if (pElementSize == nullptr)
-				return E_POINTER;
-			*pElementSize = _elementSize;
-			return S_OK;
-		}
-		STDMETHODIMP put_ElementSize(Size elementSize)
-		{
-			auto lock = _lock.LockExclusive();
-			_elementSize = elementSize;
-			ResizeControl();
-			return S_OK;
-		}
-
-		STDMETHODIMP get_ElementMargin(Thickness *pElementMargin)
+		STDMETHODIMP get_RelativeElementMargin(Thickness *pElementMargin)
 		{
 			if (pElementMargin == nullptr)
 				return E_POINTER;
 			*pElementMargin = _elementMargin;
 			return S_OK;
 		}
-		STDMETHODIMP put_ElementMargin(Thickness elementMargin)
+		STDMETHODIMP put_RelativeElementMargin(Thickness elementMargin)
 		{
 			auto lock = _lock.LockExclusive();
 			_elementMargin = elementMargin;
-			ResizeControl();
 			return S_OK;
 		}
 
@@ -180,93 +174,21 @@ namespace AudioVisualizer
 			return S_OK;
 		}
 
-		STDMETHODIMP get_RiseTime(TimeSpan *pTime)
+		STDMETHODIMP get_VisualizationStyle(BarVisualizationStyle *pStyle)
 		{
-			if (pTime == nullptr)
+			if (pStyle == nullptr)
 				return E_POINTER;
-			*pTime = _riseTime;
+			*pStyle = _style;
 			return S_OK;
 		}
-		STDMETHODIMP put_RiseTime(TimeSpan time)
-		{
-			_riseTime = time;
-			return S_OK;
-		}
-		STDMETHODIMP get_FallTime(TimeSpan *pTime)
-		{
-			if (pTime == nullptr)
-				return E_POINTER;
-			*pTime = _fallTime;
-			return S_OK;
-		}
-		STDMETHODIMP put_FallTime(TimeSpan time)
-		{
-			_riseTime = time;
-			return S_OK;
-		}
-
-		// ISpectrumVisualizer implementation
-		STDMETHODIMP get_BarCount(UINT32 *pBarCount)
-		{
-			if (pBarCount == nullptr)
-				return E_POINTER;
-			*pBarCount = _barCount;
-			return S_OK;
-		}
-		STDMETHODIMP put_BarCount(UINT32 barCount)
+		STDMETHODIMP put_VisualizationStyle(BarVisualizationStyle style)
 		{
 			auto lock = _lock.LockExclusive();
-			_barCount = barCount;
-			ResizeControl();
-			return S_OK;
-		}
-		STDMETHODIMP get_MinFrequency(float *pValue)
-		{
-			if (pValue == nullptr)
-				return E_POINTER;
-			*pValue = _minFrequency;
-			return S_OK;
-		}
-		STDMETHODIMP put_MinFrequency(float value)
-		{
-			auto lock = _lock.LockExclusive();
-			_minFrequency = value;
-			Rescale();
-			return S_OK;
-		}
-		STDMETHODIMP get_MaxFrequency(float *pValue)
-		{
-			if (pValue == nullptr)
-				return E_POINTER;
-			*pValue = _maxFrequency;
-			return S_OK;
-		}
-		STDMETHODIMP put_MaxFrequency(float value)
-		{
-			auto lock = _lock.LockExclusive();
-			_maxFrequency = value;
-			Rescale();
-			return S_OK;
-		}
-		STDMETHODIMP get_Scale(ScaleType *pValue)
-		{
-			if (pValue == nullptr)
-				return E_POINTER;
-			*pValue = _frequencyScale;
-			return S_OK;
-		}
-		STDMETHODIMP put_Scale(ScaleType value)
-		{
-			auto lock = _lock.LockExclusive();
-			_frequencyScale = value;
-			Rescale();
+			_style = style;
 			return S_OK;
 		}
 private:
-		void ResizeControl();
-		HRESULT Rescale();
 		virtual HRESULT OnDraw(ICanvasDrawingSession *pSession, IVisualizationDataFrame *pDataFrame, IReference<TimeSpan> *pPresentationTime);
-
 
 	};
 }

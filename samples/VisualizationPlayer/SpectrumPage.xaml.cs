@@ -24,19 +24,34 @@ namespace VisualizationPlayer
     {
         public PlayerService Player { get { return App.Player; } }
 
+        private AudioVisualizer.SourceConverter _converterSource;
+
         public SpectrumPage()
         {
             this.InitializeComponent();
-            spectrum.BarCount = 20;
+            _converterSource = new AudioVisualizer.SourceConverter();
+            _converterSource.FrequencyCount = 50;
+            _converterSource.FrequencyScale = AudioVisualizer.ScaleType.Logarithmic;
+            _converterSource.MinFrequency = 20.0f;
+            _converterSource.MaxFrequency = 20000.0f;
+            _converterSource.SpectrumRiseTime = TimeSpan.FromMilliseconds(50);
+            _converterSource.SpectrumFallTime = TimeSpan.FromMilliseconds(100);
+            _converterSource.RmsRiseTime = TimeSpan.FromMilliseconds(100);
+            _converterSource.RmsFallTime = TimeSpan.FromMilliseconds(100);
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+            spectrum.Source = _converterSource;
+            leftVU.Source = _converterSource;
+            rightVU.Source = _converterSource;
+            leftVU.ChannelIndex = 0;
+            rightVU.ChannelIndex = 1;
             if (App.Player.VisualizationSource != null)
             {
                 App.Player.VisualizationSource.IsSuspended = false;
-                spectrum.Source = App.Player.VisualizationSource;
+                _converterSource.Source = App.Player.VisualizationSource;
             }
             App.Player.VisualizationSourceChanged += Player_VisualizationSourceChanged;
 
@@ -44,7 +59,7 @@ namespace VisualizationPlayer
 
         private void Player_VisualizationSourceChanged(object sender, AudioVisualizer.IVisualizationSource source)
         {
-            spectrum.Source = source;
+            _converterSource.Source = source;
         }
 
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)

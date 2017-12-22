@@ -16,25 +16,22 @@ namespace AudioVisualizer
 	using namespace ABI::Windows::Foundation;
 
 	class DiscreteVUBar : public 
-		RuntimeClass<IVisualizer,IDiscreteVUBar,ComposableBase<>>, 
+		RuntimeClass<IVisualizer,IBarVisualizer,ComposableBase<>>, 
 		public BaseVisualizer<DiscreteVUBar>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_DiscreteVUBar, BaseTrust);
 		Orientation _orientation;
 		std::vector<MeterBarLevel> _levels;
-		UINT32 _channelCount;
-		Size _elementSize;
+		UINT32 _channelIndex;
 		Thickness _elementMargin;
 		Color _unlitElement;
-		TimeSpan _riseTime;
-		TimeSpan _fallTime;
-
-		Size _calculatedSize;
-
+		BarVisualizationStyle _style;
+		float _minAmp;
+		float _maxAmp;
+		Size _controlSize;
+		EventRegistrationToken _sizeChangedToken;
 		SRWLock _lock;
 
-		Size CalculateSize();
-		ComPtr<IScalarData> _previousValues;
 	public:
 		DiscreteVUBar();
 		~DiscreteVUBar();
@@ -77,7 +74,6 @@ namespace AudioVisualizer
 		{
 			auto lock = _lock.LockExclusive();
 			_orientation = value;
-			ResizeControl();
 			return S_OK;
 		}
 
@@ -107,52 +103,49 @@ namespace AudioVisualizer
 			{
 				_levels[i] = pLevels[i];
 			}
-			ResizeControl();
 			return S_OK;
 		}
 
-		STDMETHODIMP get_ChannelCount(UINT32 *pChannels)
+		STDMETHODIMP get_ChannelIndex(UINT32 *pIndex)
 		{
-			if (pChannels == nullptr)
+			if (pIndex == nullptr)
 				return E_POINTER;
-			*pChannels = _channelCount;
+			*pIndex = _channelIndex;
 			return S_OK;
 		}
-		STDMETHODIMP put_ChannelCount(UINT32 channels)
+		STDMETHODIMP put_ChannelIndex(UINT32 index)
 		{
 			auto lock = _lock.LockExclusive();
-			_channelCount = channels;
-			ResizeControl();
+			_channelIndex = index;
 			return S_OK;
 		}
 
-		STDMETHODIMP get_ElementSize(Size *pElementSize)
-		{
-			if (pElementSize == nullptr)
-				return E_POINTER;
-			*pElementSize = _elementSize;
-			return S_OK;
-		}
-		STDMETHODIMP put_ElementSize(Size elementSize)
-		{
-			auto lock = _lock.LockExclusive();
-			_elementSize = elementSize;
-			ResizeControl();
-			return S_OK;
-		}
 
-		STDMETHODIMP get_ElementMargin(Thickness *pElementMargin)
+		STDMETHODIMP get_RelativeElementMargin(Thickness *pElementMargin)
 		{
 			if (pElementMargin == nullptr)
 				return E_POINTER;
 			*pElementMargin = _elementMargin;
 			return S_OK;
 		}
-		STDMETHODIMP put_ElementMargin(Thickness elementMargin)
+		STDMETHODIMP put_RelativeElementMargin(Thickness elementMargin)
 		{
 			auto lock = _lock.LockExclusive();
 			_elementMargin = elementMargin;
-			ResizeControl();
+			return S_OK;
+		}
+
+		STDMETHODIMP get_VisualizationStyle(BarVisualizationStyle *pStyle)
+		{
+			if (pStyle == nullptr)
+				return E_POINTER;
+			*pStyle = _style;
+			return S_OK;
+		}
+		STDMETHODIMP put_VisualizationStyle(BarVisualizationStyle style)
+		{
+			auto lock = _lock.LockExclusive();
+			_style = style;
 			return S_OK;
 		}
 
@@ -169,34 +162,6 @@ namespace AudioVisualizer
 			_unlitElement = color;
 			return S_OK;
 		}
-
-		STDMETHODIMP get_RiseTime(TimeSpan *pTime)
-		{
-			if (pTime == nullptr)
-				return E_POINTER;
-			*pTime = _riseTime;
-			return S_OK;
-		}
-		STDMETHODIMP put_RiseTime(TimeSpan time)
-		{
-			_riseTime = time;
-			return S_OK;
-		}
-		STDMETHODIMP get_FallTime(TimeSpan *pTime)
-		{
-			if (pTime == nullptr)
-				return E_POINTER;
-			*pTime = _fallTime;
-			return S_OK;
-		}
-		STDMETHODIMP put_FallTime(TimeSpan time)
-		{
-			_riseTime = time;
-			return S_OK;
-		}
-
-		void ResizeControl();
-
 
 		virtual HRESULT OnDraw(ICanvasDrawingSession *pSession, IVisualizationDataFrame *pDataFrame, IReference<TimeSpan> *pPresentationTime);
 	};

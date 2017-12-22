@@ -21,7 +21,7 @@ namespace AudioVisualizer
 {
 #define MFT_ANALYZER_PROPERTYSET_NAME L"Source"
 
-	class CAnalyzerEffect
+	class MediaAnalyzer
 		: public Microsoft::WRL::RuntimeClass<
 		Microsoft::WRL::RuntimeClassFlags< Microsoft::WRL::RuntimeClassType::WinRtClassicComMix >,
 		ABI::Windows::Media::IMediaExtension,
@@ -30,7 +30,7 @@ namespace AudioVisualizer
 		IMFClockStateSink,
 		ABI::AudioVisualizer::IVisualizationSource>
 	{
-		InspectableClass(RuntimeClass_AudioVisualizer_MftAnalyzer, BaseTrust)
+		InspectableClass(RuntimeClass_AudioVisualizer_MediaAnalyzer, BaseTrust)
 		
 #pragma region IMFTransform variables
 		Microsoft::WRL::ComPtr<IMFMediaType> m_spOutputType;
@@ -177,8 +177,8 @@ namespace AudioVisualizer
 			return _configurationChangedList.InvokeAll(this, HStringReference(wszPropertyName).Get());
 		}
 	public:
-		CAnalyzerEffect();
-		~CAnalyzerEffect();
+		MediaAnalyzer();
+		~MediaAnalyzer();
 		HRESULT RuntimeClassInitialize();
 #pragma region IVisualizationSource
 		STDMETHODIMP GetData(IVisualizationDataFrame **pData);
@@ -196,7 +196,7 @@ namespace AudioVisualizer
 			*pState = _playbackState;
 			return S_OK;
 		}
-		STDMETHODIMP get_FrequencyCount(IReference<UINT32> **ppcElements)
+		STDMETHODIMP get_ActualFrequencyCount(IReference<UINT32> **ppcElements)
 		{
 			using namespace wrl_util;
 			if (ppcElements == nullptr)
@@ -205,11 +205,7 @@ namespace AudioVisualizer
 			auto value = Make<Nullable<UINT32>>(frequencyCount);
 			return value.CopyTo(ppcElements);
 		}
-		STDMETHODIMP put_FrequencyCount(IReference<UINT32> *pcElements)
-		{
-			return E_NOTIMPL;
-		}
-		STDMETHODIMP get_ChannelCount(IReference<UINT32> **ppcElements)
+		STDMETHODIMP get_ActualChannelCount(IReference<UINT32> **ppcElements)
 		{
 			if (ppcElements == nullptr)
 				return E_POINTER;
@@ -225,23 +221,16 @@ namespace AudioVisualizer
 				*ppcElements = nullptr;
 			return S_OK;
 		}
-		STDMETHODIMP put_ChannelCount(IReference<UINT32> *pcElements)
-		{
-			return E_NOTIMPL;
-		}
 
-		STDMETHODIMP get_MinFrequency(IReference<float> **ppValue)
+		STDMETHODIMP get_ActualMinFrequency(IReference<float> **ppValue)
 		{
 			if (ppValue == nullptr)
 				return E_POINTER;
 			auto minFreq = Make<Nullable<float>>(0.0f);
 			return minFreq.CopyTo(ppValue);
 		}
-		STDMETHODIMP put_MinFrequency(IReference<float> *pValue)
-		{
-			return E_NOTIMPL;
-		}
-		STDMETHODIMP get_MaxFrequency(IReference<float> **ppValue)
+
+		STDMETHODIMP get_ActualMaxFrequency(IReference<float> **ppValue)
 		{
 			if (ppValue == nullptr)
 				return E_POINTER;
@@ -257,21 +246,13 @@ namespace AudioVisualizer
 			auto maxFreq = Make<Nullable<float>>((float) sampleRate / (2.0f * (float)_analyzer->GetDownsampleRate() ) );
 			return maxFreq.CopyTo(ppValue);
 		}
-		STDMETHODIMP put_MaxFrequency(IReference<float> *pValue)
-		{
-			return E_NOTIMPL;
-		}
 
-		STDMETHODIMP get_FrequencyScale(IReference<ScaleType> **ppValue)
+		STDMETHODIMP get_ActualFrequencyScale(IReference<ScaleType> **ppValue)
 		{
 			if (ppValue == nullptr)
 				return E_POINTER;
 			auto scale = Make<Nullable<ScaleType>>(ScaleType::Linear);
 			return scale.CopyTo(ppValue);
-		}
-		STDMETHODIMP put_FrequencyScale(IReference<ScaleType> *pValue)
-		{
-			return E_NOTIMPL;
 		}
 		
 		STDMETHODIMP add_ConfigurationChanged(

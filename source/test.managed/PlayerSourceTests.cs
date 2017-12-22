@@ -42,7 +42,7 @@ namespace test.managed
             {
                 Assert.IsTrue(sources.Count == 1);
                 Assert.IsNotNull(sources[0]);
-                Assert.IsInstanceOfType(sources[0], typeof(AudioVisualizer.MftAnalyzer));
+                Assert.IsInstanceOfType(sources[0], typeof(AudioVisualizer.MediaAnalyzer));
             }
             else
                 Assert.Fail("Timeout when waiting for the source creation");
