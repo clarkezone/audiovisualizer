@@ -10,7 +10,7 @@
 
 # Introduction
 
-<iframe src="https://giphy.com/embed/xULW8pt2IrgCfn06o8" width="480" height="270" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
+[![Image](readme_images/spectrum.gif)]
 
 The AudioAnalyzer UWP extension DLL contains a component that can provide realtime audio analysis information for visualization and other purposes. The library also contains prebuilt controls implementing VU meters, a spectrum analyzer as well as a control that has a custom draw capability.
 
