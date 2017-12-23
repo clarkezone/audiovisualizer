@@ -101,7 +101,7 @@ namespace VisualizationPlayer
         {
             if (args.PresentationTime != null)
             {
-                string timeString = args.PresentationTime.Value.ToString("mm\\:ss\\.f");
+                string timeString = args.PresentationTime.Value.ToString("mm\\:ss\\.ff");
                 var ds = (CanvasDrawingSession)args.DrawingSession;
                 ds.DrawText(timeString, 0, 0, Colors.Gray);
             }
