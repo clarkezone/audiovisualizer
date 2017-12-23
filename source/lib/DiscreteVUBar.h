@@ -16,7 +16,7 @@ namespace AudioVisualizer
 	using namespace ABI::Windows::Foundation;
 
 	class DiscreteVUBar : public 
-		RuntimeClass<IVisualizer,IBarVisualizer,ComposableBase<>>, 
+		RuntimeClass<IVisualizer,IBarVisualizer,IDiscreteVUBar,ComposableBase<>>, 
 		public BaseVisualizer<DiscreteVUBar>
 	{
 		InspectableClass(RuntimeClass_AudioVisualizer_DiscreteVUBar, BaseTrust);
@@ -25,10 +25,10 @@ namespace AudioVisualizer
 		UINT32 _channelIndex;
 		Thickness _elementMargin;
 		Color _unlitElement;
-		BarVisualizationStyle _style;
 		float _minAmp;
 		float _maxAmp;
 		Size _controlSize;
+		bool _displayPeak;
 		EventRegistrationToken _sizeChangedToken;
 		SRWLock _lock;
 
@@ -135,20 +135,6 @@ namespace AudioVisualizer
 			return S_OK;
 		}
 
-		STDMETHODIMP get_VisualizationStyle(BarVisualizationStyle *pStyle)
-		{
-			if (pStyle == nullptr)
-				return E_POINTER;
-			*pStyle = _style;
-			return S_OK;
-		}
-		STDMETHODIMP put_VisualizationStyle(BarVisualizationStyle style)
-		{
-			auto lock = _lock.LockExclusive();
-			_style = style;
-			return S_OK;
-		}
-
 		STDMETHODIMP get_UnlitElement(Color *pColor)
 		{
 			if (pColor == nullptr)
@@ -160,6 +146,20 @@ namespace AudioVisualizer
 		{
 			auto lock = _lock.LockExclusive();
 			_unlitElement = color;
+			return S_OK;
+		}
+
+		STDMETHODIMP get_DisplayPeak(boolean *pValue)
+		{
+			if (pValue == nullptr)
+				return E_POINTER;
+			*pValue = _displayPeak;
+			return S_OK;
+		}
+
+		STDMETHODIMP put_DisplayPeak(boolean value)
+		{
+			_displayPeak = value;
 			return S_OK;
 		}
 

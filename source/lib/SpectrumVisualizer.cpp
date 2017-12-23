@@ -10,7 +10,7 @@ namespace AudioVisualizer
 		_channelIndex = 0; // Map to first channel by default
 		_elementMargin = Thickness() = { 0.1,0.1,0.1,0.1 };
 		_unlitElement = Color() = { 0xff, 0x40, 0x40, 0x40 };
-		_style = BarVisualizationStyle::Blocks;
+		_style = SpectrumVisualizationStyle::Blocks;
 		_controlSize.Width = 0.0f;
 		_controlSize.Height = 0.0f;
 		_levels.resize(24);
@@ -139,7 +139,7 @@ namespace AudioVisualizer
 			{
 				spectrum->GetAt(barIndex, &level);
 			}
-			if (_style == BarVisualizationStyle::Blocks || _style == BarVisualizationStyle::TopBlock)
+			if (_style == SpectrumVisualizationStyle::Blocks || _style == SpectrumVisualizationStyle::TopBlock)
 			{
 				Rect elementRect;
 				float elementHeight = (barAbsHeight / (float)_levels.size());
@@ -153,7 +153,7 @@ namespace AudioVisualizer
 					MeterBarLevel nextElementLevel = levelIndex + 1 < _levels.size() ? _levels[levelIndex + 1] : elementLevel;
 					Color elementColor;
 					if (level >= nextElementLevel.Level)	// Element is fully lit unless only top block style
-						elementColor = _style == BarVisualizationStyle::Blocks ? elementLevel.Color : _unlitElement;
+						elementColor = _style == SpectrumVisualizationStyle::Blocks ? elementLevel.Color : _unlitElement;
 					else if (level > elementLevel.Level)
 					{
 						// Element partly lit

@@ -176,14 +176,14 @@ namespace AudioVisualizer
 	} MeterBarLevel;
 
 	[version(1.0)]
-	typedef enum BarVisualizationStyle
+	typedef enum SpectrumVisualizationStyle
 	{
 		Bars = (int)0,
 		TopBar = (int)1,
 		Blocks = (int)2,
 		TopBlock = (int)3,
 		Line = (int)4
-	} BarVisualizationStyle;
+	} SpectrumVisualizationStyle;
 
 
 	[uuid(DFC03A65-C30B-4B6F-8367-98B7047954AB)]
@@ -200,16 +200,30 @@ namespace AudioVisualizer
 		[propput] HRESULT RelativeElementMargin([in] Windows.UI.Xaml.Thickness value);
 		[propget] HRESULT UnlitElement([out, retval] Windows.UI.Color *pColor);
 		[propput] HRESULT UnlitElement([in] Windows.UI.Color color);
-		[propget] HRESULT VisualizationStyle([out, retval] BarVisualizationStyle *pStyle);
-		[propput] HRESULT VisualizationStyle([in] BarVisualizationStyle style);
  	}
 
+	[uuid(F7DAA918-AA98-4AB4-A669-A2DF10217363)]
+	[version(1.0)]
+	interface IDiscreteVUBar : IInspectable
+	{
+		[propget] HRESULT DisplayPeak([out, retval] boolean *pbShow);
+		[propput] HRESULT DisplayPeak([in] boolean bShow);
+	};
+
+	[uuid(7E767576-44A6-4E0C-9656-F081F0035EFF)]
+	[version(1.0)]
+	interface ISpectrumVisualizer : IInspectable
+	{
+		[propget] HRESULT VisualizationStyle([out, retval] SpectrumVisualizationStyle *pStyle);
+		[propput] HRESULT VisualizationStyle([in] SpectrumVisualizationStyle style);
+	};
 
 	[version(1.0), marshaling_behavior(agile), threading(both),activatable(1.0)]
 	runtimeclass DiscreteVUBar : Windows.UI.Xaml.Controls.Control
 	{
 		[default] interface IVisualizer;
 		interface IBarVisualizer;
+		interface IDiscreteVUBar;
 	}
 
 	[version(1.0), marshaling_behavior(agile), threading(both), activatable(1.0)]
@@ -217,6 +231,7 @@ namespace AudioVisualizer
 	{
 		[default] interface IVisualizer;
 		interface IBarVisualizer;
+		interface ISpectrumVisualizer;
 	}
 	
 	[uuid(6407028A-43B7-4DB5-A4BE-108DC810904D),version(1.0)]
@@ -396,6 +411,8 @@ namespace AudioVisualizer
 		[propput] HRESULT FrequencyCount([in] Windows.Foundation.IReference<UINT32> *pcElements);
 		[propget] HRESULT ChannelCount([out, retval] Windows.Foundation.IReference<UINT32> **pcElements);
 		[propput] HRESULT ChannelCount([in] Windows.Foundation.IReference<UINT32> *pcElements);
+		[propget] HRESULT ChannelMapping([out] UINT32* elementCount, [out][retval][size_is(, *elementCount)] float** values);
+		[propput] HRESULT ChannelMapping([in] UINT32 elementCount, [in][size_is(elementCount)] float* values);
 		[propget] HRESULT MinFrequency([out, retval] Windows.Foundation.IReference<float> **ppValue);
 		[propput] HRESULT MinFrequency([in] Windows.Foundation.IReference<float> *pValue);
 		[propget] HRESULT MaxFrequency([out, retval] Windows.Foundation.IReference<float> **ppValue);

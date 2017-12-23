@@ -76,7 +76,7 @@ namespace AudioVisualizer
 		float level = -100.0f;
 		if (data != nullptr)
 		{
-			ComPtr<IVector<float>> values;
+			ComPtr<IVectorView<float>> values;
 			data.As(&values);
 			UINT32 size = 0;
 			values->get_Size(&size);

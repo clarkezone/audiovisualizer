@@ -168,7 +168,10 @@ namespace test.managed
             converter.MinFrequency = 0.0f;
             Assert.AreEqual(0.0f, converter.MinFrequency);
             CollectionAssert.AreEqual(
-                new string[] { "Source","FrequencyCount","ChannelCount","RiseTime","FallTime","MinFrequency","MaxFrequency","FrequencyScale","FrequencyScale","MinFrequency" },
+                new string[] { "Source","FrequencyCount","ChannelCount",
+                    "RmsRiseTime","RmsFallTime","PeakRiseTime","PeakFallTime",
+                    "SpectrumRiseTime","SpectrumFallTime",
+                    "MinFrequency","MaxFrequency","FrequencyScale","FrequencyScale","MinFrequency" },
                 propertiesChanged
                 );
             converter = null;
@@ -204,6 +207,55 @@ namespace test.managed
             f = converter.GetData();
             Assert.IsNotNull(f);
 
+        }
+
+        [TestCategory("SourceConverter")]
+        [TestMethod()]
+        public void SourceConverter_RiseAndFall()
+        {
+            SourceConverter converter = new SourceConverter();
+            FakeVisualizationSource source = new FakeVisualizationSource();
+
+            converter.Source = source;
+
+            var frame1 = new VisualizationDataFrame(
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromTicks(166667),
+                ScalarData.CreateEmpty(2),
+                ScalarData.CreateEmpty(2),
+                SpectrumData.CreateEmpty(2, 10, ScaleType.Linear, ScaleType.Linear, 0.0f, 22100.0f)
+                );
+
+            var frame2 = new VisualizationDataFrame(
+                TimeSpan.FromSeconds(2),
+                TimeSpan.FromTicks(166667),
+                ScalarData.Create(new float[] { 0.5f, 1.0f }),
+                ScalarData.Create(new float[] { 1.0f, 0.5f }),
+                SpectrumData.Create(new float[][] 
+                {
+                    new float[] { 1.0f,0,0,0,0,0,0,0,0,0 },
+                    new float[] { 0.5f,0,0,0,0,0,0,0,0,0 }
+                },ScaleType.Linear,ScaleType.Linear,0.0f,22100.0f)
+                );
+
+            source.Frame = frame1;
+            converter.SpectrumRiseTime = TimeSpan.FromMilliseconds(100);
+            converter.SpectrumFallTime = TimeSpan.FromMilliseconds(50);
+            converter.RmsRiseTime = TimeSpan.FromMilliseconds(80);
+            converter.RmsFallTime = TimeSpan.FromMilliseconds(40);
+            converter.PeakRiseTime = TimeSpan.FromMilliseconds(20);
+            converter.PeakFallTime = TimeSpan.FromMilliseconds(200);
+            var data1 = converter.GetData();
+            source.Frame = frame2;
+            var data2 = converter.GetData();
+            Assert.IsNotNull(data2.RMS);
+            Assert.IsNotNull(data2.Peak);
+            Assert.IsNotNull(data2.Spectrum);
+
+            CollectionAssert.AreEqual(new float[] {0.09403199f , 0.188063979f }, data2.RMS.ToArray());
+            CollectionAssert.AreEqual(new float[] { 0.5654025f,0.282701254f }, data2.Peak.ToArray());
+            CollectionAssert.AreEqual(new float[] { 0.1535185f, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, data2.Spectrum[0].ToArray());
+            CollectionAssert.AreEqual(new float[] { 0.07675925f, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, data2.Spectrum[1].ToArray());
         }
     }
 }

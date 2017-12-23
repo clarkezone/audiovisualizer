@@ -213,6 +213,16 @@ namespace AudioVisualizer
 			return S_OK;
 		}
 
+		STDMETHODIMP get_ChannelMapping(UINT32 *pCount, float **ppValues)
+		{
+			return E_NOTIMPL;
+		}
+
+		STDMETHODIMP put_ChannelMapping(UINT32 cCount, float *pValues)
+		{
+			return E_NOTIMPL;
+		}
+
 		STDMETHODIMP get_MinFrequency(IReference<float> **ppValue)
 		{
 			auto lock = _csLock.Lock();

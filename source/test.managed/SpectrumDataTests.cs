@@ -171,7 +171,7 @@ namespace test.managed
             Assert.AreEqual(1000.0f, s2.MinFrequency);
             Assert.AreEqual(25000.0f, s2.MaxFrequency);
             CollectionAssert.AreEqual(new float[] { 3.0f,5.25f,5.8125f,0.15625f }, s2[0].ToArray());
-            CollectionAssert.AreEqual(new float[] { 30f,5.25f,58.125f,1.5625f }, s2[1].ToArray());
+            CollectionAssert.AreEqual(new float[] { 30f,52.5f,58.125f,1.5625f }, s2[1].ToArray());
         }
 
         [TestCategory("SpectrumData")]

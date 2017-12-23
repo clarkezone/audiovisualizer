@@ -40,7 +40,6 @@ namespace VisualizationPlayer
             if (App.Player.VisualizationSource != null)
             {
                 App.Player.VisualizationSource.IsSuspended = false;
-                ledbar.Source = App.Player.VisualizationSource;
                 spectrum.Source = App.Player.VisualizationSource;
             }
             App.Player.VisualizationSourceChanged += Player_VisualizationSourceChanged;
@@ -48,7 +47,6 @@ namespace VisualizationPlayer
 
         private void Player_VisualizationSourceChanged(object sender, AudioVisualizer.IVisualizationSource source)
         {
-            ledbar.Source = source;
             spectrum.Source = source;
         }
 

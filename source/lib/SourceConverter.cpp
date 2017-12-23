@@ -188,16 +188,20 @@ namespace AudioVisualizer
 		}
 		if ((_analyzerTypes & AnalyzerType::RMS) == AnalyzerType::RMS && rms != nullptr)
 		{
-			hr = ApplyRiseAndFall(rms.Get(), _previousRMS.Get(), _rmsRiseTime.Get(),_rmsFallTime.Get(), &rms);
+			ComPtr<IScalarData> resultRms;
+			hr = ApplyRiseAndFall(rms.Get(), _previousRMS.Get(), _rmsRiseTime.Get(),_rmsFallTime.Get(), &resultRms);
 			if (FAILED(hr))
 				return hr;
+			rms = resultRms;
 			rms.CopyTo(&_previousRMS);
 		}
 		if ((_analyzerTypes & AnalyzerType::Peak) == AnalyzerType::Peak && peak != nullptr)
 		{
-			hr = ApplyRiseAndFall(peak.Get(), _previousPeak.Get(), _peakRiseTime.Get(),_peakFallTime.Get(), &peak);
+			ComPtr<IScalarData> resultPeak;
+			hr = ApplyRiseAndFall(peak.Get(), _previousPeak.Get(), _peakRiseTime.Get(),_peakFallTime.Get(), &resultPeak);
 			if (FAILED(hr))
 				return hr;
+			peak = resultPeak;
 			peak.CopyTo(&_previousPeak);
 		}
 

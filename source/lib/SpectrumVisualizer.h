@@ -20,6 +20,7 @@ namespace AudioVisualizer
 	class SpectrumVisualizer : public RuntimeClass<
 		IVisualizer,
 		IBarVisualizer,
+		ISpectrumVisualizer,
 		ComposableBase<>>,
 		BaseVisualizer<SpectrumVisualizer>
 	{
@@ -33,7 +34,7 @@ namespace AudioVisualizer
 		UINT32 _channelIndex;
 		float _minAmp;
 		float _maxAmp;
-		BarVisualizationStyle _style;
+		SpectrumVisualizationStyle _style;
 		
 		Size _controlSize;
 
@@ -174,14 +175,14 @@ namespace AudioVisualizer
 			return S_OK;
 		}
 
-		STDMETHODIMP get_VisualizationStyle(BarVisualizationStyle *pStyle)
+		STDMETHODIMP get_VisualizationStyle(SpectrumVisualizationStyle *pStyle)
 		{
 			if (pStyle == nullptr)
 				return E_POINTER;
 			*pStyle = _style;
 			return S_OK;
 		}
-		STDMETHODIMP put_VisualizationStyle(BarVisualizationStyle style)
+		STDMETHODIMP put_VisualizationStyle(SpectrumVisualizationStyle style)
 		{
 			auto lock = _lock.LockExclusive();
 			_style = style;
