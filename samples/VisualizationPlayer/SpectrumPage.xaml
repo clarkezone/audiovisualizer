@@ -9,6 +9,17 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <vis:SpectrumVisualizer x:Name="spectrum" ></vis:SpectrumVisualizer>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="200"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="50"></ColumnDefinition>
+            <ColumnDefinition Width="50"></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <vis:SpectrumVisualizer Grid.Row="0" Grid.Column="2" Width="800" Height="100" x:Name="spectrum" UnlitElement="LightGray"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2" Padding="2" BorderBrush="Blue" BorderThickness="1"></vis:SpectrumVisualizer>
+        <vis:DiscreteVUBar Grid.Row="0" Grid.Column="0"  x:Name="leftVU" Width="20" Height="100" RelativeElementMargin="0.1,0.1,0.1,0.1" HorizontalAlignment="Center"></vis:DiscreteVUBar>
+        <vis:DiscreteVUBar Grid.Row="0" Grid.Column="1" x:Name="rightVU" Width="20" Height="100" RelativeElementMargin="0.1,0.1,0.1,0.1" HorizontalAlignment="Center"></vis:DiscreteVUBar>
     </Grid>
 </Page>

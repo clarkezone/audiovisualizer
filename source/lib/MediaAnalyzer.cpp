@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "MftAnalyzer.h"
+#include "MediaAnalyzer.h"
 #include "xdsp.h"
 #include <cfloat>
 #include <memory>
@@ -17,11 +17,11 @@ using namespace ABI::Windows::Foundation;
 
 namespace AudioVisualizer
 {
-	ActivatableClass(CAnalyzerEffect);
+	ActivatableClass(MediaAnalyzer);
 
 	const size_t CircleBufferSize = 960000;	// 10 sec worth of stereo audio at 48k
 
-	CAnalyzerEffect::CAnalyzerEffect() :
+	MediaAnalyzer::MediaAnalyzer() :
 		m_FramesPerSecond(0),
 		m_nChannels(0),
 		_bFlushPending(false),
@@ -43,20 +43,17 @@ namespace AudioVisualizer
 #endif
 	}
 
-	CAnalyzerEffect::~CAnalyzerEffect()
+	MediaAnalyzer::~MediaAnalyzer()
 	{
 		if (m_spPresentationClock != nullptr)
 		{
 			m_spPresentationClock->RemoveClockStateSink(this);
 		}
 		CloseHandle(_threadPoolSemaphore);
-#ifdef _TRACE
-		AudioVisualizer::Diagnostics::Trace::Shutdown();
-#endif
 	}
 
 
-	HRESULT CAnalyzerEffect::RuntimeClassInitialize()
+	HRESULT MediaAnalyzer::RuntimeClassInitialize()
 	{
 		HRESULT hr = MFCreateAttributes(&m_spMftAttributes, 4);
 		if (FAILED(hr))
@@ -73,7 +70,7 @@ namespace AudioVisualizer
 		return S_OK;
 	}
 
-	STDMETHODIMP CAnalyzerEffect::GetData(ABI::AudioVisualizer::IVisualizationDataFrame **ppData)
+	STDMETHODIMP MediaAnalyzer::GetData(ABI::AudioVisualizer::IVisualizationDataFrame **ppData)
 	{
 		if (ppData == nullptr)
 			return E_POINTER;
@@ -101,14 +98,14 @@ namespace AudioVisualizer
 		return hr;
 	}
 
-	STDMETHODIMP CAnalyzerEffect::get_IsSuspended(boolean * pbIsSuspended)
+	STDMETHODIMP MediaAnalyzer::get_IsSuspended(boolean * pbIsSuspended)
 	{
 		if (pbIsSuspended == nullptr)
 			return E_POINTER;
 		*pbIsSuspended = (boolean) m_bIsSuspended;
 		return S_OK;
 	}
-	STDMETHODIMP CAnalyzerEffect::put_IsSuspended(boolean bNewValue)
+	STDMETHODIMP MediaAnalyzer::put_IsSuspended(boolean bNewValue)
 	{
 		if (m_bIsSuspended != (bool) bNewValue)
 		{
@@ -120,7 +117,7 @@ namespace AudioVisualizer
 		return S_OK;
 	}
 
-	STDMETHODIMP CAnalyzerEffect::get_Fps(float *pFps)
+	STDMETHODIMP MediaAnalyzer::get_Fps(float *pFps)
 	{
 		if (pFps == nullptr)
 			return E_POINTER;
@@ -128,12 +125,12 @@ namespace AudioVisualizer
 		return S_OK;
 	}
 
-	STDMETHODIMP CAnalyzerEffect::put_Fps(float fps)
+	STDMETHODIMP MediaAnalyzer::put_Fps(float fps)
 	{
 		return E_NOTIMPL;
 	}
 
-	STDMETHODIMP CAnalyzerEffect::get_AnalyzerTypes(AnalyzerType *pResult)
+	STDMETHODIMP MediaAnalyzer::get_AnalyzerTypes(AnalyzerType *pResult)
 	{
 		if (pResult == nullptr)
 			return E_POINTER;
@@ -142,12 +139,12 @@ namespace AudioVisualizer
 	}
 
 
-	STDMETHODIMP CAnalyzerEffect::put_AnalyzerTypes(AnalyzerType result)
+	STDMETHODIMP MediaAnalyzer::put_AnalyzerTypes(AnalyzerType result)
 	{
 		return E_NOTIMPL;
 	}
 
-	STDMETHODIMP CAnalyzerEffect::get_PresentationTime(IReference<TimeSpan> **ppTime)
+	STDMETHODIMP MediaAnalyzer::get_PresentationTime(IReference<TimeSpan> **ppTime)
 	{
 		if (ppTime == nullptr)
 			return E_POINTER;
@@ -162,7 +159,7 @@ namespace AudioVisualizer
 		return S_OK;
 	}
 
-	STDMETHODIMP CAnalyzerEffect::ConfigureSpectrum(UINT32 fftLength, float inputOverlap)
+	STDMETHODIMP MediaAnalyzer::ConfigureSpectrum(UINT32 fftLength, float inputOverlap)
 	{
 		if ((fftLength & fftLength - 1) != 0)	// FFT length needs to be power of 2
 			return E_INVALIDARG;
@@ -177,6 +174,8 @@ namespace AudioVisualizer
 		if (m_spInputType != nullptr)
 			return Analyzer_Initialize();
 
+		RaiseConfiguratonChanged(L"");
+
 		return S_OK;
 	}
 
@@ -184,7 +183,7 @@ namespace AudioVisualizer
 	// GetStreamLimits
 	// Returns the minum and maximum number of streams.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetStreamLimits(DWORD * pdwInputMinimum, DWORD * pdwInputMaximum, DWORD * pdwOutputMinimum, DWORD * pdwOutputMaximum)
+	STDMETHODIMP MediaAnalyzer::GetStreamLimits(DWORD * pdwInputMinimum, DWORD * pdwInputMaximum, DWORD * pdwOutputMinimum, DWORD * pdwOutputMaximum)
 	{
 		if (pdwInputMaximum == nullptr || pdwInputMaximum == nullptr || pdwOutputMinimum == nullptr || pdwOutputMaximum == nullptr)
 			return E_POINTER;
@@ -200,7 +199,7 @@ namespace AudioVisualizer
 	// GetStreamCount
 	// Returns the actual number of streams.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetStreamCount(DWORD * pcInputStreams, DWORD * pcOutputStreams)
+	STDMETHODIMP MediaAnalyzer::GetStreamCount(DWORD * pcInputStreams, DWORD * pcOutputStreams)
 	{
 		if ((pcInputStreams == NULL) || (pcOutputStreams == NULL))
 		{
@@ -217,7 +216,7 @@ namespace AudioVisualizer
 	// GetStreamIDs
 	// Returns stream IDs for the input and output streams.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetStreamIDs(DWORD dwInputIDArraySize, DWORD * pdwInputIDs, DWORD dwOutputIDArraySize, DWORD * pdwOutputIDs)
+	STDMETHODIMP MediaAnalyzer::GetStreamIDs(DWORD dwInputIDArraySize, DWORD * pdwInputIDs, DWORD dwOutputIDArraySize, DWORD * pdwOutputIDs)
 	{
 		// It is not required to implement this method if the MFT has a fixed number of
 		// streams AND the stream IDs are numbered sequentially from zero (that is, the
@@ -231,7 +230,7 @@ namespace AudioVisualizer
 	// GetInputStreamInfo
 	// Returns information about an input stream.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetInputStreamInfo(DWORD dwInputStreamID, MFT_INPUT_STREAM_INFO * pStreamInfo)
+	STDMETHODIMP MediaAnalyzer::GetInputStreamInfo(DWORD dwInputStreamID, MFT_INPUT_STREAM_INFO * pStreamInfo)
 	{
 		if (pStreamInfo == NULL)
 		{
@@ -256,7 +255,7 @@ namespace AudioVisualizer
 	// GetOutputStreamInfo
 	// Returns information about an output stream.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetOutputStreamInfo(DWORD dwOutputStreamID, MFT_OUTPUT_STREAM_INFO * pStreamInfo)
+	STDMETHODIMP MediaAnalyzer::GetOutputStreamInfo(DWORD dwOutputStreamID, MFT_OUTPUT_STREAM_INFO * pStreamInfo)
 	{
 		if (pStreamInfo == NULL)
 		{
@@ -292,7 +291,7 @@ namespace AudioVisualizer
 	// GetAttributes
 	// Returns the attributes for the MFT.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetAttributes(IMFAttributes ** ppAttributes)
+	STDMETHODIMP MediaAnalyzer::GetAttributes(IMFAttributes ** ppAttributes)
 	{
 		if (ppAttributes == NULL)
 		{
@@ -307,7 +306,7 @@ namespace AudioVisualizer
 	// GetInputStreamAttributes
 	// Returns stream-level attributes for an input stream.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetInputStreamAttributes(DWORD dwInputStreamID, IMFAttributes ** ppAttributes)
+	STDMETHODIMP MediaAnalyzer::GetInputStreamAttributes(DWORD dwInputStreamID, IMFAttributes ** ppAttributes)
 	{
 		// This MFT does not support any stream-level attributes, so the method is not implemented.
 		return E_NOTIMPL;
@@ -317,7 +316,7 @@ namespace AudioVisualizer
 	// GetOutputStreamAttributes
 	// Returns stream-level attributes for an output stream.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetOutputStreamAttributes(DWORD dwOutputStreamID, IMFAttributes ** ppAttributes)
+	STDMETHODIMP MediaAnalyzer::GetOutputStreamAttributes(DWORD dwOutputStreamID, IMFAttributes ** ppAttributes)
 	{
 		// This MFT does not support any stream-level attributes, so the method is not implemented.
 		return E_NOTIMPL;
@@ -327,7 +326,7 @@ namespace AudioVisualizer
 	// DeleteInputStream
 	// Remove stream from processing
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::DeleteInputStream(DWORD dwStreamID)
+	STDMETHODIMP MediaAnalyzer::DeleteInputStream(DWORD dwStreamID)
 	{
 		// This MFT does not support any stream-level attributes, so the method is not implemented.
 		return E_NOTIMPL;
@@ -337,7 +336,7 @@ namespace AudioVisualizer
 	// AddInputStreams
 	// Add streams for processing
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::AddInputStreams(DWORD cStreams, DWORD * adwStreamIDs)
+	STDMETHODIMP MediaAnalyzer::AddInputStreams(DWORD cStreams, DWORD * adwStreamIDs)
 	{
 		// This MFT does not support any stream-level attributes, so the method is not implemented.
 		return E_NOTIMPL;
@@ -347,7 +346,7 @@ namespace AudioVisualizer
 	// GetInputAvailableType
 	// Returns a preferred input type.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetInputAvailableType(DWORD dwInputStreamID, DWORD dwTypeIndex, IMFMediaType **ppType)
+	STDMETHODIMP MediaAnalyzer::GetInputAvailableType(DWORD dwInputStreamID, DWORD dwTypeIndex, IMFMediaType **ppType)
 	{
 		if (ppType == NULL)
 		{
@@ -410,7 +409,7 @@ namespace AudioVisualizer
 	// GetOutputAvailableType
 	// Returns a preferred output type.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetOutputAvailableType(DWORD dwOutputStreamID, DWORD dwTypeIndex, IMFMediaType **ppType)
+	STDMETHODIMP MediaAnalyzer::GetOutputAvailableType(DWORD dwOutputStreamID, DWORD dwTypeIndex, IMFMediaType **ppType)
 	{
 		if (ppType == NULL)
 		{
@@ -445,7 +444,7 @@ namespace AudioVisualizer
 	// SetInputType
 	// Test and set input data type
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::SetInputType(DWORD dwInputStreamID, IMFMediaType * pType, DWORD dwFlags)
+	STDMETHODIMP MediaAnalyzer::SetInputType(DWORD dwInputStreamID, IMFMediaType * pType, DWORD dwFlags)
 	{
 		// Validate flags.
 		if (dwInputStreamID != 0)
@@ -484,7 +483,7 @@ namespace AudioVisualizer
 	// SetOutputType
 	// Test and set output data type
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::SetOutputType(DWORD dwOutputStreamID, IMFMediaType * pType, DWORD dwFlags)
+	STDMETHODIMP MediaAnalyzer::SetOutputType(DWORD dwOutputStreamID, IMFMediaType * pType, DWORD dwFlags)
 	{
 		// Validate parameters
 		if (dwOutputStreamID != 0)
@@ -506,7 +505,9 @@ namespace AudioVisualizer
 		if ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0)
 		{
 			m_spOutputType = pType;
-			return Analyzer_SetMediaType(pType);	// Using MFT output type to configure analyzer
+			HRESULT hr = Analyzer_SetMediaType(pType);	// Using MFT output type to configure analyzer
+			RaiseConfiguratonChanged(L"");
+			return hr;
 		}
 		return S_OK;
 	}
@@ -515,7 +516,7 @@ namespace AudioVisualizer
 	// GetInputCurrentType
 	// Returns the current input type.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetInputCurrentType(DWORD dwInputStreamID, IMFMediaType ** ppType)
+	STDMETHODIMP MediaAnalyzer::GetInputCurrentType(DWORD dwInputStreamID, IMFMediaType ** ppType)
 	{
 		if (ppType == NULL)
 		{
@@ -540,7 +541,7 @@ namespace AudioVisualizer
 	// GetOutputCurrentType
 	// Returns the current output type.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetOutputCurrentType(DWORD dwOutputStreamID, IMFMediaType ** ppType)
+	STDMETHODIMP MediaAnalyzer::GetOutputCurrentType(DWORD dwOutputStreamID, IMFMediaType ** ppType)
 	{
 		if (ppType == NULL)
 		{
@@ -565,7 +566,7 @@ namespace AudioVisualizer
 	// GetInputStatus
 	// Query if the MFT is accepting more input.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetInputStatus(
+	STDMETHODIMP MediaAnalyzer::GetInputStatus(
 		DWORD           dwInputStreamID,
 		DWORD           *pdwFlags
 	)
@@ -604,7 +605,7 @@ namespace AudioVisualizer
 	// GetOutputStatus
 	// Query if the MFT can produce output.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::GetOutputStatus(DWORD *pdwFlags)
+	STDMETHODIMP MediaAnalyzer::GetOutputStatus(DWORD *pdwFlags)
 	{
 		if (pdwFlags == nullptr)
 		{
@@ -628,7 +629,7 @@ namespace AudioVisualizer
 	// SetOutputBounds
 	// Sets the range of time stamps that the MFT will output.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::SetOutputBounds(LONGLONG hnsLowerBound, LONGLONG hnsUpperBound)
+	STDMETHODIMP MediaAnalyzer::SetOutputBounds(LONGLONG hnsLowerBound, LONGLONG hnsUpperBound)
 	{
 		return E_NOTIMPL;	// This method is not implemented for this MFT
 	}
@@ -637,7 +638,7 @@ namespace AudioVisualizer
 	// ProcessEvent
 	// Sends an event to an input stream.
 	//-------------------------------------------------------------------
-	STDMETHODIMP CAnalyzerEffect::ProcessEvent(
+	STDMETHODIMP MediaAnalyzer::ProcessEvent(
 		DWORD              dwInputStreamID,
 		IMFMediaEvent      *pEvent
 	)
@@ -649,7 +650,7 @@ namespace AudioVisualizer
 	//-------------------------------------------------------------------
 	// ProcessMessage
 	//-------------------------------------------------------------------
-	HRESULT CAnalyzerEffect::ProcessMessage(
+	HRESULT MediaAnalyzer::ProcessMessage(
 		MFT_MESSAGE_TYPE    eMessage,
 		ULONG_PTR           ulParam
 	)
@@ -709,7 +710,7 @@ namespace AudioVisualizer
 		return hr;
 	}
 
-	HRESULT CAnalyzerEffect::ProcessInput(DWORD dwInputStreamID, IMFSample * pSample, DWORD dwFlags)
+	HRESULT MediaAnalyzer::ProcessInput(DWORD dwInputStreamID, IMFSample * pSample, DWORD dwFlags)
 	{
 		// Check input parameters.
 		if (pSample == NULL)
@@ -746,7 +747,7 @@ namespace AudioVisualizer
 
 		return hr;
 	}
-	HRESULT CAnalyzerEffect::ProcessOutput(DWORD dwFlags, DWORD cOutputBufferCount, MFT_OUTPUT_DATA_BUFFER * pOutputSamples, DWORD * pdwStatus)
+	HRESULT MediaAnalyzer::ProcessOutput(DWORD dwFlags, DWORD cOutputBufferCount, MFT_OUTPUT_DATA_BUFFER * pOutputSamples, DWORD * pdwStatus)
 	{
 		if (dwFlags != 0)
 		{
@@ -782,7 +783,7 @@ namespace AudioVisualizer
 		return hr;
 	}
 
-	HRESULT CAnalyzerEffect::SetPresentationClock(IMFPresentationClock * pPresentationClock)
+	HRESULT MediaAnalyzer::SetPresentationClock(IMFPresentationClock * pPresentationClock)
 	{
 		if (m_spPresentationClock != nullptr)
 		{
@@ -796,7 +797,7 @@ namespace AudioVisualizer
 		return S_OK;
 	}
 
-	HRESULT CAnalyzerEffect::Analyzer_TestInputType(IMFMediaType * pMediaType)
+	HRESULT MediaAnalyzer::Analyzer_TestInputType(IMFMediaType * pMediaType)
 	{
 		if (pMediaType == nullptr)	// Allow nullptr
 			return S_OK;
@@ -815,7 +816,7 @@ namespace AudioVisualizer
 		return S_OK;
 	}
 
-	HRESULT CAnalyzerEffect::Analyzer_SetMediaType(IMFMediaType * pType)
+	HRESULT MediaAnalyzer::Analyzer_SetMediaType(IMFMediaType * pType)
 	{
 		m_FramesPerSecond = 0;
 		HRESULT hr = pType->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, &m_FramesPerSecond);
@@ -835,7 +836,7 @@ namespace AudioVisualizer
 		return hr;
 	}
 
-	HRESULT CAnalyzerEffect::Analyzer_Initialize()
+	HRESULT MediaAnalyzer::Analyzer_Initialize()
 	{
 		
 		m_FftLengthLog2 = 1;
@@ -855,7 +856,7 @@ namespace AudioVisualizer
 		return S_OK;
 	}
 
-	HRESULT CAnalyzerEffect::Analyzer_ProcessSample(IMFSample * pSample)
+	HRESULT MediaAnalyzer::Analyzer_ProcessSample(IMFSample * pSample)
 	{
 		if (m_FramesPerSecond == 0 || m_nChannels == 0)
 			return E_NOT_VALID_STATE;
@@ -908,7 +909,7 @@ namespace AudioVisualizer
 	// ScheduleInputProcessing
 	// Validate if background processing is running and if not initiate
 	//-----------------------------------------------
-	HRESULT CAnalyzerEffect::Analyzer_ScheduleProcessing()
+	HRESULT MediaAnalyzer::Analyzer_ScheduleProcessing()
 	{
 		if (m_bIsSuspended)	// Do not schedule another work item when suspended
 			return S_OK;
@@ -939,7 +940,7 @@ namespace AudioVisualizer
 			return E_FAIL;
 	}
 
-	void CAnalyzerEffect::Analyzer_ProcessData()
+	void MediaAnalyzer::Analyzer_ProcessData()
 	{
 		// Process data until not suspended, not in a reset and output is available
 		while (!m_bIsSuspended && !_bFlushPending && _analyzer->IsOutputAvailable())
@@ -1001,7 +1002,7 @@ namespace AudioVisualizer
 		}
 	}
 
-	HRESULT CAnalyzerEffect::Analyzer_Flush()
+	HRESULT MediaAnalyzer::Analyzer_Flush()
 	{
 		// Dissallow processing and discard any output until new samples 
 		_bFlushPending = true;
@@ -1013,7 +1014,7 @@ namespace AudioVisualizer
 		return S_OK;
 	}
 
-	HRESULT CAnalyzerEffect::Analyzer_CompactOutputQueue()
+	HRESULT MediaAnalyzer::Analyzer_CompactOutputQueue()
 	{
 		Analyzer_FFwdQueueTo(GetPresentationTime(), nullptr);
 		// Now manage queue size - remove items until the size is below limit
@@ -1028,7 +1029,7 @@ namespace AudioVisualizer
 		return S_OK;
 	}
 
-	HRESULT CAnalyzerEffect::Analyzer_ClearOutputQueue()
+	HRESULT MediaAnalyzer::Analyzer_ClearOutputQueue()
 	{
 		auto lock = m_csOutputQueueAccess.Lock();
 
@@ -1048,19 +1049,19 @@ namespace AudioVisualizer
 		return S_OK;
 	}
 
-	HRESULT CAnalyzerEffect::Analyzer_Resume()
+	HRESULT MediaAnalyzer::Analyzer_Resume()
 	{
 		m_bIsSuspended = false;
 		return Analyzer_ScheduleProcessing();
 	}
 
-	HRESULT CAnalyzerEffect::Analyzer_Suspend()
+	HRESULT MediaAnalyzer::Analyzer_Suspend()
 	{
 		m_bIsSuspended = true;
 		return S_OK;
 	}
 
-	HRESULT CAnalyzerEffect::Analyzer_FFwdQueueTo(REFERENCE_TIME position, IVisualizationDataFrame **ppFrame)
+	HRESULT MediaAnalyzer::Analyzer_FFwdQueueTo(REFERENCE_TIME position, IVisualizationDataFrame **ppFrame)
 	{
 		if (position < 0)
 			return S_FALSE;
@@ -1101,7 +1102,7 @@ namespace AudioVisualizer
 		return S_FALSE;
 	}
 
-	REFERENCE_TIME CAnalyzerEffect::GetPresentationTime()
+	REFERENCE_TIME MediaAnalyzer::GetPresentationTime()
 	{
 		MFTIME presentationTime = -1;
 		HRESULT hr = S_OK;
@@ -1115,7 +1116,7 @@ namespace AudioVisualizer
 		return presentationTime;
 	}
 
-	STDMETHODIMP CAnalyzerEffect::SetProperties(ABI::Windows::Foundation::Collections::IPropertySet * pConfiguration)
+	STDMETHODIMP MediaAnalyzer::SetProperties(ABI::Windows::Foundation::Collections::IPropertySet * pConfiguration)
 	{
 		using namespace ABI::Windows::Foundation::Collections;
 		using namespace Microsoft::WRL;

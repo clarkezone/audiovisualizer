@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <algorithm>
 #include "SpectrumVisualizer.h"
 
 namespace AudioVisualizer
@@ -7,16 +8,14 @@ namespace AudioVisualizer
 	{
 		_orientation = Orientation::Orientation_Vertical; // Vertical bars
 		_channelIndex = 0; // Map to first channel by default
-		_elementSize = Size() = { 20,4 };
-		_elementMargin = Thickness() = { 5,1,5,1 };
+		_elementMargin = Thickness() = { 0.1,0.1,0.1,0.1 };
 		_unlitElement = Color() = { 0xff, 0x40, 0x40, 0x40 };
-		_riseTime = TimeSpan() = { 1000000L };	// 100ms
-		_fallTime = TimeSpan() = { 1000000L };	// 100ms
-		_barCount = 10;
-		_minFrequency = 20.0f;
-		_maxFrequency = 20000.f;
-		_frequencyScale = ScaleType::Logarithmic;
+		_style = SpectrumVisualizationStyle::Blocks;
+		_controlSize.Width = 0.0f;
+		_controlSize.Height = 0.0f;
 		_levels.resize(24);
+		_minAmp = -60.0;
+		_maxAmp = 12.0f;
 		int level = -60;
 		for (size_t i = 0; i < 24; i++, level += 3)
 		{
@@ -28,43 +27,62 @@ namespace AudioVisualizer
 			else
 				_levels[i].Color = Color() = { 255, 255, 0, 0 };
 		}
-		Rescale();
-		ResizeControl();
-	}
 
+		ComPtr<IFrameworkElement> frameworkElement = As<IFrameworkElement>(GetControl());
+
+		ThrowIfFailed(frameworkElement->add_SizeChanged(Callback<ISizeChangedEventHandler>(
+			[=](IInspectable *pSender, ISizeChangedEventArgs *pArgs) -> HRESULT
+		{
+			pArgs->get_NewSize(&_controlSize);
+			return S_OK;
+		}).Get(), &_sizeChangedToken));
+
+	}
 
 	SpectrumVisualizer::~SpectrumVisualizer()
 	{
-	}
-	void SpectrumVisualizer::ResizeControl()
-	{
-		float spectrumWidth = _barCount * (_elementSize.Width + (float)_elementMargin.Left + (float)_elementMargin.Right);
-		float spectrumHeight = _levels.size() * (_elementSize.Height + (float)_elementMargin.Top + (float)_elementMargin.Bottom);
-		auto element = As<IFrameworkElement>(GetControl());
-		element->put_Width(spectrumWidth);
-		element->put_Height(spectrumHeight);
-
+		ComPtr<IFrameworkElement> frameworkElement = As<IFrameworkElement>(GetControl());
+		frameworkElement->remove_SizeChanged(_sizeChangedToken);
 	}
 
-	HRESULT SpectrumVisualizer::Rescale()
+	STDMETHODIMP SpectrumVisualizer::put_Source(ABI::AudioVisualizer::IVisualizationSource * pSource)
 	{
-		_previousSpectrum = nullptr;
-		_emptySpectrum = nullptr;
+		auto lock = _lock.LockExclusive();
 
-		HRESULT hr = MakeAndInitialize<SpectrumData>(
-			&_emptySpectrum,
-			1,
-			_barCount,
-			ScaleType::Linear,
-			_frequencyScale,
-			_minFrequency,
-			_maxFrequency,
-			true);
-
-		if (FAILED(hr))
-			return hr;
-
+		if (_visualizationSource != nullptr)
+		{
+			// Remove change handler
+			_visualizationSource->remove_ConfigurationChanged(_sourceConfigurationChangedToken);
+		}
+		_visualizationSource = pSource;
+		if (pSource != nullptr)
+		{
+			_visualizationSource->add_ConfigurationChanged(
+				Callback<ITypedEventHandler<IVisualizationSource *, HSTRING>>
+				(
+					[=](IVisualizationSource *pSender, HSTRING propertyName)->HRESULT
+					{
+						auto lock = _lock.LockExclusive();
+						ReconfigureSpectrum(propertyName);
+						return S_OK;
+					}
+				).Get(),
+				&_sourceConfigurationChangedToken
+			);
+		}
+		ReconfigureSpectrum(HStringReference(L"Source").Get());
 		return S_OK;
+	}
+	
+	void SpectrumVisualizer::ReconfigureSpectrum(HSTRING propertyName)
+	{
+		_expectedFrequencyCount = 0;
+		if (_visualizationSource == nullptr)
+			return;
+		ComPtr<IReference<UINT32>> fCount;
+		_visualizationSource->get_ActualFrequencyCount(&fCount);
+		if (fCount != nullptr)
+			fCount->get_Value(&_expectedFrequencyCount);
 	}
 
 	HRESULT SpectrumVisualizer::OnDraw(ICanvasDrawingSession * pSession, IVisualizationDataFrame * pDataFrame, IReference<TimeSpan>* pPresentationTime)
@@ -73,68 +91,70 @@ namespace AudioVisualizer
 		HRESULT hr = S_OK;
 
 		ComPtr<ISpectrumData> data;
-
 		if (pDataFrame != nullptr)
 		{
-			ComPtr<ISpectrumData> frameData;
-			pDataFrame->get_Spectrum(&frameData);
-			if (frameData != nullptr)
+			ComPtr<ISpectrumData> spectrumData;
+			pDataFrame->get_Spectrum(&spectrumData);
+
+			if (spectrumData != nullptr)
 			{
-				ComPtr<ISpectrumData> spectrumData;	// This is a spectrum the right spectrum count and scale
-				if (_frequencyScale == ScaleType::Linear)
-					hr = frameData->LinearTransform(_barCount, _minFrequency, _maxFrequency, &spectrumData);
+				ScaleType ampScale = ScaleType::Linear;
+				spectrumData->get_AmplitudeScale(&ampScale);
+				if (ampScale == ScaleType::Linear)
+				{
+					// Amplitude is linear, convert to logarithmic
+					ComPtr<ISpectrumData> logSpectrum;
+					spectrumData->ConvertToDecibels(_minAmp, _maxAmp, &logSpectrum);
+					data = logSpectrum;
+				}
 				else
-					hr = frameData->LogarithmicTransform(_barCount, _minFrequency, _maxFrequency, &spectrumData);
-				if (FAILED(hr))
-					return hr;
-
-				ComPtr<ISpectrumData> spectrumCombined;
-				ComPtr<IVectorView<IVectorView<float> *>> vectorView;
-				hr = spectrumData.As(&vectorView);
-				if (FAILED(hr))
-					return hr;
-
-				UINT32 inputDataChannelCount = 0;
-				vectorView->get_Size(&inputDataChannelCount);
-
-				// TODO: Mapping logic
-				data = spectrumData;
+					data = spectrumData;
 			}
-			else
-				data = _emptySpectrum;
 		}
-		else
-			data = _emptySpectrum;
 
-		// Apply rise and fall
-		_previousSpectrum = data;
-
-		ComPtr<ISpectrumData> logData;
-		data->ConvertToDecibels(-100, 0, &logData);
-
-		ComPtr<IVectorView<IVectorView<float>*>> channels;
-		logData.As(&channels);
-
-		ComPtr<IVectorView<float>> channelData;
-		if (SUCCEEDED(channels->GetAt(_channelIndex, &channelData)))
+		UINT32 barCount = _expectedFrequencyCount;
+		if (data != nullptr)
 		{
-			for (size_t barIndex = 0; barIndex < _barCount; barIndex++)
+			data->get_FrequencyCount(&barCount);
+		}
+
+		if (barCount == 0)	// Cannot determine bar count stop drawing
+			return S_FALSE;
+
+		float barAbsWidth = (_orientation == Orientation::Orientation_Vertical ? _controlSize.Width : _controlSize.Height) / (float) barCount;
+		float barAbsHeight = (_orientation == Orientation::Orientation_Vertical ? _controlSize.Height : _controlSize.Width);
+
+		ComPtr<IVectorView<float>> spectrum;
+		if (data != nullptr)
+		{
+			ComPtr<IVectorView<IVectorView<float>*>> channels;
+			data.As(&channels);
+			channels->GetAt(_channelIndex, &spectrum);
+		}
+
+		for (size_t barIndex = 0; barIndex < barCount; barIndex++)
+		{
+			float level = -100.0f;
+			if (spectrum != nullptr)
 			{
-				float level = -100.0f;
-				channelData->GetAt(barIndex, &level);
+				spectrum->GetAt(barIndex, &level);
+			}
+			if (_style == SpectrumVisualizationStyle::Blocks || _style == SpectrumVisualizationStyle::TopBlock)
+			{
 				Rect elementRect;
-				elementRect.X = barIndex * (_elementSize.Width + (float)_elementMargin.Left + (float)_elementMargin.Right) + (float)_elementMargin.Left;
-				elementRect.Width = _elementSize.Width;
-				elementRect.Height = _elementSize.Height;
+				float elementHeight = (barAbsHeight / (float)_levels.size());
+				elementRect.X = barIndex * barAbsWidth + barAbsWidth * (float) _elementMargin.Left;
+				elementRect.Height =  elementHeight * (1.0f - (float) _elementMargin.Top - (float) _elementMargin.Bottom);
+				elementRect.Width = (barAbsWidth) * (1.0f - (float) _elementMargin.Left - (float) _elementMargin.Right);
 
 				for (size_t levelIndex = 0; levelIndex < _levels.size(); levelIndex++)
 				{
 					MeterBarLevel elementLevel = _levels[levelIndex];
 					MeterBarLevel nextElementLevel = levelIndex + 1 < _levels.size() ? _levels[levelIndex + 1] : elementLevel;
 					Color elementColor;
-					if (level >= nextElementLevel.Level)	// Element is fully lit
-						elementColor = elementLevel.Color;
-					else if (level >= elementLevel.Level)
+					if (level >= nextElementLevel.Level)	// Element is fully lit unless only top block style
+						elementColor = _style == SpectrumVisualizationStyle::Blocks ? elementLevel.Color : _unlitElement;
+					else if (level > elementLevel.Level)
 					{
 						// Element partly lit
 						elementColor = elementLevel.Color;
@@ -143,11 +163,12 @@ namespace AudioVisualizer
 					{
 						elementColor = _unlitElement;
 					}
-					elementRect.Y = (_levels.size() - levelIndex) * (_elementSize.Height + (float)_elementMargin.Top + (float)_elementMargin.Bottom) + (float)_elementMargin.Top;
+					elementRect.Y = (_levels.size() - levelIndex) * elementHeight + (float) _elementMargin.Top;
 					pSession->FillRoundedRectangleWithColor(elementRect, 0, 0, elementColor);
 				}
 			}
 		}
+		
 		return hr;
 	}
 

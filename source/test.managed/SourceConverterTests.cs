@@ -32,13 +32,17 @@ namespace test.managed
 
         public TimeSpan? PresentationTime => Time;
 
-        public uint? ChannelCount { get => 2; set => throw new NotImplementedException(); }
-        public uint? FrequencyCount { get => 50; set => throw new NotImplementedException(); }
-        public ScaleType? FrequencyScale { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public float? MaxFrequency { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public float? MinFrequency { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
         public event TypedEventHandler<IVisualizationSource, string> ConfigurationChanged;
+
+        public uint? ActualChannelCount => 2;
+
+        public uint? ActualFrequencyCount => 50;
+
+        public float? ActualMaxFrequency => 20000.0f;
+
+        public float? ActualMinFrequency => 0.0f;
+
+        public ScaleType? ActualFrequencyScale => ScaleType.Linear;
     }
 
     [TestClass()]
@@ -69,8 +73,12 @@ namespace test.managed
             Assert.IsNull(converter.Source);
             Assert.IsNull(converter.FrequencyCount);
             Assert.IsNull(converter.ChannelCount);
-            Assert.IsNull(converter.RiseTime);
-            Assert.IsNull(converter.FallTime);
+            Assert.IsNull(converter.SpectrumRiseTime);
+            Assert.IsNull(converter.SpectrumFallTime);
+            Assert.IsNull(converter.RmsRiseTime);
+            Assert.IsNull(converter.RmsFallTime);
+            Assert.IsNull(converter.PeakRiseTime);
+            Assert.IsNull(converter.PeakFallTime);
             Assert.IsNull(converter.MinFrequency);
             Assert.IsNull(converter.MaxFrequency);
             Assert.IsNull(converter.FrequencyScale);
@@ -92,6 +100,12 @@ namespace test.managed
             Assert.AreEqual(source.PlaybackState, converter.PlaybackState);
             Assert.AreEqual(source.Time, converter.PresentationTime);
 
+            Assert.AreEqual(2u, converter.ActualChannelCount);
+            Assert.AreEqual(50u, converter.ActualFrequencyCount);
+            Assert.AreEqual(0.0f, converter.ActualMinFrequency);
+            Assert.AreEqual(20000.0f, converter.ActualMaxFrequency);
+            Assert.AreEqual(ScaleType.Linear, converter.ActualFrequencyScale);
+
             source.AnalyzerTypes = AnalyzerType.RMS;
             source.IsSuspended = !source.IsSuspended;
             source.State = SourcePlaybackState.Playing;
@@ -110,14 +124,34 @@ namespace test.managed
             converter.ChannelCount = 2;
             Assert.IsNotNull(converter.FrequencyCount);
             Assert.AreEqual(2u, converter.ChannelCount.Value);
-            Assert.ThrowsException<ArgumentException>(() => { converter.RiseTime = TimeSpan.Zero; });
-            converter.RiseTime = TimeSpan.FromTicks(1);
-            Assert.IsNotNull(converter.RiseTime);
-            Assert.AreEqual(TimeSpan.FromTicks(1), converter.RiseTime);
-            Assert.ThrowsException<ArgumentException>(() => { converter.FallTime = TimeSpan.Zero; });
-            converter.FallTime = TimeSpan.FromTicks(1);
-            Assert.IsNotNull(converter.FallTime);
-            Assert.AreEqual(TimeSpan.FromTicks(1), converter.FallTime);
+            Assert.ThrowsException<ArgumentException>(() => { converter.RmsRiseTime = TimeSpan.Zero; });
+            converter.RmsRiseTime = TimeSpan.FromTicks(1);
+            Assert.IsNotNull(converter.RmsRiseTime);
+            Assert.AreEqual(TimeSpan.FromTicks(1), converter.RmsRiseTime);
+            Assert.ThrowsException<ArgumentException>(() => { converter.RmsFallTime = TimeSpan.Zero; });
+            converter.RmsFallTime = TimeSpan.FromTicks(1);
+            Assert.IsNotNull(converter.RmsFallTime);
+            Assert.AreEqual(TimeSpan.FromTicks(1), converter.RmsFallTime);
+
+            Assert.ThrowsException<ArgumentException>(() => { converter.PeakRiseTime = TimeSpan.Zero; });
+            converter.PeakRiseTime = TimeSpan.FromTicks(1);
+            Assert.IsNotNull(converter.PeakRiseTime);
+            Assert.AreEqual(TimeSpan.FromTicks(1), converter.PeakRiseTime);
+            Assert.ThrowsException<ArgumentException>(() => { converter.PeakFallTime = TimeSpan.Zero; });
+            converter.PeakFallTime = TimeSpan.FromTicks(1);
+            Assert.IsNotNull(converter.PeakFallTime);
+            Assert.AreEqual(TimeSpan.FromTicks(1), converter.PeakFallTime);
+
+            Assert.ThrowsException<ArgumentException>(() => { converter.SpectrumRiseTime = TimeSpan.Zero; });
+            converter.SpectrumRiseTime = TimeSpan.FromTicks(1);
+            Assert.IsNotNull(converter.SpectrumRiseTime);
+            Assert.AreEqual(TimeSpan.FromTicks(1), converter.SpectrumRiseTime);
+            Assert.ThrowsException<ArgumentException>(() => { converter.SpectrumFallTime = TimeSpan.Zero; });
+            converter.SpectrumFallTime = TimeSpan.FromTicks(1);
+            Assert.IsNotNull(converter.SpectrumFallTime);
+            Assert.AreEqual(TimeSpan.FromTicks(1), converter.SpectrumFallTime);
+
+
 
             converter.MinFrequency = 20.0f;
             converter.MaxFrequency = 20000.0f;
@@ -134,7 +168,10 @@ namespace test.managed
             converter.MinFrequency = 0.0f;
             Assert.AreEqual(0.0f, converter.MinFrequency);
             CollectionAssert.AreEqual(
-                new string[] { "Source","FrequencyCount","ChannelCount","RiseTime","FallTime","MinFrequency","MaxFrequency","FrequencyScale","FrequencyScale","MinFrequency" },
+                new string[] { "Source","FrequencyCount","ChannelCount",
+                    "RmsRiseTime","RmsFallTime","PeakRiseTime","PeakFallTime",
+                    "SpectrumRiseTime","SpectrumFallTime",
+                    "MinFrequency","MaxFrequency","FrequencyScale","FrequencyScale","MinFrequency" },
                 propertiesChanged
                 );
             converter = null;
@@ -170,6 +207,55 @@ namespace test.managed
             f = converter.GetData();
             Assert.IsNotNull(f);
 
+        }
+
+        [TestCategory("SourceConverter")]
+        [TestMethod()]
+        public void SourceConverter_RiseAndFall()
+        {
+            SourceConverter converter = new SourceConverter();
+            FakeVisualizationSource source = new FakeVisualizationSource();
+
+            converter.Source = source;
+
+            var frame1 = new VisualizationDataFrame(
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromTicks(166667),
+                ScalarData.CreateEmpty(2),
+                ScalarData.CreateEmpty(2),
+                SpectrumData.CreateEmpty(2, 10, ScaleType.Linear, ScaleType.Linear, 0.0f, 22100.0f)
+                );
+
+            var frame2 = new VisualizationDataFrame(
+                TimeSpan.FromSeconds(2),
+                TimeSpan.FromTicks(166667),
+                ScalarData.Create(new float[] { 0.5f, 1.0f }),
+                ScalarData.Create(new float[] { 1.0f, 0.5f }),
+                SpectrumData.Create(new float[][] 
+                {
+                    new float[] { 1.0f,0,0,0,0,0,0,0,0,0 },
+                    new float[] { 0.5f,0,0,0,0,0,0,0,0,0 }
+                },ScaleType.Linear,ScaleType.Linear,0.0f,22100.0f)
+                );
+
+            source.Frame = frame1;
+            converter.SpectrumRiseTime = TimeSpan.FromMilliseconds(100);
+            converter.SpectrumFallTime = TimeSpan.FromMilliseconds(50);
+            converter.RmsRiseTime = TimeSpan.FromMilliseconds(80);
+            converter.RmsFallTime = TimeSpan.FromMilliseconds(40);
+            converter.PeakRiseTime = TimeSpan.FromMilliseconds(20);
+            converter.PeakFallTime = TimeSpan.FromMilliseconds(200);
+            var data1 = converter.GetData();
+            source.Frame = frame2;
+            var data2 = converter.GetData();
+            Assert.IsNotNull(data2.RMS);
+            Assert.IsNotNull(data2.Peak);
+            Assert.IsNotNull(data2.Spectrum);
+
+            CollectionAssert.AreEqual(new float[] {0.09403199f , 0.188063979f }, data2.RMS.ToArray());
+            CollectionAssert.AreEqual(new float[] { 0.5654025f,0.282701254f }, data2.Peak.ToArray());
+            CollectionAssert.AreEqual(new float[] { 0.1535185f, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, data2.Spectrum[0].ToArray());
+            CollectionAssert.AreEqual(new float[] { 0.07675925f, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, data2.Spectrum[1].ToArray());
         }
     }
 }
