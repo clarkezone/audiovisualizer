@@ -37,6 +37,7 @@ namespace AudioVisualizer
 		ComPtr<ABI::Windows::UI::Xaml::IWindow> _window;
 		EventRegistrationToken _sizeChangedToken;
 		EventRegistrationToken _loadedToken;
+		EventRegistrationToken _unloadedToken;
 		EventRegistrationToken _deviceLostToken;
 		EventRegistrationToken _deviceReplacedToken;
 		EventRegistrationToken _dpiChangedToken;
@@ -92,28 +93,6 @@ namespace AudioVisualizer
 				ThrowIfFailed(_canvasCompositionStatics->CreateCompositionGraphicsDevice(_compositor.Get(), _device.Get(), &_compositionGraphicsDevice));
 			else
 				ThrowIfFailed(_canvasCompositionStatics->SetCanvasDevice(_compositionGraphicsDevice.Get(), _device.Get()));
-
-			/*_compositionGraphicsDevice->add_RenderingDeviceReplaced(
-				Callback<__FITypedEventHandler_2_Windows__CUI__CComposition__CCompositionGraphicsDevice_Windows__CUI__CComposition__CRenderingDeviceReplacedEventArgs>(
-					[](ABI::Windows::UI::Composition::ICompositionGraphicsDevice*pDevice, ABI::Windows::UI::Composition::IRenderingDeviceReplacedEventArgs*pArgs) -> HRESULT
-			{
-				return S_OK;
-			}
-					).Get(),&_deviceReplacedToken
-			
-			);*/
-
-
-			/*ThrowIfFailed(_device->add_DeviceLost(
-				Callback<__FITypedEventHandler_2_Microsoft__CGraphics__CCanvas__CCanvasDevice_IInspectable>(
-					[](ABI::Microsoft::Graphics::Canvas::ICanvasDevice*, IInspectable *) -> HRESULT
-			{
-				// TODO: Unregister callback and create a new device on UI thread
-				return S_OK;
-			}
-					).Get(),
-				&_deviceLostToken
-				));*/
 
 			return S_OK;
 
@@ -198,8 +177,7 @@ namespace AudioVisualizer
 
 			typedef AddFtmBase<IWorkItemHandler>::Type CallbackType;
 
-			HANDLE cancelEvent = CreateEventEx(nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_ALL_ACCESS);
-			_cancelDrawLoop = cancelEvent;
+			_cancelDrawLoop = CreateEventEx(nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_ALL_ACCESS);
 
 			auto drawLoop = Callback<CallbackType>(
 				[=](IAsyncAction *) -> HRESULT
@@ -208,7 +186,7 @@ namespace AudioVisualizer
 				SetThreadDescription(GetCurrentThread(), L"Visualizer draw loop");
 				while (SUCCEEDED(hr))
 				{
-					DWORD dwWaitResult = WaitForSingleObject(cancelEvent, 0);
+					DWORD dwWaitResult = WaitForSingleObject(_cancelDrawLoop, 0);
 
 					if (dwWaitResult != WAIT_TIMEOUT)
 						break;
@@ -258,7 +236,7 @@ namespace AudioVisualizer
 					else
 					{
 						lock.Unlock();
-						WaitForSingleObject(cancelEvent, 17);	// If there is no swap chain or draw look is suspended wait for 17ms and retry
+						WaitForSingleObject(_cancelDrawLoop, 17);	// If there is no swap chain or draw look is suspended wait for 17ms and retry
 					}
 				}
 				return hr;
@@ -337,6 +315,7 @@ namespace AudioVisualizer
 		{
 			auto frameworkElement = As<IFrameworkElement>(GetControl());
 			frameworkElement->remove_Loaded(_loadedToken);
+			frameworkElement->remove_Unloaded(_unloadedToken);
 			frameworkElement->remove_SizeChanged(_sizeChangedToken);
 		}
 		
@@ -388,6 +367,15 @@ namespace AudioVisualizer
 			}
 			).Get(),&_loadedToken));
 
+			ThrowIfFailed(
+				frameworkElement->add_Unloaded(
+				Callback<IRoutedEventHandler>(
+					[=](IInspectable *pSender, IRoutedEventArgs *pArgs)->HRESULT
+			{
+				_bDrawEventActive = false;
+				SetEvent(_cancelDrawLoop);
+				return S_OK;
+			}).Get(),&_unloadedToken));
 
 			ThrowIfFailed(frameworkElement->add_SizeChanged(Callback<ISizeChangedEventHandler>(
 				[=](IInspectable *pSender, ISizeChangedEventArgs *pArgs) -> HRESULT

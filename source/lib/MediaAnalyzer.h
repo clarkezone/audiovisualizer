@@ -10,6 +10,7 @@
 #include <windows.system.threading.h>
 #include <AudioAnalyzer.h>
 #include "VisualizationDataFrame.h"
+#include "wrl_util.h"
 
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::System::Threading;
@@ -20,7 +21,7 @@ namespace AudioVisualizer
 {
 #define MFT_ANALYZER_PROPERTYSET_NAME L"Source"
 
-	class CAnalyzerEffect
+	class MediaAnalyzer
 		: public Microsoft::WRL::RuntimeClass<
 		Microsoft::WRL::RuntimeClassFlags< Microsoft::WRL::RuntimeClassType::WinRtClassicComMix >,
 		ABI::Windows::Media::IMediaExtension,
@@ -29,7 +30,7 @@ namespace AudioVisualizer
 		IMFClockStateSink,
 		ABI::AudioVisualizer::IVisualizationSource>
 	{
-		InspectableClass(RuntimeClass_AudioVisualizer_MftAnalyzer, BaseTrust)
+		InspectableClass(RuntimeClass_AudioVisualizer_MediaAnalyzer, BaseTrust)
 		
 #pragma region IMFTransform variables
 		Microsoft::WRL::ComPtr<IMFMediaType> m_spOutputType;
@@ -46,7 +47,7 @@ namespace AudioVisualizer
 		bool m_bIsSuspended;	// Is analyzer in a suspended state
 		ComPtr<IThreadPoolStatics> _threadPoolStatics;
 		HANDLE _threadPoolSemaphore;	// Controls threadpool execution - schedule only one instance of execution
-		bool _bResetAnalyzer;
+		bool _bFlushPending;
 
 		const size_t cMaxOutputQueueSize = 600;	// Keep 10sec worth of data for 60fps output
 
@@ -170,9 +171,14 @@ namespace AudioVisualizer
 		}
 #pragma endregion
 
+		EventSource<ITypedEventHandler<IVisualizationSource*, HSTRING>> _configurationChangedList;
+		HRESULT RaiseConfiguratonChanged(wchar_t *wszPropertyName)
+		{
+			return _configurationChangedList.InvokeAll(this, HStringReference(wszPropertyName).Get());
+		}
 	public:
-		CAnalyzerEffect();
-		~CAnalyzerEffect();
+		MediaAnalyzer();
+		~MediaAnalyzer();
 		HRESULT RuntimeClassInitialize();
 #pragma region IVisualizationSource
 		STDMETHODIMP GetData(IVisualizationDataFrame **pData);
@@ -190,6 +196,77 @@ namespace AudioVisualizer
 			*pState = _playbackState;
 			return S_OK;
 		}
+		STDMETHODIMP get_ActualFrequencyCount(IReference<UINT32> **ppcElements)
+		{
+			using namespace wrl_util;
+			if (ppcElements == nullptr)
+				return E_POINTER;
+			UINT32 frequencyCount = _analyzer->GetFftLength() / 2;
+			auto value = Make<Nullable<UINT32>>(frequencyCount);
+			return value.CopyTo(ppcElements);
+		}
+		STDMETHODIMP get_ActualChannelCount(IReference<UINT32> **ppcElements)
+		{
+			if (ppcElements == nullptr)
+				return E_POINTER;
+			auto lock = m_csMft.Lock();
+			if (m_spOutputType != nullptr)
+			{
+				UINT32 channels;
+				m_spOutputType->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &channels);
+				auto value = Make<Nullable<UINT32>>(channels);
+				return value.CopyTo(ppcElements);
+			}
+			else
+				*ppcElements = nullptr;
+			return S_OK;
+		}
+
+		STDMETHODIMP get_ActualMinFrequency(IReference<float> **ppValue)
+		{
+			if (ppValue == nullptr)
+				return E_POINTER;
+			auto minFreq = Make<Nullable<float>>(0.0f);
+			return minFreq.CopyTo(ppValue);
+		}
+
+		STDMETHODIMP get_ActualMaxFrequency(IReference<float> **ppValue)
+		{
+			if (ppValue == nullptr)
+				return E_POINTER;
+			
+			auto lock = m_csMft.Lock();
+			if (m_spOutputType == nullptr)
+			{
+				*ppValue = nullptr;
+			}
+			UINT32 sampleRate = 0;
+			m_spOutputType->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND,&sampleRate);
+
+			auto maxFreq = Make<Nullable<float>>((float) sampleRate / (2.0f * (float)_analyzer->GetDownsampleRate() ) );
+			return maxFreq.CopyTo(ppValue);
+		}
+
+		STDMETHODIMP get_ActualFrequencyScale(IReference<ScaleType> **ppValue)
+		{
+			if (ppValue == nullptr)
+				return E_POINTER;
+			auto scale = Make<Nullable<ScaleType>>(ScaleType::Linear);
+			return scale.CopyTo(ppValue);
+		}
+		
+		STDMETHODIMP add_ConfigurationChanged(
+			ITypedEventHandler<IVisualizationSource *, HSTRING> *value,
+			EventRegistrationToken *token)
+		{
+			return _configurationChangedList.Add(value, token);
+		}
+		STDMETHODIMP remove_ConfigurationChanged(
+			EventRegistrationToken token)
+		{
+			return _configurationChangedList.Remove(token);
+		}
+
 #pragma endregion
 		
 		STDMETHODIMP ConfigureSpectrum(UINT32 fftLength, float overlap);

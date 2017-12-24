@@ -2,48 +2,80 @@
     x:Class="VisualizationPlayer.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:a="using:AudioVisualizer"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:VisualizationPlayer"
-    mc:Ignorable="d" Loaded="Page_Loaded">
-    <NavigationView x:Name="navView" IsPaneOpen="True" SelectionChanged="navView_SelectionChanged" Header="{x:Bind Player}">
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="Page_Loaded"
+    mc:Ignorable="d">
+    <NavigationView
+        x:Name="navView"
+        Header="{x:Bind Player}"
+        IsPaneOpen="True"
+        SelectionChanged="navView_SelectionChanged">
         <NavigationView.HeaderTemplate>
             <DataTemplate x:DataType="local:PlayerService">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="20,0" Text="{x:Bind Title,Mode=OneWay}"></TextBlock>
+                    <TextBlock
+                        Grid.Column="0"
+                        Margin="20,0"
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Title, Mode=OneWay}" />
                 </Grid>
             </DataTemplate>
         </NavigationView.HeaderTemplate>
         <NavigationView.MenuItems>
-            <NavigationViewItem Content="Player" Tag="Player">
+            <NavigationViewItem Content="Player" Tag="VisualizationPlayer.PlayerPage">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Play" />
+                </NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Information" Tag="Information">
+            <NavigationViewItem Content="Spectrum" Tag="VisualizationPlayer.SpectrumPage">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Audio" />
+                </NavigationViewItem.Icon>
             </NavigationViewItem>
+            <NavigationViewItem Content="Information" Tag="VisualizationPlayer.InformationPage">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="MusicInfo" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
         </NavigationView.MenuItems>
         <NavigationView.Content>
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Frame Grid.Row="0" x:Name="ContentFrame">
-                </Frame>
+                <Frame x:Name="ContentFrame" Grid.Row="0" />
                 <Grid Grid.Row="1">
                     <Grid.RowDefinitions>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
+                        <RowDefinition />
+                        <RowDefinition />
                     </Grid.RowDefinitions>
-                    <Slider x:Name="seekSlider" Grid.Row="0" Orientation="Horizontal" Margin="40,5" ValueChanged="seekSlider_ValueChanged" ></Slider>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
-                        <a:CustomVisualizer x:Name="PositionDisplay" Height="50" Width="250" Draw="PositionDisplay_Draw"></a:CustomVisualizer>
-                        <AppBarButton Icon="Play" Click="PlayButton_Click"></AppBarButton>
-                        <AppBarButton Icon="Pause" Click="StopButton_Click" ></AppBarButton>
-                        <AppBarButton Icon="OpenFile" Click="OpenFile_Click"></AppBarButton>
+                    <Slider
+                        x:Name="seekSlider"
+                        Grid.Row="0"
+                        Margin="40,5"
+                        Orientation="Horizontal"
+                        ValueChanged="seekSlider_ValueChanged" />
+                    <StackPanel
+                        Grid.Row="1"
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal">
+                        <a:CustomVisualizer
+                            x:Name="PositionDisplay"
+                            Width="75"
+                            Height="40"
+                            Draw="PositionDisplay_Draw" />
+                        <AppBarButton Click="PlayButton_Click" Icon="Play" />
+                        <AppBarButton Click="StopButton_Click" Icon="Pause" />
+                        <AppBarButton Click="OpenFile_Click" Icon="OpenFile" />
                     </StackPanel>
                 </Grid>
             </Grid>

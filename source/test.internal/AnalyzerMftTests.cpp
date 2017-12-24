@@ -151,7 +151,7 @@ namespace AnalyzerTest
 		{
 			using namespace ABI::Windows::Foundation;
 			ComPtr<IActivationFactory> spFactory;
-			HRESULT hr = GetActivationFactory(HStringReference(RuntimeClass_AudioVisualizer_MftAnalyzer).Get(), &spFactory);
+			HRESULT hr = GetActivationFactory(HStringReference(RuntimeClass_AudioVisualizer_MediaAnalyzer).Get(), &spFactory);
 			if (FAILED(hr))
 				return hr;
 			ComPtr<IInspectable> spObject;

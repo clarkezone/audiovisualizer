@@ -101,7 +101,7 @@ namespace VisualizationPlayer
         {
             if (args.PresentationTime != null)
             {
-                string timeString = args.PresentationTime.Value.ToString("mm\\:ss\\.f");
+                string timeString = args.PresentationTime.Value.ToString("mm\\:ss\\.ff");
                 var ds = (CanvasDrawingSession)args.DrawingSession;
                 ds.DrawText(timeString, 0, 0, Colors.Gray);
             }
@@ -133,15 +133,9 @@ namespace VisualizationPlayer
             }
             else
             {
-                switch (((NavigationViewItem)args.SelectedItem).Tag)
-                {
-                    case "Player":
-                        ContentFrame.Navigate(typeof(PlayerPage));
-                        break;
-                    case "Information":
-                        ContentFrame.Navigate(typeof(InformationPage));
-                        break;
-                }
+                string typeName = (string)((NavigationViewItem)args.SelectedItem).Tag;
+                Type pageType = Type.GetType(typeName);
+                ContentFrame.Navigate(pageType);
             }
         }
     }

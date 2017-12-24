@@ -356,7 +356,8 @@
     <Exec Command="$(MdMergeExe) -v @(MetaDataDir -> '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(MergedWinmdDirectory)&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial" />
   </Target>
   <ItemGroup>
-    <ClInclude Include="ArrayData.h" />
+    <ClInclude Include="SourceConverter.h" />
+    <ClInclude Include="SpectrumData.h" />
     <ClInclude Include="AudioAnalyzer.h" />
     <ClInclude Include="AudioBuffer.h" />
     <ClInclude Include="AudioMath.h" />
@@ -367,10 +368,11 @@
     <ClInclude Include="ErrorHandling.h" />
     <ClInclude Include="LifespanTracker.h" />
     <ClInclude Include="PlaybackSource.h" />
-    <ClInclude Include="MftAnalyzer.h" />
+    <ClInclude Include="MediaAnalyzer.h" />
     <ClInclude Include="Microsoft.Graphics.Canvas.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ScalarData.h" />
+    <ClInclude Include="SpectrumVisualizer.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="Utilities.h" />
@@ -380,16 +382,16 @@
     <ClInclude Include="XDSP.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ArrayData.cpp" />
+    <ClCompile Include="SourceConverter.cpp" />
+    <ClCompile Include="SpectrumData.cpp" />
     <ClCompile Include="AudioAnalyzer.cpp" />
     <ClCompile Include="AudioBuffer.cpp" />
     <ClCompile Include="AudioMath.cpp" />
-    <ClCompile Include="CreateResourcesEventArgs.cpp" />
     <ClCompile Include="CustomVisualizer.cpp" />
     <ClCompile Include="DiscreteVUBar.cpp" />
     <ClCompile Include="LifespanTracker.cpp" />
     <ClCompile Include="PlaybackSource.cpp" />
-    <ClCompile Include="MftAnalyzer.cpp" />
+    <ClCompile Include="MediaAnalyzer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -402,6 +404,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='CIBUILD|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ScalarData.cpp" />
+    <ClCompile Include="SpectrumVisualizer.cpp" />
     <ClCompile Include="Trace.cpp" />
     <ClCompile Include="VisualizationDataFrame.cpp" />
     <ClCompile Include="VisualizerDrawEventArgs.cpp" />

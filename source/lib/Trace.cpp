@@ -35,6 +35,11 @@ using namespace Microsoft::WRL;
 #define EVT_SET_PRESENTATION_CLOCK L"SetClock"
 #define EVT_DRAWLOOP_DEVICE_LOST L"DrawLoop_DeviceLost"
 
+void InitializeTrace()
+{
+	AudioVisualizer::Diagnostics::Trace::Initialize();
+}
+
 namespace AudioVisualizer
 {
 	namespace Diagnostics
@@ -62,26 +67,11 @@ namespace AudioVisualizer
 			auto durationTitle = HStringReference(szDuration);
 			if (pFrame != nullptr)
 			{
-				ComPtr<IReference<TimeSpan>> time = 0;
+				TimeSpan time = { -1 };
 				pFrame->get_Time(&time);
-				if (time != nullptr)
-				{
-					TimeSpan value;
-					time->get_Value(&value);
-					pFields->AddTimeSpan(timeTitle.Get(), value);
-				}
-				else
-					pFields->AddEmpty(timeTitle.Get());
-
+				pFields->AddTimeSpan(timeTitle.Get(), time);
 				pFrame->get_Duration(&time);
-				if (time != nullptr)
-				{
-					TimeSpan value;
-					time->get_Value(&value);
-					pFields->AddTimeSpan(durationTitle.Get(), value);
-				}
-				else
-					pFields->AddEmpty(durationTitle.Get());
+				pFields->AddTimeSpan(durationTitle.Get(), time);
 			}
 			else
 			{
@@ -238,7 +228,7 @@ namespace AudioVisualizer
 			return g_pLoggingChannel->StartActivityWithFields(HStringReference(EVT_START_CALCULATE).Get(), spFields.Get(), ppActivity);
 		}
 
-		HRESULT Trace::Log_GetData(REFERENCE_TIME currentPosition, IVisualizationDataFrame *pFrame, AudioVisualizer::VisualizationDataFrame *pQueueFront, size_t queueSize, HRESULT result)
+		HRESULT Trace::Log_GetData(REFERENCE_TIME currentPosition, IVisualizationDataFrame *pFrame, size_t queueSize)
 		{
 			using namespace Windows::Foundation;
 			HRESULT hr = S_OK;
@@ -247,15 +237,8 @@ namespace AudioVisualizer
 			if (FAILED(hr))
 				return hr;
 			spFields->AddTimeSpan(HStringReference(L"Position").Get(), ABI::Windows::Foundation::TimeSpan() = { currentPosition });
-
 			AddVisualizationFrameProperties(pFrame, spFields.Get(), L"Time", L"Duration");
-
-			ComPtr<IVisualizationDataFrame> dataFrameQF = dynamic_cast<IVisualizationDataFrame *>(pQueueFront);;
-			AddVisualizationFrameProperties(dataFrameQF.Get(), spFields.Get(), L"QFTime", L"QFDuration");
-
-
 			spFields->AddUInt32(HStringReference(L"QueueSize").Get(), (UINT32)queueSize);
-			spFields->AddInt32WithFormat(HStringReference(L"Result").Get(), result, LoggingFieldFormat::LoggingFieldFormat_HResult);
 			hr = g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_GET_DATA).Get(), spFields.Get());
 			return hr;
 		}
@@ -341,16 +324,9 @@ namespace AudioVisualizer
 				return hr;
 			if (pFrame != nullptr)
 			{
-				ComPtr<IReference<TimeSpan>> time = 0;
+				TimeSpan time = { 0 };
 				pFrame->get_Time(&time);
-				if (time != nullptr)
-				{
-					TimeSpan value;
-					time->get_Value(&value);
-					spFields->AddTimeSpan(HStringReference(L"Time").Get(), value);
-				}
-				else
-					spFields->AddEmpty(HStringReference(L"Time").Get());
+					spFields->AddTimeSpan(HStringReference(L"Time").Get(), time);
 			}
 			else
 				spFields->AddEmpty(HStringReference(L"Time").Get());
@@ -456,11 +432,12 @@ namespace AudioVisualizer
 			hr = g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_CLEAR_OUTPUT).Get(), spFields.Get());
 			return hr;
 		}
-		HRESULT Trace::Log_MftProcessMessage(MFT_MESSAGE_TYPE msg)
+		HRESULT Trace::Log_MftProcessMessage(MFT_MESSAGE_TYPE msg,ULONG param)
 		{
 			ComPtr<ILoggingFields> spFields;
 			HRESULT hr = CreateLoggingFields(&spFields);
 			spFields->AddInt32(HStringReference(L"MessageId").Get(),(INT32) msg);
+			spFields->AddUInt64(HStringReference(L"Param").Get(), param);
 			return g_pLoggingChannel->LogEventWithFields(HStringReference(EVT_MFT_PROCESSMSG).Get(), spFields.Get());
 		}
 		HRESULT Trace::Log_GetPresentationTime(IMFPresentationClock *pClock, REFERENCE_TIME time, HRESULT hr)

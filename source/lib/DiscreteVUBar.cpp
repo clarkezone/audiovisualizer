@@ -20,15 +20,21 @@ namespace AudioVisualizer
 			else
 				_levels[i].Color = Color() = { 255, 255, 0, 0 };
 		}
-		_channelCount = 2;
+		_minAmp = -60.0f;
+		_maxAmp = -12.0f;
+		_channelIndex = 0;
 		_orientation = Orientation::Orientation_Vertical;
-		_elementSize = Size() = { 20,8 };
-		_elementMargin = Thickness() = { 5, 1, 5, 1 };
+		_elementMargin = Thickness() = { 0, 0, 0, 0 };
 		_unlitElement = Color() = { 0, 96, 96, 96 };
-		_riseTime.Duration = 1000000;	// 100ms
-		_fallTime.Duration = 1000000;	// 100ms
 
-		ResizeControl();
+		ComPtr<IFrameworkElement> frameworkElement = As<IFrameworkElement>(GetControl());
+
+		ThrowIfFailed(frameworkElement->add_SizeChanged(Callback<ISizeChangedEventHandler>(
+			[=](IInspectable *pSender, ISizeChangedEventArgs *pArgs) -> HRESULT
+		{
+			pArgs->get_NewSize(&_controlSize);
+			return S_OK;
+		}).Get(), &_sizeChangedToken));
 	}
 
 
@@ -36,85 +42,76 @@ namespace AudioVisualizer
 	{
 	}
 
-	Size DiscreteVUBar::CalculateSize()
-	{
-		Size calculatedSize;
-		calculatedSize.Height = _levels.size() * (_elementSize.Height + (float)_elementMargin.Top + (float)_elementMargin.Bottom);
-		calculatedSize.Width = _channelCount * (_elementSize.Width + (float)_elementMargin.Left + (float)_elementMargin.Right);
-		if (_orientation == Orientation::Orientation_Horizontal)
-			std::swap(calculatedSize.Height, calculatedSize.Width);
-
-		return calculatedSize;
-	}
-
-	void DiscreteVUBar::ResizeControl()
-	{
-		Size size = CalculateSize();
-		auto element = As<IFrameworkElement>(GetControl());
-		element->put_Width(size.Width);
-		element->put_Height(size.Height);
-	}
 
 	HRESULT DiscreteVUBar::OnDraw(ICanvasDrawingSession *pDrawingSession, IVisualizationDataFrame *pDataFrame, IReference<TimeSpan> *)
 	{
-		ComPtr<IScalarData> logRms;
-		ComPtr<ABI::Windows::Foundation::Collections::IVectorView<float>> rmsValues;
-		UINT32 valueCount = 0;
+		auto lock = _lock.LockExclusive();
+		HRESULT hr = S_OK;
 
-		SourcePlaybackState state = SourcePlaybackState::Stopped;
-		if (_visualizationSource != nullptr)
-			_visualizationSource->get_PlaybackState(&state);
-
-		ComPtr<IScalarData> rms;
-		if (pDataFrame != nullptr && state == SourcePlaybackState::Playing)
-			pDataFrame->get_RMS(&rms);
-		else
-			rms = Make<ScalarData>(_channelCount, ScaleType::Linear, true);
-
-		ComPtr<IReference<TimeSpan>> ref_duration;
-		TimeSpan duration = { 166667 };
-
+		ComPtr<IScalarData> data;
 		if (pDataFrame != nullptr)
 		{
-			pDataFrame->get_Duration(&ref_duration);
-			ref_duration->get_Value(&duration);
-		}
-		ComPtr<IScalarData> prevValue;
-		rms->ApplyRiseAndFall(_previousValues.Get(), _riseTime, _fallTime, duration, &prevValue);
-		_previousValues = prevValue;
-		_previousValues->ConvertToLogAmplitude(-100, 0, &logRms);
-		logRms.As(&rmsValues);
-		rmsValues->get_Size(&valueCount);
+			ComPtr<IScalarData> rmsData;
+			pDataFrame->get_RMS(&rmsData);
 
-		for (size_t levelIndex = 0; levelIndex < _levels.size(); levelIndex++)
-		{
-			for (size_t channelIndex = 0; channelIndex < _channelCount; channelIndex++)
+			if (rmsData != nullptr)
 			{
-				Color elementColor = _unlitElement;
-				if (rmsValues != nullptr && valueCount > channelIndex)
+				ScaleType ampScale = ScaleType::Linear;
+				rmsData->get_AmplitudeScale(&ampScale);
+				if (ampScale == ScaleType::Linear)
 				{
-					float value = -100.0f;
-					rmsValues->GetAt(channelIndex, &value);
-					if (value > _levels[levelIndex].Level)
-						elementColor = _levels[levelIndex].Color;
+					// Amplitude is linear, convert to logarithmic
+					ComPtr<IScalarData> logRms;
+					rmsData->ConvertToDecibels(_minAmp, _maxAmp, &logRms);
+					data = logRms;
 				}
-				float elementX = channelIndex * (_elementSize.Width + (float)_elementMargin.Left + (float)_elementMargin.Right) + (float)_elementMargin.Left;
-				float elementY = ((int)_levels.size() - (int)levelIndex) * (_elementSize.Height + (float)_elementMargin.Top + (float)_elementMargin.Bottom) + (float)_elementMargin.Top;
-				if (_orientation == Orientation::Orientation_Vertical)
+				else
+					data = rmsData;
+			}
+		}
+
+		float barAbsWidth = (_orientation == Orientation::Orientation_Vertical ? _controlSize.Width : _controlSize.Height);
+		float barAbsHeight = (_orientation == Orientation::Orientation_Vertical ? _controlSize.Height : _controlSize.Width);
+
+		float level = -100.0f;
+		if (data != nullptr)
+		{
+			ComPtr<IVectorView<float>> values;
+			data.As(&values);
+			UINT32 size = 0;
+			values->get_Size(&size);
+			if (_channelIndex < size)
+				values->GetAt(_channelIndex, &level);
+		}
+
+			Rect elementRect;
+			float elementHeight = (barAbsHeight / (float)_levels.size());
+			elementRect.X = barAbsWidth * (float)_elementMargin.Left;
+			elementRect.Height = elementHeight * (1.0f - (float)_elementMargin.Top - (float)_elementMargin.Bottom);
+			elementRect.Width = (barAbsWidth) * (1.0f - (float)_elementMargin.Left - (float)_elementMargin.Right);
+
+			for (size_t levelIndex = 0; levelIndex < _levels.size(); levelIndex++)
+			{
+				MeterBarLevel elementLevel = _levels[levelIndex];
+				MeterBarLevel nextElementLevel = levelIndex + 1 < _levels.size() ? _levels[levelIndex + 1] : elementLevel;
+				Color elementColor;
+				if (level >= nextElementLevel.Level)	// Element is fully lit
+					elementColor = elementLevel.Color;
+				else if (level > elementLevel.Level)
 				{
-					pDrawingSession->FillRectangleAtCoordsWithColor(
-						elementX, elementY, _elementSize.Width, _elementSize.Height, elementColor
-					);
+					// Element partly lit
+					elementColor = elementLevel.Color;
 				}
 				else
 				{
-					pDrawingSession->FillRectangleAtCoordsWithColor(
-						elementY, elementX, _elementSize.Height, _elementSize.Width, elementColor
-					);
+					elementColor = _unlitElement;
 				}
-			}
+				elementRect.Y = (_levels.size() - levelIndex) * elementHeight + (float)_elementMargin.Top;
+				pDrawingSession->FillRoundedRectangleWithColor(elementRect, 0, 0, elementColor);
 		}
-		return S_OK;
+
+
+		return hr;
 	}
 
 	ActivatableClass(DiscreteVUBar);

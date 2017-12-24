@@ -64,7 +64,7 @@ namespace AudioVisualizer
 			return iterator.CopyTo(ppIterator);
 		}
 
-		STDMETHODIMP ConvertToLogAmplitude(float minValue, float maxValue, IScalarData **ppResult);
+		STDMETHODIMP ConvertToDecibels(float minValue, float maxValue, IScalarData **ppResult);
 		STDMETHODIMP ApplyRiseAndFall(IScalarData *pPrevious, TimeSpan riseTime, TimeSpan fallTime, TimeSpan timeDelta, IScalarData **ppResult);
 	};
 }

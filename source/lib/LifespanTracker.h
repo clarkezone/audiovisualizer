@@ -59,7 +59,13 @@ public:
 		std::wstring_convert<std::codecvt<wchar_t, char, mbstate_t>> conv;
 		auto typeName = conv.from_bytes(type.name());
 		AudioVisualizer::Diagnostics::Trace::Log_CloseObject(typeName.c_str(), pObj, objectCount, pActivity);
+	}
 
+	static void ReportRefCount(IUnknown *pObj, type_info const& type, ABI::Windows::Foundation::Diagnostics::ILoggingActivity *pActivity)
+	{
+		std::wstring_convert<std::codecvt<wchar_t, char, mbstate_t>> conv;
+		auto typeName = conv.from_bytes(type.name());
+		AudioVisualizer::Diagnostics::Trace::Log_RefCount_Impl(typeName.c_str(), pObj, pActivity);
 	}
 };
 
@@ -87,6 +93,7 @@ protected:
 	}
 public:
 	ABI::Windows::Foundation::Diagnostics::ILoggingActivity *GetLoggingActivity() { return _traceLog_Activity.Get(); }
+	void LogRefCount() { LifespanInfo::ReportRefCount(static_cast<IUnknown*>(this), typeid(this), _traceLog_Activity.Get()); }
 };
 
 

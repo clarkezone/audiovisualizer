@@ -82,7 +82,7 @@ namespace AudioVisualizer
 			return hr;
 
 		hr = playerEffects->AddAudioEffect(
-				HStringReference(RuntimeClass_AudioVisualizer_MftAnalyzer).Get(),
+				HStringReference(RuntimeClass_AudioVisualizer_MediaAnalyzer).Get(),
 				false,
 				_spPropSet.Get());
 
