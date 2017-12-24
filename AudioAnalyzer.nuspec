@@ -12,8 +12,12 @@
     <projectUrl>https://github.com/clarkezone/audiovisualizer</projectUrl>
     <licenseUrl>https://raw.githubusercontent.com/clarkezone/audiovisualizer/master/LICENSE</licenseUrl>
     <iconUrl>https://raw.githubusercontent.com/clarkezone/audiovisualizer/master/build/nuget.png</iconUrl>
-    <copyright>Copyright 2017 Tonu Vanatalu and James Clarke</copyright>
+    <copyright>Copyright 2017, 2018 Tonu Vanatalu and James Clarke</copyright>
     <tags>Audio Spectrum UWP</tags>
+    <dependencies>
+      <dependency id="Win2D.uwp" version="1.21.0">
+      </dependency>
+    </dependencies>
   </metadata>
  <files>
    <file src="bin\uapx86\CIBUILD\MergedWinMD\AudioVisualizer.winmd" target="lib\uap10.0"/>
