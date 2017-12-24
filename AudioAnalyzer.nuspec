@@ -24,6 +24,10 @@
    <file src="bin\uapx64\CIBUILD\uwp.dll\AudioVisualizer.dll"  target="runtimes\win10-x64\native"/>
    <file src="bin\uapx64\CIBUILD\uwp.dll\AudioVisualizer.pri" target="runtimes\win10-x64\native"/>
  </files>
+  <dependencies>
+    <dependency id="Win2D.uwp" version="1.21.0">
+    </dependency>
+  </dependencies>
 </package>
 
 <!-- 
