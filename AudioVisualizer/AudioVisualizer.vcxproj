@@ -90,13 +90,17 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="aligned_allocator.h" />
+    <ClInclude Include="AudioMath.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Class.h">
       <DependentUpon>Class.idl</DependentUpon>
     </ClInclude>
     <ClInclude Include="ScalarData.h" />
+    <ClInclude Include="XDSP.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AudioMath.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

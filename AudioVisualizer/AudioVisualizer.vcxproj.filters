@@ -16,11 +16,15 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="ScalarData.cpp" />
+    <ClCompile Include="AudioMath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="Class.h" />
     <ClInclude Include="ScalarData.h" />
+    <ClInclude Include="aligned_allocator.h" />
+    <ClInclude Include="AudioMath.h" />
+    <ClInclude Include="XDSP.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Class.idl" />

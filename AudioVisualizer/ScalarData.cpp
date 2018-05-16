@@ -2,70 +2,7 @@
 #include "ScalarData.h"
 #include <memory>
 #include <winrt/Windows.Foundation.Collections.h>
-
-
-template <typename T, std::size_t Align = 16>
-class aligned_allocator {
-public:
-	typedef T value_type;
-	typedef std::size_t size_type;
-	typedef std::ptrdiff_t difference_type;
-
-	typedef T * pointer;
-	typedef const T * const_pointer;
-
-	typedef T & reference;
-	typedef const T & const_reference;
-
-public:
-	inline aligned_allocator() throw () { }
-
-	template <typename OtherType>
-	inline aligned_allocator(const aligned_allocator<OtherType, Align> &) throw () { }
-
-	inline ~aligned_allocator() throw () { }
-
-	inline pointer adress(reference r) {
-		return &r;
-	}
-
-	inline const_pointer adress(const_reference r) const {
-		return &r;
-	}
-
-	inline pointer allocate(size_type n) {
-		return (pointer)_aligned_malloc(n * sizeof(value_type), Align);
-	}
-
-	inline void deallocate(pointer p, size_type) {
-		_aligned_free(p);
-	}
-
-	inline void construct(pointer p, const value_type & value) {
-		new (p) value_type(value);
-	}
-
-	inline void destroy(pointer p) {
-		p->~value_type();
-	}
-
-	inline size_type max_size() const throw () {
-		return size_type(-1) / sizeof(value_type);
-	}
-
-	template <typename OtherType>
-	struct rebind {
-		typedef aligned_allocator<OtherType, Align> other;
-	};
-
-	bool operator!=(const aligned_allocator<T, Align>& other) const {
-		return !(*this == other);
-	}
-
-	bool operator==(const aligned_allocator<T, Align>& other) const {
-		return true;
-	}
-};
+#include <AudioMath.h>
 
 
 namespace winrt::AudioVisualizer::implementation
@@ -75,77 +12,125 @@ namespace winrt::AudioVisualizer::implementation
         return _amplitudeScale;
     }
 
-    AudioVisualizer::ScalarData ScalarData::ConvertToDecibels(float minValue, float maxValue)
-    {
-        throw hresult_not_implemented();
-    }
-
-    AudioVisualizer::ScalarData ScalarData::ApplyRiseAndFall(AudioVisualizer::ScalarData const& previous, Windows::Foundation::TimeSpan const& riseTime, Windows::Foundation::TimeSpan const& fallTime, Windows::Foundation::TimeSpan const& timeFromPrevious)
-    {
-        throw hresult_not_implemented();
-    }
-
     Windows::Foundation::Collections::IIterator<float> ScalarData::First()
     {
-		
-		return single_threaded_vector(std::move(_data)).GetView().First();
+		return make<VectorDataIterator>(_pData, _size);
     }
 
     float ScalarData::GetAt(uint32_t index)
     {
 		if (index >= _size)
 			throw hresult_out_of_bounds();
-		return _data[index];
+		return ((float*)_pData)[index];
 	}
 
-    bool ScalarData::IndexOf(float const& value, uint32_t& index)
+    bool ScalarData::IndexOf(float const& , uint32_t& )
     {
-        throw hresult_not_implemented();
+		throw hresult_not_implemented();
     }
 
-    uint32_t ScalarData::GetMany(uint32_t startIndex, array_view<float> items)
+    uint32_t ScalarData::GetMany(uint32_t , array_view<float> )
     {
-        throw hresult_not_implemented();
-    }
+		throw hresult_not_implemented();
+	}
 
-    AudioVisualizer::ScalarData ScalarData::CreateEmpty(uint32_t channels)
+	AudioVisualizer::ScalarData ScalarData::ConvertToDecibels(float minValue, float maxValue)
+	{
+		if (_amplitudeScale == ScaleType::Logarithmic)
+			throw hresult_error(E_NOT_VALID_STATE,hstring(L"Value already logarithmic"));
+		if (maxValue <= minValue)
+			throw hresult_invalid_argument();
+
+		auto returnValue = make_self<ScalarData>(_size, ScaleType::Logarithmic);
+		size_t vSize = (_size + 3) >> 2;	
+		AudioMath::ConvertToLogarithmic(_pData, returnValue->_pData, vSize, minValue, maxValue);
+		
+		return returnValue.as<winrt::AudioVisualizer::ScalarData>();
+	}
+
+	AudioVisualizer::ScalarData ScalarData::ApplyRiseAndFall(AudioVisualizer::ScalarData const& previous, Windows::Foundation::TimeSpan const& riseTime, Windows::Foundation::TimeSpan const& fallTime, Windows::Foundation::TimeSpan const& timeFromPrevious)
+	{
+		if (_amplitudeScale != ScaleType::Linear) {
+			throw hresult_invalid_argument(hstring(L"Amplitude scale needs to be linear"));
+		}
+		if (timeFromPrevious.count() == 0) {
+			throw hresult_invalid_argument(hstring(L"Time delta parameter zero"));
+		}
+
+		if (previous != nullptr)
+		{
+			if (previous.AmplitudeScale() == ScaleType::Logarithmic)
+				throw hresult_invalid_argument(hstring(L"Amplitude scale needs to be linear"));
+
+			if (previous.Size() != _size)
+				throw hresult_invalid_argument(hstring(L"Data needs to be of same size"));
+		}
+		auto result = make_self<ScalarData>(_size, _amplitudeScale);
+
+		size_t vSize = (_size + 3) >> 2;
+		DirectX::XMVECTOR *pLastData = nullptr;
+		
+		if (previous != nullptr) {
+			// Get the raw buffer
+			pLastData = previous.as<AudioVisualizer::implementation::ScalarData>()->_pData;
+		}
+		float normalizedRiseTime = riseTime.count() != 0 ? (float)timeFromPrevious.count() / riseTime.count() : std::numeric_limits<float>::infinity();
+		float normalizedFallTime = fallTime.count() != 0 ? (float)timeFromPrevious.count() / fallTime.count() : std::numeric_limits<float>::infinity();
+
+		AudioMath::ApplyRiseAndFall(pLastData, _pData, result->_pData, vSize, normalizedRiseTime, normalizedFallTime);
+
+		return result.as<AudioVisualizer::ScalarData>();
+	}
+
+	AudioVisualizer::ScalarData ScalarData::CreateEmpty(uint32_t channels)
     {
-		return make<ScalarData>(channels, ScaleType::Linear, true);
+		return make<ScalarData>(channels, ScaleType::Linear);
     }
 
     AudioVisualizer::ScalarData ScalarData::Create(array_view<float const> values)
     {
-        throw hresult_not_implemented();
+		auto value = make<ScalarData>(values,ScaleType::Linear);
+		return value;
     }
 
     AudioVisualizer::ScalarData ScalarData::ApplyRiseAndFallToEmpty(AudioVisualizer::ScalarData const& previous, Windows::Foundation::TimeSpan const& riseTime, Windows::Foundation::TimeSpan const& fallTime, Windows::Foundation::TimeSpan const& timeFromPrevious)
     {
-        throw hresult_not_implemented();
+		if (timeFromPrevious.count() == 0) {
+			throw hresult_invalid_argument(hstring(L"Time delta parameter zero"));
+		}
+		if (previous == nullptr) {
+			throw hresult_invalid_argument(hstring(L"Previous data cannot be null"));
+		}
+
+		auto result = make_self<ScalarData>(previous.Size(), ScaleType::Linear);
+
+		float normalizedRiseTime = riseTime.count() != 0 ? (float)timeFromPrevious.count() / riseTime.count() : std::numeric_limits<float>::infinity();
+		float normalizedFallTime = fallTime.count() != 0 ? (float)timeFromPrevious.count() / fallTime.count() : std::numeric_limits<float>::infinity();
+		size_t vectorSize = (previous.Size() + 3) >> 2;
+
+		AudioMath::ApplyRiseAndFall(previous.as<AudioVisualizer::implementation::ScalarData>()->_pData, nullptr, result->_pData, vectorSize, normalizedRiseTime, normalizedFallTime);
+		return result.as<AudioVisualizer::ScalarData> ();
     }
 
-	ScalarData::ScalarData(size_t cElements, ScaleType scaleType, bool bInit)
+	ScalarData::ScalarData(size_t cElements, ScaleType scaleType,bool bInitToZero)
 	{
 		_amplitudeScale = scaleType;
-		_data.resize(cElements);
+		size_t vectorLength = (cElements + 3) >> 2;
+		_pData = static_cast<DirectX::XMVECTOR*>(_aligned_malloc(sizeof(DirectX::XMVECTOR)*vectorLength,16));
+		_pData[vectorLength - 1] = DirectX::g_XMZero;	// Always pad with zero
 
-		_pData = nullptr;
-
-		size_t vLength = (cElements + 3) >> 2;	// Vector size of the allocated buffer
-		_pData = reinterpret_cast<DirectX::XMVECTOR *>(_aligned_malloc(vLength * sizeof(DirectX::XMVECTOR), 16));
-		if (bInit)
-		{
-			memset(_pData, 0, vLength * sizeof(DirectX::XMVECTOR));
+		if (bInitToZero) {
+			memset(_pData, 0, vectorLength * sizeof(DirectX::XMVECTOR));
 		}
 		_size = cElements;
-
-		auto data = std::vector<float, aligned_allocator<float>>(16);
-		auto view = single_threaded_vector(std::move(data)).GetView();
+	}
+	ScalarData::ScalarData(array_view<float const> values, ScaleType scaleType) : ScalarData(values.size(),scaleType,false)
+	{
+		memcpy(_pData, values.data(), sizeof(float)*values.size());
 	}
 
 	ScalarData::~ScalarData()
 	{
 		_aligned_free(_pData);
 	}
-
-
 }
