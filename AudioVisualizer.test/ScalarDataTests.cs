@@ -36,7 +36,7 @@ namespace AudioVisualizer.test
                 Assert.AreEqual(initData[i], data[i]);
             }
         }
-        
+
         [TestMethod()]
         public void ScalarData_ConvertToDecibels()
         {
@@ -47,20 +47,20 @@ namespace AudioVisualizer.test
             Assert.ThrowsException<COMException>(() => { var d2 = logData.ConvertToDecibels(-100, 0); });
             Assert.ThrowsException<ArgumentException>(() => { var d3 = data.ConvertToDecibels(0, 0); });
         }
-        
+
         [TestMethod()]
         public void ScalarData_RiseAndFall()
         {
             var data = ScalarData.Create(new float[] { 1.0f, 2.0f, 1.5f }); // First falling, second rising, 3rd same
             var previous = ScalarData.Create(new float[] { 2.0f, 1.0f, 1.5f });
-            /*var result = data.ApplyRiseAndFall(previous,
+            var result = data.ApplyRiseAndFall(previous,
                 TimeSpan.FromMilliseconds(100),
                 TimeSpan.FromMilliseconds(200),
                 TimeSpan.FromMilliseconds(400)
                 );
             CollectionAssert.AreEqual(
                 new float[] { 1.135336f, 1.98168433f, 1.5f }, result.ToArray());
-                */
+
             var result2 = data.ApplyRiseAndFall(null,
                 TimeSpan.FromMilliseconds(100),
                 TimeSpan.FromMilliseconds(200),
@@ -70,12 +70,14 @@ namespace AudioVisualizer.test
                 new float[] { 0.9816843f, 1.96336865f, 1.47252655f }, result2.ToArray());
 
             Assert.ThrowsException<ArgumentException>(
-                () => {
+                () =>
+                {
                     data.ConvertToDecibels(-100, 20).ApplyRiseAndFall(previous, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
                 }
                 );
             Assert.ThrowsException<ArgumentException>(
-                () => {
+                () =>
+                {
                     data.ApplyRiseAndFall(previous, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.Zero);
                 }
                 );
@@ -86,6 +88,13 @@ namespace AudioVisualizer.test
                     data2.ApplyRiseAndFall(previous, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
                 }
                 );
+        }
+
+       
+        void ScalarData_RiseAndFallToEmpty()
+        {
+            var data = ScalarData.Create(new float[] { 1.0f, 0.0f, -1.0f });
+            var data2 = ScalarData.ApplyRiseAndFallToEmpty(data, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1));
         }
     }
 }

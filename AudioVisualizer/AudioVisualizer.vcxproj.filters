@@ -11,25 +11,25 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="Class.cpp" />
     <ClCompile Include="Generated Files\module.g.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="ScalarData.cpp" />
     <ClCompile Include="AudioMath.cpp" />
+    <ClCompile Include="SpectrumData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Class.h" />
     <ClInclude Include="ScalarData.h" />
     <ClInclude Include="aligned_allocator.h" />
     <ClInclude Include="AudioMath.h" />
     <ClInclude Include="XDSP.h" />
+    <ClInclude Include="SpectrumData.h" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="Class.idl" />
     <Midl Include="ScalarData.idl" />
     <Midl Include="Types.idl" />
+    <Midl Include="SpectrumData.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

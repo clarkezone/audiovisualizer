@@ -93,10 +93,8 @@
     <ClInclude Include="aligned_allocator.h" />
     <ClInclude Include="AudioMath.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Class.h">
-      <DependentUpon>Class.idl</DependentUpon>
-    </ClInclude>
     <ClInclude Include="ScalarData.h" />
+    <ClInclude Include="SpectrumData.h" />
     <ClInclude Include="XDSP.h" />
   </ItemGroup>
   <ItemGroup>
@@ -104,15 +102,13 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Class.cpp">
-      <DependentUpon>Class.idl</DependentUpon>
-    </ClCompile>
     <ClCompile Include="Generated Files\module.g.cpp" />
     <ClCompile Include="ScalarData.cpp" />
+    <ClCompile Include="SpectrumData.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="Class.idl" />
     <Midl Include="ScalarData.idl" />
+    <Midl Include="SpectrumData.idl" />
     <Midl Include="Types.idl" />
   </ItemGroup>
   <ItemGroup>

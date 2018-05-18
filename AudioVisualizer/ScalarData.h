@@ -12,8 +12,8 @@ namespace winrt::AudioVisualizer::implementation
 		size_t _size;
 		size_t _currentIndex;
 
-		VectorDataIterator(const DirectX::XMVECTOR *pData, size_t size) {
-			_pData = (const float *)(pData);
+		VectorDataIterator(const float *pData, size_t size) {
+			_pData = pData;
 			_size = size;
 			_currentIndex = 0;
 		}

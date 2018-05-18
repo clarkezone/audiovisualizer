@@ -14,7 +14,7 @@ namespace winrt::AudioVisualizer::implementation
 
     Windows::Foundation::Collections::IIterator<float> ScalarData::First()
     {
-		return make<VectorDataIterator>(_pData, _size);
+		return make<VectorDataIterator>((float *)_pData, _size);
     }
 
     float ScalarData::GetAt(uint32_t index)
@@ -131,6 +131,8 @@ namespace winrt::AudioVisualizer::implementation
 
 	ScalarData::~ScalarData()
 	{
-		_aligned_free(_pData);
+		if (_pData != nullptr)
+			_aligned_free(_pData);
+		_pData = nullptr;
 	}
 }
