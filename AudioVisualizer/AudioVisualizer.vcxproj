@@ -92,6 +92,7 @@
   <ItemGroup>
     <ClInclude Include="aligned_allocator.h" />
     <ClInclude Include="AudioMath.h" />
+    <ClInclude Include="CreateResourcesEventArgs.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ScalarData.h" />
     <ClInclude Include="SpectrumData.h" />
@@ -99,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AudioMath.cpp" />
+    <ClCompile Include="CreateResourcesEventArgs.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -107,12 +109,14 @@
     <ClCompile Include="SpectrumData.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="CreateResourcesEventArgs.idl" />
     <Midl Include="ScalarData.idl" />
     <Midl Include="SpectrumData.idl" />
-    <Midl Include="Types.idl" />
+    <Midl Include="EnumTypes.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt">
@@ -121,5 +125,12 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\Win2D.uwp.1.23.0\build\native\Win2D.uwp.targets" Condition="Exists('..\packages\Win2D.uwp.1.23.0\build\native\Win2D.uwp.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Win2D.uwp.1.23.0\build\native\Win2D.uwp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Win2D.uwp.1.23.0\build\native\Win2D.uwp.targets'))" />
+  </Target>
 </Project>

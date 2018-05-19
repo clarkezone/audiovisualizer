@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "SpectrumData.h"
 #include "ScalarData.h"
-
+#include "AudioMath.h"
 
 namespace winrt::AudioVisualizer::implementation
 {
@@ -37,12 +37,66 @@ namespace winrt::AudioVisualizer::implementation
 
     AudioVisualizer::SpectrumData SpectrumData::LinearTransform(uint32_t elementCount, float fromFrequency, float toFrequency)
     {
-        throw hresult_not_implemented();
+		if (_amplitudeScale != ScaleType::Linear || _frequencyScale != ScaleType::Linear || elementCount < 1)
+			throw hresult_invalid_argument();
+
+		if (fromFrequency >= toFrequency)
+				throw hresult_invalid_argument();
+
+		auto result = make_self<SpectrumData>(
+			_channels,
+			elementCount,
+			_amplitudeScale,
+			_frequencyScale,
+			fromFrequency,
+			toFrequency,
+			false);
+
+		float fromIndex = (fromFrequency - _minimumFrequency) / _frequencyStep;
+		float toIndex = (toFrequency - _maximumFrequency) / _frequencyStep;
+
+		for (size_t index = 0, vSrcIndex = 0, vDstIndex = 0; index < _channels; index++, vSrcIndex += _vElementsCount, vDstIndex += result->_vElementsCount)
+		{
+			float *pSource = (float *)(_pData + vSrcIndex);
+			float *pDest = (float*)(result->_pData + vDstIndex);
+			AudioMath::SpectrumTransform(pSource, _size, fromIndex, toIndex, pDest, result->_size, true);
+		}
+
+		return result.as<AudioVisualizer::SpectrumData>();
     }
 
     AudioVisualizer::SpectrumData SpectrumData::LogarithmicTransform(uint32_t elementCount, float fromFrequency, float toFrequency)
     {
-        throw hresult_not_implemented();
+		if (_amplitudeScale != ScaleType::Linear ||
+			_frequencyScale != ScaleType::Linear)
+			throw hresult_error(E_NOT_VALID_STATE);
+		if (fromFrequency <= 0 || toFrequency < fromFrequency)
+			throw hresult_invalid_argument();
+
+		if (fromFrequency >= toFrequency || elementCount < 1)
+			throw hresult_invalid_argument();
+
+		auto result = make_self<SpectrumData>(
+			_channels,
+			elementCount,
+			_amplitudeScale,
+			ScaleType::Logarithmic,
+			fromFrequency,
+			toFrequency,
+			false);
+
+
+		float fromIndex = (fromFrequency - _minimumFrequency) / _frequencyStep;
+		float toIndex = (toFrequency - _minimumFrequency) / _frequencyStep;
+
+		for (size_t index = 0, vSrcIndex = 0, vDstIndex = 0; index < _channels; index++, vSrcIndex += _vElementsCount, vDstIndex += result->_vElementsCount)
+		{
+			float *pSource = (float *)(_pData + vSrcIndex);
+			float *pDest = (float*)(result->_pData + vDstIndex);
+			AudioMath::SpectrumTransform(pSource, _size, fromIndex, toIndex, pDest, result->_size, false);
+		}
+
+		return result.as<AudioVisualizer::SpectrumData>();
     }
 
     AudioVisualizer::SpectrumData SpectrumData::ApplyRiseAndFall(AudioVisualizer::SpectrumData const& previous, Windows::Foundation::TimeSpan const& riseTime, Windows::Foundation::TimeSpan const& fallTime, Windows::Foundation::TimeSpan const& timeFromPrevious)
@@ -52,12 +106,51 @@ namespace winrt::AudioVisualizer::implementation
 
     AudioVisualizer::SpectrumData SpectrumData::ConvertToDecibels(float minValue, float maxValue)
     {
-        throw hresult_not_implemented();
+		if (_amplitudeScale == ScaleType::Logarithmic)
+			throw hresult_error(E_NOT_VALID_STATE);
+		if (minValue >= maxValue)
+			throw hresult_invalid_argument();
+
+		auto result = make_self<SpectrumData>(_channels, _size, ScaleType::Logarithmic, _frequencyScale, _minimumFrequency, _maximumFrequency, false);
+		AudioMath::ConvertToLogarithmic(_pData, result->_pData, _vElementsCount * _channels, minValue, maxValue);
+		return result.as<AudioVisualizer::SpectrumData>();
     }
 
     AudioVisualizer::SpectrumData SpectrumData::CombineChannels(array_view<float const> map)
     {
-        throw hresult_not_implemented();
+		if (map.data() == nullptr)
+			throw hresult_error(E_POINTER);
+
+		if (map.size() < _channels)
+			throw hresult_invalid_argument();
+		if (_amplitudeScale != ScaleType::Linear)
+			throw hresult_invalid_argument();
+
+		UINT32 outputChannels = map.size() / _channels;
+		auto result = make_self<SpectrumData>(
+			outputChannels,
+			_size,
+			_amplitudeScale,
+			_frequencyScale,
+			_minimumFrequency,
+			_maximumFrequency,
+			false);
+
+		std::vector<DirectX::XMVECTOR *> src(_channels);
+		DirectX::XMVECTOR *pData = _pData;
+		for (size_t channelIndex = 0; channelIndex < _channels; channelIndex++, pData += _vElementsCount)
+		{
+			src[channelIndex] = pData;
+		}
+
+		DirectX::XMVECTOR *pDest = result->_pData;
+		for (size_t channelIndex = 0; channelIndex < outputChannels; channelIndex++, pDest += _vElementsCount)
+		{
+			AudioMath::CombineChannels(src.data(), _channels, _vElementsCount, ((float *) map.data()) + channelIndex * _channels, pDest);
+		}
+
+		return result.as<AudioVisualizer::SpectrumData>();
+
     }
 
     float SpectrumData::GetFrequency(uint32_t elementIndex)

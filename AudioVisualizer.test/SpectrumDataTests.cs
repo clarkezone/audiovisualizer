@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -106,7 +107,17 @@ namespace AudioVisualizer.test
     [TestClass]
     public class SpectrumDataTests
     {
-        [TestInitialize]
+        [TestMethod]
+        public void SpectrumData_ConvertToDecibels()
+        {
+            var testValues = new float[][] { new float [] { 0.0f, 0.1f, 1.0f, 1e-6f, 1e6f, -1 } };
+            var data = SpectrumData.Create(testValues,ScaleType.Linear,ScaleType.Linear,20,20000);
+            var logData = data.ConvertToDecibels(-100, 0);
+            CollectionAssert.AreEqual(new float[] { -100.0f, -20.0f, 0.0f, -100.0f, 0.0f, -100.0f }, logData[0].ToArray());
+            Assert.ThrowsException<COMException>(() => { var d2 = logData.ConvertToDecibels(-100, 0); });
+            Assert.ThrowsException<ArgumentException>(() => { var d3 = data.ConvertToDecibels(0, 0); });
+        }
+
         [TestMethod()]
         public void SpectrumData_CreateEmpty()
         {

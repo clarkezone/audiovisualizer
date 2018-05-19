@@ -1,4 +1,4 @@
-import "Types.idl";
+import "EnumTypes.idl";
 
 namespace AudioVisualizer
 {

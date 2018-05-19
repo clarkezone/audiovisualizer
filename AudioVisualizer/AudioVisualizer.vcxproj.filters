@@ -17,6 +17,7 @@
     <ClCompile Include="ScalarData.cpp" />
     <ClCompile Include="AudioMath.cpp" />
     <ClCompile Include="SpectrumData.cpp" />
+    <ClCompile Include="CreateResourcesEventArgs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -25,14 +26,17 @@
     <ClInclude Include="AudioMath.h" />
     <ClInclude Include="XDSP.h" />
     <ClInclude Include="SpectrumData.h" />
+    <ClInclude Include="CreateResourcesEventArgs.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ScalarData.idl" />
-    <Midl Include="Types.idl" />
     <Midl Include="SpectrumData.idl" />
+    <Midl Include="EnumTypes.idl" />
+    <Midl Include="CreateResourcesEventArgs.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />

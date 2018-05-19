@@ -1,7 +1,0 @@
-namespace AudioVisualizer
-{
-	enum ScaleType {
-		Linear = 0,
-		Logarithmic = 1
-	};
-}
