@@ -1,0 +1,24 @@
+import "enumTypes.idl";
+import "VisualizationDataFrame.idl";
+
+namespace AudioVisualizer
+{
+	interface IVisualizationSource;
+
+	interface IVisualizationSource
+	{
+		VisualizationDataFrame GetData();
+		Boolean IsSuspended;
+		Single Fps;
+		AnalyzerType AnalyzerTypes;
+		Windows.Foundation.IReference<Windows.Foundation.TimeSpan> PresentationTime{ get; };
+		SourcePlaybackState PlaybackState{ get; };
+		Windows.Foundation.IReference<UInt32> ActualFrequencyCount{ get; };
+		Windows.Foundation.IReference<UInt32> ActualChannelCount{ get; };
+		Windows.Foundation.IReference<Single> ActualMinFrequency{ get; };
+		Windows.Foundation.IReference<Single> ActualMaxFrequency{ get; };
+		Windows.Foundation.IReference<ScaleType> ActualFrequencyScale{ get; };
+
+		event Windows.Foundation.EventHandler<String> ConfigurationChanged;
+	};
+}

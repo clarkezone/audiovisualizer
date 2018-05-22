@@ -20,22 +20,26 @@ namespace AudioVisualizer.test
             sut = SpectrumData.CreateEmpty(2, 10, ScaleType.Linear, ScaleType.Linear, 0, 20000);
         }
 
+        [TestCategory("SpectrumData")]
         [TestMethod]
         public void SpectrumData_Init_ChannelCount()
         {
             Assert.AreEqual(2, sut.Count());
             Assert.AreEqual(2, sut.Count);
         }
+        [TestCategory("SpectrumData")]
         [TestMethod]
         public void SpectrumData_Init_AmpScaleType()
         {
             Assert.AreEqual(ScaleType.Linear, sut.AmplitudeScale);
         }
+        [TestCategory("SpectrumData")]
+        [TestMethod]
         public void SpectrumData_Init_FScaleType()
         {
             Assert.AreEqual(ScaleType.Linear, sut.FrequencyScale);
         }
-
+        [TestCategory("SpectrumData")]
         [TestMethod]
         public void SpectrumData_Init_ItemCount()
         {
@@ -45,21 +49,25 @@ namespace AudioVisualizer.test
             }
         }
         [TestMethod]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_Init_FrequencyCount()
         {
             Assert.AreEqual(10u, sut.FrequencyCount, "Frequency bin count");
         }
         [TestMethod]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_Init_MinFrequency()
         {
             Assert.AreEqual(0.0f, sut.MinFrequency, "Min Frequency property init");
         }
         [TestMethod]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_Init_MaxFrequency()
         {
             Assert.AreEqual(20000.0f, sut.MaxFrequency, "Max Frequency property init");
         }
         [TestMethod]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_Init_FStep()
         {
             Assert.AreEqual(2000.0f, sut.FrequencyStep);
@@ -78,26 +86,32 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_Init_LogF_AmpScaleType()
         {
             Assert.AreEqual(ScaleType.Linear, sut.AmplitudeScale);
         }
+        [TestMethod]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_Init_LogF_FScaleType()
         {
             Assert.AreEqual(ScaleType.Logarithmic, sut.FrequencyScale);
         }
 
         [TestMethod]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_Init_LogF_MinFrequency()
         {
             Assert.AreEqual(10.0f, sut.MinFrequency, "Min Frequency property init");
         }
         [TestMethod]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_Init_LogF_MaxFrequency()
         {
             Assert.AreEqual(10000.0f, sut.MaxFrequency, "Max Frequency property init");
         }
         [TestMethod]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_Init_LogF_FStep()
         {
             Assert.AreEqual(1.995262f, sut.FrequencyStep, 1e-6f);
@@ -108,6 +122,7 @@ namespace AudioVisualizer.test
     public class SpectrumDataTests
     {
         [TestMethod]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_ConvertToDecibels()
         {
             var testValues = new float[][] { new float [] { 0.0f, 0.1f, 1.0f, 1e-6f, 1e6f, -1 } };
@@ -119,6 +134,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod()]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_CreateEmpty()
         {
             var data = SpectrumData.CreateEmpty(2, 10, ScaleType.Linear, ScaleType.Linear, 0, 20000);
@@ -186,6 +202,7 @@ namespace AudioVisualizer.test
                 };
 
         [TestMethod()]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_CreateWithValues()
         {
             float[][] initialValues = {
@@ -222,6 +239,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod()]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_CreateArgs_ValuesAreNull()
         {
             Assert.ThrowsException<NullReferenceException>(
@@ -232,6 +250,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod()]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_CreateArgs_ChannelValuesAreDifferentSize()
         {
             Assert.ThrowsException<ArgumentException>(
@@ -243,6 +262,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod()]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_CreateArgs_MinF_GT_MaxF()
         {
             Assert.ThrowsException<ArgumentException>(
@@ -253,6 +273,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod()]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_CreateArgs_MinF_EQ_MaxF()
         {
             Assert.ThrowsException<ArgumentException>(
@@ -263,6 +284,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod()]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_CreateArgs_MinF_Negative()
         {
             Assert.ThrowsException<ArgumentException>(
@@ -273,6 +295,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod()]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_CreateArgs_MinFZeroWhenFScaleLog()
         {
             Assert.ThrowsException<ArgumentException>(
@@ -283,6 +306,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod()]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_LinearTransform()
         {
             SpectrumData data = SpectrumData.Create(
@@ -319,6 +343,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod()]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_LogarithmicTransform()
         {
             SpectrumData data = SpectrumData.Create(
@@ -345,6 +370,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod()]
+        [TestCategory("SpectrumData")]
         public void SpectrumData_CombineChannels()
         {
             SpectrumData data = SpectrumData.Create(

@@ -18,6 +18,12 @@
     <ClCompile Include="AudioMath.cpp" />
     <ClCompile Include="SpectrumData.cpp" />
     <ClCompile Include="CreateResourcesEventArgs.cpp" />
+    <ClCompile Include="VisualizationDataFrame.cpp" />
+    <ClCompile Include="VisualizerDrawEventArgs.cpp" />
+    <ClCompile Include="AudioAnalyzer.cpp" />
+    <ClCompile Include="AudioBuffer.cpp" />
+    <ClCompile Include="MediaAnalyzer.cpp" />
+    <ClCompile Include="PlaybackSource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -27,12 +33,24 @@
     <ClInclude Include="XDSP.h" />
     <ClInclude Include="SpectrumData.h" />
     <ClInclude Include="CreateResourcesEventArgs.h" />
+    <ClInclude Include="VisualizationDataFrame.h" />
+    <ClInclude Include="VisualizerDrawEventArgs.h" />
+    <ClInclude Include="AudioAnalyzer.h" />
+    <ClInclude Include="AudioBuffer.h" />
+    <ClInclude Include="MediaAnalyzer.h" />
+    <ClInclude Include="PlaybackSource.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ScalarData.idl" />
     <Midl Include="SpectrumData.idl" />
     <Midl Include="EnumTypes.idl" />
     <Midl Include="CreateResourcesEventArgs.idl" />
+    <Midl Include="VisualizationDataFrame.idl" />
+    <Midl Include="VisualizerDrawEventArgs.idl" />
+    <Midl Include="MediaAnalyzer.idl" />
+    <Midl Include="VisualizationSource.idl" />
+    <Midl Include="SpectralAnalyzerSettings.idl" />
+    <Midl Include="PlaybackSource.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

@@ -1,0 +1,15 @@
+import "VisualizationSource.idl";
+
+namespace AudioVisualizer
+{
+	interface ISpectralAnalyzerSettings
+	{
+		void ConfigureSpectrum(UInt32 fftLength,Single overlap);
+	}
+
+	[default_interface]
+	runtimeclass MediaAnalyzer : Windows.Media.IMediaExtension, IVisualizationSource, ISpectralAnalyzerSettings
+	{
+		MediaAnalyzer();
+	}
+}

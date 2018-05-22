@@ -1,0 +1,14 @@
+import "VisualizationDataFrame.idl";
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass VisualizerDrawEventArgs {
+		VisualizerDrawEventArgs(VisualizationDataFrame data,Object drawingSession,Windows.Foundation.Size viewExtent,Windows.Foundation.IReference<Windows.Foundation.TimeSpan> presentationTime);
+
+		VisualizationDataFrame Data { get; };
+		Object DrawingSession{ get; };
+		Windows.Foundation.Size ViewExtent{ get; };
+		Windows.Foundation.IReference<Windows.Foundation.TimeSpan> PresentationTime{ get; };
+	}
+}

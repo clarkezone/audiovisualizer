@@ -53,7 +53,7 @@ namespace winrt::AudioVisualizer::implementation
 			false);
 
 		float fromIndex = (fromFrequency - _minimumFrequency) / _frequencyStep;
-		float toIndex = (toFrequency - _maximumFrequency) / _frequencyStep;
+		float toIndex = (toFrequency - _minimumFrequency) / _frequencyStep;
 
 		for (size_t index = 0, vSrcIndex = 0, vDstIndex = 0; index < _channels; index++, vSrcIndex += _vElementsCount, vDstIndex += result->_vElementsCount)
 		{

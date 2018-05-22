@@ -1,0 +1,17 @@
+import "ScalarData.idl";
+import "SpectrumData.idl";
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass VisualizationDataFrame
+	{
+		VisualizationDataFrame(Windows.Foundation.TimeSpan time,Windows.Foundation.TimeSpan duration,ScalarData rms,ScalarData peak,SpectrumData spectrum);
+		Windows.Foundation.TimeSpan Time { get; };
+		Windows.Foundation.TimeSpan Duration { get; };
+		ScalarData RMS { get; };
+		ScalarData Peak { get; };
+		SpectrumData Spectrum { get; };
+	}
+}
+

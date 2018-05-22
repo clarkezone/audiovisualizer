@@ -91,28 +91,46 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="aligned_allocator.h" />
+    <ClInclude Include="AudioAnalyzer.h" />
+    <ClInclude Include="AudioBuffer.h" />
     <ClInclude Include="AudioMath.h" />
     <ClInclude Include="CreateResourcesEventArgs.h" />
+    <ClInclude Include="MediaAnalyzer.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PlaybackSource.h" />
     <ClInclude Include="ScalarData.h" />
     <ClInclude Include="SpectrumData.h" />
+    <ClInclude Include="VisualizationDataFrame.h" />
+    <ClInclude Include="VisualizerDrawEventArgs.h" />
     <ClInclude Include="XDSP.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AudioAnalyzer.cpp" />
+    <ClCompile Include="AudioBuffer.cpp" />
     <ClCompile Include="AudioMath.cpp" />
     <ClCompile Include="CreateResourcesEventArgs.cpp" />
+    <ClCompile Include="MediaAnalyzer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Generated Files\module.g.cpp" />
+    <ClCompile Include="PlaybackSource.cpp" />
     <ClCompile Include="ScalarData.cpp" />
     <ClCompile Include="SpectrumData.cpp" />
+    <ClCompile Include="VisualizationDataFrame.cpp" />
+    <ClCompile Include="VisualizerDrawEventArgs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="CreateResourcesEventArgs.idl" />
+    <Midl Include="MediaAnalyzer.idl" />
+    <Midl Include="PlaybackSource.idl" />
     <Midl Include="ScalarData.idl" />
+    <Midl Include="SpectralAnalyzerSettings.idl" />
     <Midl Include="SpectrumData.idl" />
     <Midl Include="EnumTypes.idl" />
+    <Midl Include="VisualizationDataFrame.idl" />
+    <Midl Include="VisualizationSource.idl" />
+    <Midl Include="VisualizerDrawEventArgs.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />
