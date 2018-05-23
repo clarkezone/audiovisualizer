@@ -9,6 +9,7 @@ namespace AudioVisualizer.test
     public class EnumTypesTests
     {
         [TestMethod]
+        [TestCategory("ScaleType")]
         public void ScaleType_Values()
         {
             Assert.AreEqual((Int32) ScaleType.Linear, 0);
@@ -16,6 +17,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod]
+        [TestCategory("CreateResourcesReason")]
         public void CreateResourcesReason_Values()
         {
             Assert.AreEqual((Int32) CreateResourcesReason.New,0);

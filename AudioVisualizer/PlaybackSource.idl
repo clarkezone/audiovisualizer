@@ -8,6 +8,6 @@ namespace AudioVisualizer
 		PlaybackSource (Windows.Media.Playback.MediaPlayer mediaPlayer);
 		IVisualizationSource Source{ get; };
 		
-		event Windows.Foundation.EventHandler<IVisualizationSource> SourceChanged;
+		event Windows.Foundation.TypedEventHandler<Object,IVisualizationSource> SourceChanged;
 	}
 }

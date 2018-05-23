@@ -21,11 +21,13 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod]
+        [TestCategory("CreateResourcesEventArgs")]
         public void CreateResourcesEventArgs_IsReasonNew()
         {
             Assert.AreEqual(CreateResourcesReason.New, sut.Reason);
         }
         [TestMethod]
+        [TestCategory("CreateResourcesEventArgs")]
         public void CreateResourcesEventArgs_IsCreatorObjectCorrect()
         {
             Assert.AreEqual(fakeCreator, sut.ResourceCreator);

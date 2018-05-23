@@ -36,6 +36,7 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::Foundation::Collections::IVectorView<Windows::Foundation::Collections::IVectorView<float>> _view;
 
         SpectrumData() = delete;
+		SpectrumData(nullptr_t = nullptr) noexcept {};
 
         AudioVisualizer::ScaleType AmplitudeScale();
         AudioVisualizer::ScaleType FrequencyScale();

@@ -163,7 +163,7 @@ namespace winrt::AudioVisualizer::implementation
 		throw hresult_not_implemented();
 	}
 
-	event_token MediaAnalyzer::ConfigurationChanged(winrt::Windows::Foundation::EventHandler<hstring> const& handler)
+	event_token MediaAnalyzer::ConfigurationChanged(winrt::Windows::Foundation::TypedEventHandler<IVisualizationSource,hstring> const& handler)
 	{
 		return _configurationChangedEvent.add(handler);
 	}

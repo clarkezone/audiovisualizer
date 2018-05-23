@@ -1,0 +1,23 @@
+import "enumTypes.idl";
+import "VisualizationSource.idl";
+
+namespace AudioVisualizer
+{
+	runtimeclass SourceConverter : IVisualizationSource
+	{
+		SourceConverter();
+		IVisualizationSource Source;
+		Windows.Foundation.IReference<UInt32> FrequencyCount;
+		Windows.Foundation.IReference<UInt32> ChannelCount;
+		Single[] ChannelMapping;
+		Windows.Foundation.IReference<Single> MinFrequency;
+		Windows.Foundation.IReference<Single> MaxFrequency;
+		Windows.Foundation.IReference<ScaleType> FrequencyScale;
+		Windows.Foundation.IReference<Windows.Foundation.TimeSpan> RmsRiseTime;
+		Windows.Foundation.IReference<Windows.Foundation.TimeSpan> RmsFallTime;
+		Windows.Foundation.IReference<Windows.Foundation.TimeSpan> PeakRiseTime;
+		Windows.Foundation.IReference<Windows.Foundation.TimeSpan> PeakFallTime;
+		Windows.Foundation.IReference<Windows.Foundation.TimeSpan> SpectrumRiseTime;
+		Windows.Foundation.IReference<Windows.Foundation.TimeSpan> SpectrumFallTime;
+	}
+}

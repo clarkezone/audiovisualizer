@@ -12,6 +12,7 @@ namespace AudioVisualizer.test
     public class ScalarDataTests
     {
         [TestMethod]
+        [TestCategory("ScalarData")]
         public void ScalarData_CreateEmpty()
         {
             var data = ScalarData.CreateEmpty(2);
@@ -24,6 +25,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod]
+        [TestCategory("ScalarData")]
         public void ScalarData_CreateWithValues()
         {
             var initData = new float[] { 0.0f, 0.1f, 0.2f, 0.3f, 0.4f };
@@ -38,6 +40,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod()]
+        [TestCategory("ScalarData")]
         public void ScalarData_ConvertToDecibels()
         {
             float[] testValues = new float[] { 0.0f, 0.1f, 1.0f, 1e-6f, 1e6f, -1 };
@@ -49,6 +52,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod()]
+        [TestCategory("ScalarData")]
         public void ScalarData_RiseAndFall()
         {
             var data = ScalarData.Create(new float[] { 1.0f, 2.0f, 1.5f }); // First falling, second rising, 3rd same

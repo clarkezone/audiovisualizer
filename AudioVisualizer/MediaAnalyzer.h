@@ -51,7 +51,7 @@ namespace winrt::AudioVisualizer::implementation
 
 		SourcePlaybackState _playbackState;
 
-		winrt::event<Windows::Foundation::EventHandler<hstring>> _configurationChangedEvent;
+		winrt::event<Windows::Foundation::TypedEventHandler<IVisualizationSource,hstring>> _configurationChangedEvent;
 
 		HRESULT Analyzer_TestInputType(IMFMediaType *pType);
 		HRESULT Analyzer_SetMediaType(IMFMediaType *pType);
@@ -169,7 +169,7 @@ namespace winrt::AudioVisualizer::implementation
         Windows::Foundation::IReference<float> ActualMinFrequency();
         Windows::Foundation::IReference<float> ActualMaxFrequency();
         Windows::Foundation::IReference<AudioVisualizer::ScaleType> ActualFrequencyScale();
-        event_token ConfigurationChanged(winrt::Windows::Foundation::EventHandler<hstring> const& handler);
+        event_token ConfigurationChanged(winrt::Windows::Foundation::TypedEventHandler<IVisualizationSource,hstring> const& handler);
         void ConfigurationChanged(event_token const& token);
         void SetProperties(Windows::Foundation::Collections::IPropertySet const& configuration);
     };

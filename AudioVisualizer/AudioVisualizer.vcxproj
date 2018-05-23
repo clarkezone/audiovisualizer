@@ -99,6 +99,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="PlaybackSource.h" />
     <ClInclude Include="ScalarData.h" />
+    <ClInclude Include="SourceConverter.h" />
     <ClInclude Include="SpectrumData.h" />
     <ClInclude Include="VisualizationDataFrame.h" />
     <ClInclude Include="VisualizerDrawEventArgs.h" />
@@ -116,6 +117,7 @@
     <ClCompile Include="Generated Files\module.g.cpp" />
     <ClCompile Include="PlaybackSource.cpp" />
     <ClCompile Include="ScalarData.cpp" />
+    <ClCompile Include="SourceConverter.cpp" />
     <ClCompile Include="SpectrumData.cpp" />
     <ClCompile Include="VisualizationDataFrame.cpp" />
     <ClCompile Include="VisualizerDrawEventArgs.cpp" />
@@ -125,6 +127,7 @@
     <Midl Include="MediaAnalyzer.idl" />
     <Midl Include="PlaybackSource.idl" />
     <Midl Include="ScalarData.idl" />
+    <Midl Include="SourceConverter.idl" />
     <Midl Include="SpectralAnalyzerSettings.idl" />
     <Midl Include="SpectrumData.idl" />
     <Midl Include="EnumTypes.idl" />

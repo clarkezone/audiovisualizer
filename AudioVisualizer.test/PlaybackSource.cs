@@ -12,33 +12,30 @@ using Windows.Foundation;
 using AudioVisualizer;
 using System.Collections.Generic;
 
-namespace test.managed
+namespace AudioVisualizer.test
 {
     [TestClass]
-    public class PlaybackSourceTests
+    public class PlayerSourceTests
     {
-
         [TestMethod]
-        [TestCategory("PlaybackSource")]
-        public async Task PlaybackSource_MediaPlayer()
+        [TestCategory("PlayerSource")]
+        public async Task PlayerSource_MediaPlayer()
         {
             var testFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///TestContent/test_signal.mp3"));
-            var testSourceFromFile = MediaSource.CreateFromStorageFile(testFile);
-
             var player = new MediaPlayer();
-            var playbackSource = new AudioVisualizer.PlaybackSource(player);
+
+            var playerSource = new AudioVisualizer.PlaybackSource(player);
             List<IVisualizationSource> sources = new List<IVisualizationSource>();
             ManualResetEventSlim ev = new ManualResetEventSlim();
 
-            playbackSource.SourceChanged += new TypedEventHandler<object, IVisualizationSource>(
+            playerSource.SourceChanged += new TypedEventHandler<object, IVisualizationSource>(
                 (sender,source)=>
                 {
                     sources.Add(source);
                     ev.Set();
                 }
                 );
-
-            player.Source = testSourceFromFile;
+            player.Source = MediaSource.CreateFromStorageFile(testFile);
             player.Play();
 
             if (Task.Run(() => { ev.Wait(); }).Wait(1000))

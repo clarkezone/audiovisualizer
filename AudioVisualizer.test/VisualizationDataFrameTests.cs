@@ -25,27 +25,32 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod]
+        [TestCategory("VisualizationDataFrame")]
         public void VisualizationDataFrame_Time()
         {
             Assert.AreEqual(expectedTime, sut.Time);
         }
 
         [TestMethod]
+        [TestCategory("VisualizationDataFrame")]
         public void VisualizationDataFrame_Duration()
         {
             Assert.AreEqual(expectedDuration, sut.Duration);
         }
         [TestMethod]
+        [TestCategory("VisualizationDataFrame")]
         public void VisualizationDataFrame_Rms()
         {
             Assert.AreEqual(expectedRms, sut.RMS);
         }
         [TestMethod]
+        [TestCategory("VisualizationDataFrame")]
         public void VisualizationDataFrame_Peak()
         {
             Assert.AreEqual(expectedPeak, sut.Peak);
         }
         [TestMethod]
+        [TestCategory("VisualizationDataFrame")]
         public void VisualizationDataFrame_Spectrum()
         {
             Assert.AreEqual(expectedSpectrum, sut.Spectrum);

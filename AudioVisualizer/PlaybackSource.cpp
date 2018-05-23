@@ -8,7 +8,7 @@ namespace winrt::AudioVisualizer::implementation
 		return _source;
     }
 
-	event_token PlaybackSource::SourceChanged(Windows::Foundation::EventHandler<AudioVisualizer::IVisualizationSource> const& handler)
+	event_token PlaybackSource::SourceChanged(Windows::Foundation::TypedEventHandler<Windows::Foundation::IInspectable,AudioVisualizer::IVisualizationSource> const& handler)
 	{
 		return _sourceChangedEvent.add(handler);
 	}
@@ -24,7 +24,7 @@ namespace winrt::AudioVisualizer::implementation
 			throw hresult_invalid_argument();
 
 		_propSet = Windows::Foundation::Collections::PropertySet();
-		_propSet.MapChanged([this](IInspectable const &sender, Windows::Foundation::Collections::IMapChangedEventArgs<hstring> const &args)
+		_propSet.MapChanged([this](IInspectable const &, Windows::Foundation::Collections::IMapChangedEventArgs<hstring> const &args)
 		{
 			auto source = _propSet.Lookup(args.Key()).as<AudioVisualizer::IVisualizationSource>();
 			this->_source = source;

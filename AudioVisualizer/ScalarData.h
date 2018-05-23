@@ -50,6 +50,7 @@ namespace winrt::AudioVisualizer::implementation
     struct ScalarData : ScalarDataT<ScalarData>
     {
         ScalarData() = delete;
+		ScalarData(std::nullptr_t = nullptr) noexcept {}
 
         AudioVisualizer::ScaleType AmplitudeScale();
         AudioVisualizer::ScalarData ConvertToDecibels(float minValue, float maxValue);

@@ -25,21 +25,25 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod]
+        [TestCategory("VisualizerDrawEventArgs")]
         public void VisualizerDrawEventArgs_Data()
         {
             Assert.AreEqual(expectedDataFrame, sut.Data);
         }
         [TestMethod]
+        [TestCategory("VisualizerDrawEventArgs")]
         public void VisualizerDrawEventArgs_DrawSession()
         {
             Assert.AreEqual(expectedDrawSession, sut.DrawingSession);
         }
         [TestMethod]
+        [TestCategory("VisualizerDrawEventArgs")]
         public void VisualizerDrawEventArgs_ViewExtent()
         {
             Assert.AreEqual(expectedViewExtent, sut.ViewExtent);
         }
         [TestMethod]
+        [TestCategory("VisualizerDrawEventArgs")]
         public void VisualizerDrawEventArgs_PresentationTime()
         {
             Assert.AreEqual(expectedPresentationTime, sut.PresentationTime);

@@ -19,6 +19,6 @@ namespace AudioVisualizer
 		Windows.Foundation.IReference<Single> ActualMaxFrequency{ get; };
 		Windows.Foundation.IReference<ScaleType> ActualFrequencyScale{ get; };
 
-		event Windows.Foundation.EventHandler<String> ConfigurationChanged;
+		event Windows.Foundation.TypedEventHandler<IVisualizationSource,String> ConfigurationChanged;
 	};
 }

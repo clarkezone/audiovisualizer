@@ -8,11 +8,12 @@ namespace winrt::AudioVisualizer::implementation
     {
 		Windows::Foundation::TimeSpan _time;
 		Windows::Foundation::TimeSpan _duration;
-		ScalarData _rms;
-		ScalarData _peak;
-		SpectrumData _spectrum;
+		ScalarData _rms{ nullptr };
+		ScalarData _peak{ nullptr };
+		SpectrumData _spectrum{ nullptr };
 
         VisualizationDataFrame() = delete;
+		VisualizationDataFrame(nullptr_t = nullptr) noexcept {};
         VisualizationDataFrame(Windows::Foundation::TimeSpan const& time, Windows::Foundation::TimeSpan const& duration, AudioVisualizer::ScalarData const& rms, AudioVisualizer::ScalarData const& peak, AudioVisualizer::SpectrumData const& spectrum);
 
         Windows::Foundation::TimeSpan Time();
