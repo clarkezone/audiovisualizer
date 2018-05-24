@@ -61,7 +61,7 @@ namespace winrt::AudioVisualizer::implementation
         static AudioVisualizer::SpectrumData Create(Windows::Foundation::Collections::IVectorView<Windows::Foundation::Collections::IVectorView<float>> const& values, AudioVisualizer::ScaleType const& amplitudeScale, AudioVisualizer::ScaleType const& frequencyScale, float minFrequency, float maxFrequency);
         static AudioVisualizer::SpectrumData ApplyRiseAndFallToEmpty(AudioVisualizer::SpectrumData const& previous, Windows::Foundation::TimeSpan const& riseTime, Windows::Foundation::TimeSpan const& fallTime, Windows::Foundation::TimeSpan const& timeFromPrevious);
     
-		SpectrumData(uint32_t cChannels, uint32_t cElements, AudioVisualizer::ScaleType const& amplitudeScale, AudioVisualizer::ScaleType const& frequencyScale, float minFrequency, float maxFrequency,bool bInitWithZeros);
+		SpectrumData(uint32_t cChannels, uint32_t cElements, AudioVisualizer::ScaleType const& amplitudeScale, AudioVisualizer::ScaleType const& frequencyScale, float minFrequency, float maxFrequency,bool bInitWithZeros=true);
 		~SpectrumData();
 		
 	};

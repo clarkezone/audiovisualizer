@@ -274,9 +274,8 @@ namespace AudioVisualizer.test
             Assert.ThrowsException<ArgumentException>(() => { sut.MinFrequency = 20000.0f; });
         }
 
-        [TestMethod]
         [TestCategory("SourceConverter")]
-        void SourceConverter_GetData()
+        public void SourceConverter_GetData()
         {
 
             var frame = new VisualizationDataFrame(
@@ -300,9 +299,9 @@ namespace AudioVisualizer.test
 
         }
 
-        [TestMethod]
+       
         [TestCategory("SourceConverter")]
-        void SourceConverter_RiseAndFall()
+        public void SourceConverter_RiseAndFall()
         {
             sut.Source = _source;
 

@@ -45,16 +45,28 @@ namespace winrt::AudioVisualizer::implementation
 		size_t vSize = (_size + 3) >> 2;	
 		AudioMath::ConvertToLogarithmic(_pData, returnValue->_pData, vSize, minValue, maxValue);
 		
-		return returnValue.as<winrt::AudioVisualizer::ScalarData>();
+		return returnValue.as<AudioVisualizer::ScalarData>();
 	}
+
+	AudioVisualizer::ScalarData ScalarData::CreateEmpty(uint32_t channels)
+    {
+		return make<ScalarData>(channels, ScaleType::Linear);
+    }
+
+    AudioVisualizer::ScalarData ScalarData::Create(array_view<float const> values)
+    {
+		auto value = make<ScalarData>(values,ScaleType::Linear);
+		return value;
+    }
 
 	AudioVisualizer::ScalarData ScalarData::ApplyRiseAndFall(AudioVisualizer::ScalarData const& previous, Windows::Foundation::TimeSpan const& riseTime, Windows::Foundation::TimeSpan const& fallTime, Windows::Foundation::TimeSpan const& timeFromPrevious)
 	{
 		if (_amplitudeScale != ScaleType::Linear) {
 			throw hresult_invalid_argument(hstring(L"Amplitude scale needs to be linear"));
 		}
-		if (timeFromPrevious.count() == 0) {
-			throw hresult_invalid_argument(hstring(L"Time delta parameter zero"));
+
+		if (timeFromPrevious.count() == 0) {	
+			return previous;	// No time has passed so no changes
 		}
 
 		if (previous != nullptr)
@@ -69,47 +81,38 @@ namespace winrt::AudioVisualizer::implementation
 
 		size_t vSize = (_size + 3) >> 2;
 		DirectX::XMVECTOR *pLastData = nullptr;
-		
+
 		if (previous != nullptr) {
 			// Get the raw buffer
-			pLastData = previous.as<AudioVisualizer::implementation::ScalarData>()->_pData;
+			pLastData = winrt::from_abi<ScalarData>(previous)->_pData;
 		}
-		float normalizedRiseTime = riseTime.count() != 0 ? (float)timeFromPrevious.count() / riseTime.count() : std::numeric_limits<float>::infinity();
-		float normalizedFallTime = fallTime.count() != 0 ? (float)timeFromPrevious.count() / fallTime.count() : std::numeric_limits<float>::infinity();
+		float normalizedRiseTime = (float)timeFromPrevious.count() / (float)riseTime.count();
+		float normalizedFallTime = (float)timeFromPrevious.count() / (float)fallTime.count();
 
 		AudioMath::ApplyRiseAndFall(pLastData, _pData, result->_pData, vSize, normalizedRiseTime, normalizedFallTime);
 
 		return result.as<AudioVisualizer::ScalarData>();
 	}
 
-	AudioVisualizer::ScalarData ScalarData::CreateEmpty(uint32_t channels)
-    {
-		return make<ScalarData>(channels, ScaleType::Linear);
-    }
-
-    AudioVisualizer::ScalarData ScalarData::Create(array_view<float const> values)
-    {
-		auto value = make<ScalarData>(values,ScaleType::Linear);
-		return value;
-    }
-
     AudioVisualizer::ScalarData ScalarData::ApplyRiseAndFallToEmpty(AudioVisualizer::ScalarData const& previous, Windows::Foundation::TimeSpan const& riseTime, Windows::Foundation::TimeSpan const& fallTime, Windows::Foundation::TimeSpan const& timeFromPrevious)
     {
-		if (timeFromPrevious.count() == 0) {
-			throw hresult_invalid_argument(hstring(L"Time delta parameter zero"));
-		}
 		if (previous == nullptr) {
 			throw hresult_invalid_argument(hstring(L"Previous data cannot be null"));
+		}
+		if (timeFromPrevious.count() == 0) {
+			return previous;
 		}
 
 		auto result = make_self<ScalarData>(previous.Size(), ScaleType::Linear);
 
-		float normalizedRiseTime = riseTime.count() != 0 ? (float)timeFromPrevious.count() / riseTime.count() : std::numeric_limits<float>::infinity();
-		float normalizedFallTime = fallTime.count() != 0 ? (float)timeFromPrevious.count() / fallTime.count() : std::numeric_limits<float>::infinity();
 		size_t vectorSize = (previous.Size() + 3) >> 2;
 
-		AudioMath::ApplyRiseAndFall(previous.as<AudioVisualizer::implementation::ScalarData>()->_pData, nullptr, result->_pData, vectorSize, normalizedRiseTime, normalizedFallTime);
-		return result.as<AudioVisualizer::ScalarData> ();
+		float normalizedRiseTime = (float)timeFromPrevious.count() / (float)riseTime.count();
+		float normalizedFallTime = (float)timeFromPrevious.count() / (float)fallTime.count();
+
+		AudioMath::ApplyRiseAndFall(winrt::from_abi<ScalarData>(previous)->_pData, nullptr, result->_pData, vectorSize, normalizedRiseTime, normalizedFallTime);
+
+		return result.as<AudioVisualizer::ScalarData>();
     }
 
 	ScalarData::ScalarData(size_t cElements, ScaleType scaleType,bool bInitToZero)

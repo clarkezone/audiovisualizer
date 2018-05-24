@@ -33,6 +33,17 @@ namespace winrt::AudioVisualizer::implementation
 		 
 		winrt::event<Windows::Foundation::TypedEventHandler<IVisualizationSource, hstring>> _configurationChangedEvent;
 		winrt::event_token _sourceChanged;
+
+		AudioVisualizer::VisualizationDataFrame CloneFrame(AudioVisualizer::VisualizationDataFrame const &source);
+		AudioVisualizer::VisualizationDataFrame ProcessFrame(AudioVisualizer::VisualizationDataFrame const& source);
+
+		AudioVisualizer::SpectrumData ApplyFrequencyTransforms(AudioVisualizer::SpectrumData source);
+
+		AudioVisualizer::SpectrumData ApplyRiseAndFall(AudioVisualizer::SpectrumData data, AudioVisualizer::SpectrumData previous, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> riseTime, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> fallTime);
+
+		AudioVisualizer::ScalarData ApplyRiseAndFall(AudioVisualizer::ScalarData data, AudioVisualizer::ScalarData previous, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> riseTime, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> fallTime);
+
+
         SourceConverter();
 
         AudioVisualizer::IVisualizationSource Source();
