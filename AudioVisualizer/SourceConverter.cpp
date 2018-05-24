@@ -50,7 +50,7 @@ namespace winrt::AudioVisualizer::implementation
 	void SourceConverter::Source(AudioVisualizer::IVisualizationSource const& value)
 	{
 		std::lock_guard<std::mutex> lock(_lockMutex);
-		if (IsObjectEqual(value, _source)) {
+		if (value == _source) {
 			return;	// Both values nullptr, no change
 		}
 
@@ -86,7 +86,7 @@ namespace winrt::AudioVisualizer::implementation
 		if (value && value.GetUInt32() == 0) {
 			throw hresult_invalid_argument();
 		}
-		if (IsValueReferenceEqual(value, _frequencyCount))
+		if (value == _frequencyCount)
 			return;
 
 		_frequencyCount = value;
