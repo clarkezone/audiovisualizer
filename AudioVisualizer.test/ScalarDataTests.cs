@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace AudioVisualizer.test
 {
     [TestClass]
-    public class ScalarDataTests
+    public class ScalarDataOperation
     {
         [TestMethod]
         [TestCategory("ScalarData")]
@@ -38,7 +38,6 @@ namespace AudioVisualizer.test
                 Assert.AreEqual(initData[i], data[i]);
             }
         }
-
         [TestMethod()]
         [TestCategory("ScalarData")]
         public void ScalarData_ConvertToDecibels()
@@ -55,12 +54,12 @@ namespace AudioVisualizer.test
         // Result[n] = Result[n-1] + (Result[n] - Result[n-1]) * (1 - exp(-t))
         // where t = Result[n] - Result[n-1] > 0 ? Time / riseTime : Time / fallTime
         // If time == 0 then copy
-        float RiseFallTime(float value,float previous,float riseTime,float fallTime)
+        float RiseFallTime(float value, float previous, float riseTime, float fallTime)
         {
-            return previous + (value - previous) * (1 - (float) Math.Exp(-1.0f/(value > previous ? riseTime : fallTime)));
+            return previous + (value - previous) * (1 - (float)Math.Exp(-1.0f / (value > previous ? riseTime : fallTime)));
         }
 
-        void AssertFloatCollectionsAreEqual(ICollection<float> expected,ICollection<float> actual,float delta,string message="")
+        void AssertFloatCollectionsAreEqual(ICollection<float> expected, ICollection<float> actual, float delta, string message = "")
         {
             Assert.IsNotNull(expected);
             Assert.IsNotNull(actual);
@@ -88,12 +87,12 @@ namespace AudioVisualizer.test
                 RiseFallTime(data[2], previous[2], 0.25f, 0.5f) };
             AssertFloatCollectionsAreEqual(
                 expectedResult1,
-                result1.ToArray(),0.001f,"Calculation results incorrect"
+                result1.ToArray(), 0.001f, "Calculation results incorrect"
                 );
         }
         [TestMethod()]
         [TestCategory("ScalarData")]
-        public void ScalarData_RiseAndFall_ZeroRiseAndFall()
+        public void ScalarData_RiseAndFall_WithZeroRiseAndFallTime()
         {
             var previous = ScalarData.Create(new float[] { 2.0f, 1.0f, 1.5f });
             var data = ScalarData.Create(new float[] { 1.0f, 2.0f, 1.5f }); // First falling, second rising, 3rd same
@@ -110,7 +109,7 @@ namespace AudioVisualizer.test
         }
         [TestMethod()]
         [TestCategory("ScalarData")]
-        public void ScalarData_RiseAndFall_ZeroTime()
+        public void ScalarData_RiseAndFall_WithZeroTimeDelta()
         {
             var previous = ScalarData.Create(new float[] { 2.0f, 1.0f, 1.5f });
             var data = ScalarData.Create(new float[] { 1.0f, 2.0f, 1.5f }); // First falling, second rising, 3rd same
@@ -128,33 +127,9 @@ namespace AudioVisualizer.test
                 result1.ToArray(), 0.001f, "Calculation results incorrect"
                 );
         }
-
         [TestMethod()]
         [TestCategory("ScalarData")]
-        public void ScalarData_RiseAndFall_LogScaleArgThrows()
-        {
-            Assert.ThrowsException<ArgumentException>(
-            () =>
-            {
-                ScalarData.CreateEmpty(2).ConvertToDecibels(-100, 20).ApplyRiseAndFall(null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-            }
-            );
-        }
-        [TestMethod()]
-        [TestCategory("ScalarData")]
-        public void ScalarData_RiseAndFall_DifferentSizeThrows()
-        {
-            Assert.ThrowsException<ArgumentException>(
-            () =>
-            {
-                ScalarData.CreateEmpty(2).ApplyRiseAndFall(ScalarData.CreateEmpty(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-            }
-            );
-        }
-
-        [TestMethod()]
-        [TestCategory("ScalarData")]
-        public void ScalarData_RiseAndFall_PreviousEmpty()
+        public void ScalarData_RiseAndFall_WithPreviousNullArg()
         {
             var data = ScalarData.Create(new float[] { 1.0f, -1.0f, 0.0f }); // First falling, second rising, 3rd same
 
@@ -173,7 +148,6 @@ namespace AudioVisualizer.test
                 );
         }
 
-
         [TestMethod()]
         [TestCategory("ScalarData")]
         public void ScalarData_RiseAndFallToEmpty()
@@ -190,14 +164,88 @@ namespace AudioVisualizer.test
                 result.ToArray(), 0.001f, "Calculation results incorrect"
             );
         }
+
+
         [TestMethod()]
         [TestCategory("ScalarData")]
-        public void ScalarData_RiseAndFallToEmpty_NullPreviousThrows()
+        public void ScalarData_CombineChannels()
+        {
+            var data = ScalarData.Create(new float[] { 1, 2, 3 });
+            var result = data.CombineChannels(new float[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f });
+            Assert.AreEqual(2, result.Count);
+            float[] expectedResult = { 1.4f, 3.2f };
+            AssertFloatCollectionsAreEqual(expectedResult, result.ToArray(), 0.0001f, "Calculation incorrect");
+        }
+    }
+    [TestClass]
+    public class ScalarDataArgumentValidation
+    {
+
+        [TestMethod()]
+        [TestCategory("ScalarData")]
+        public void ScalarData_RiseAndFall_WithLogScaleArgThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(
+            () =>
+            {
+                ScalarData.CreateEmpty(2).ConvertToDecibels(-100, 20).ApplyRiseAndFall(null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            }
+            );
+        }
+        [TestMethod()]
+        [TestCategory("ScalarData")]
+        public void ScalarData_RiseAndFall_WithDifferentSizeArgThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(
+            () =>
+            {
+                ScalarData.CreateEmpty(2).ApplyRiseAndFall(ScalarData.CreateEmpty(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            }
+            );
+        }
+
+        [TestMethod()]
+        [TestCategory("ScalarData")]
+        public void ScalarData_RiseAndFallToEmpty_WithPreviousNullThrows()
         {
             Assert.ThrowsException<ArgumentException>(
                 () =>
                 {
                     var result = ScalarData.ApplyRiseAndFallToEmpty(null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(4));
+                }
+                );
+        }
+
+        [TestMethod()]
+        [TestCategory("ScalarData")]
+        public void ScalarData_CombineChannelsWithNullMapThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(
+                ()=>
+                {
+                    ScalarData.CreateEmpty(2).CombineChannels(null);
+                }
+                );
+        }
+        [TestMethod()]
+        [TestCategory("ScalarData")]
+        public void ScalarData_CombineChannelsWithMapSizeLTChannelsThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(
+                () =>
+                {
+                    ScalarData.CreateEmpty(2).CombineChannels(new float[] { 0.5f });
+                }
+                );
+        }
+        [TestMethod()]
+        [TestCategory("ScalarData")]
+        public void ScalarData_CombineChannelsWithLogScaleThrows()
+        {
+            Assert.ThrowsException<COMException>(
+                () =>
+                {
+                    ScalarData.CreateEmpty(2).ConvertToDecibels(-100,0).CombineChannels(new float[] { 0.5f,0.5f });
                 }
                 );
         }

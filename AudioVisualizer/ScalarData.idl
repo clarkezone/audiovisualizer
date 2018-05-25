@@ -12,5 +12,6 @@ namespace AudioVisualizer
 		ScaleType AmplitudeScale{ get; };
 		ScalarData ConvertToDecibels(Single minValue, Single maxValue);
 		ScalarData ApplyRiseAndFall(ScalarData previous, Windows.Foundation.TimeSpan riseTime, Windows.Foundation.TimeSpan fallTime, Windows.Foundation.TimeSpan timeFromPrevious);
+		ScalarData CombineChannels(Single[] map);
 	}
 }

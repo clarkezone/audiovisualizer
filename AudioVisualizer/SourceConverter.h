@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "SourceConverter.g.h"
+#include <concrt.h>
 
 namespace winrt::AudioVisualizer::implementation
 {
@@ -20,15 +21,15 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::Foundation::IReference<float> _minFrequency;
 		Windows::Foundation::IReference<float> _maxFrequency;
 		Windows::Foundation::IReference<ScaleType> _frequencyScale;
-		VisualizationDataFrame _cachedSourceFrame{ nullptr };
-		VisualizationDataFrame _cachedOutputFrame{ nullptr };
+		AudioVisualizer::VisualizationDataFrame _cachedSourceFrame{ nullptr };
+		AudioVisualizer::VisualizationDataFrame _cachedOutputFrame{ nullptr };
 		bool _bCacheData;
 
-		SpectrumData _previousSpectrum{ nullptr };
-		ScalarData _previousRMS{ nullptr };
-		ScalarData _previousPeak{ nullptr };
+		AudioVisualizer::SpectrumData _previousSpectrum{ nullptr };
+		AudioVisualizer::ScalarData _previousRMS{ nullptr };
+		AudioVisualizer::ScalarData _previousPeak{ nullptr };
 
-		std::mutex _lockMutex;
+		concurrency::reader_writer_lock _lock;
 		Windows::Foundation::TimeSpan _timeFromPrevious;
 		 
 		winrt::event<Windows::Foundation::TypedEventHandler<IVisualizationSource, hstring>> _configurationChangedEvent;
@@ -43,6 +44,11 @@ namespace winrt::AudioVisualizer::implementation
 
 		AudioVisualizer::ScalarData ApplyRiseAndFall(AudioVisualizer::ScalarData data, AudioVisualizer::ScalarData previous, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> riseTime, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> fallTime);
 
+		Windows::Foundation::IReference<uint32_t> get_ActualFrequencyCount();
+		Windows::Foundation::IReference<uint32_t> get_ActualChannelCount();
+		Windows::Foundation::IReference<float> get_ActualMinFrequency();
+		Windows::Foundation::IReference<float> get_ActualMaxFrequency();
+		Windows::Foundation::IReference<AudioVisualizer::ScaleType> get_ActualFrequencyScale();
 
         SourceConverter();
 

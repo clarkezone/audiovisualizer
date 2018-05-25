@@ -41,8 +41,8 @@ namespace winrt::AudioVisualizer::implementation
 		if (maxValue <= minValue)
 			throw hresult_invalid_argument();
 
-		auto returnValue = make_self<ScalarData>(_size, ScaleType::Logarithmic);
-		size_t vSize = (_size + 3) >> 2;	
+		auto returnValue = make_self<ScalarData>(Size(), ScaleType::Logarithmic);
+		size_t vSize = (Size() + 3) >> 2;	
 		AudioMath::ConvertToLogarithmic(_pData, returnValue->_pData, vSize, minValue, maxValue);
 		
 		return returnValue.as<AudioVisualizer::ScalarData>();
@@ -91,6 +91,33 @@ namespace winrt::AudioVisualizer::implementation
 
 		AudioMath::ApplyRiseAndFall(pLastData, _pData, result->_pData, vSize, normalizedRiseTime, normalizedFallTime);
 
+		return result.as<AudioVisualizer::ScalarData>();
+	}
+
+	AudioVisualizer::ScalarData ScalarData::CombineChannels(array_view<float const> map)
+	{
+		if (map.size() < Size()) {
+			throw hresult_invalid_argument();
+		}
+		if (AmplitudeScale() == ScaleType::Logarithmic) {
+			throw hresult_error(E_NOT_VALID_STATE);
+		}
+
+		uint32_t newSize = map.size() / _size;
+
+		auto result = make_self<ScalarData>(newSize, AmplitudeScale(), false);
+
+		float *pResult = reinterpret_cast<float *>(result->_pData);
+		uint32_t mapIndex = 0;
+		for (size_t resultIndex = 0; resultIndex < newSize; resultIndex++)
+		{
+			float sum = 0;
+			for (size_t sourceIndex = 0; sourceIndex < Size(); sourceIndex++,mapIndex++)
+			{
+				sum += reinterpret_cast<float*>(_pData)[sourceIndex] * map.at(mapIndex);
+			}
+			reinterpret_cast<float *>(result->_pData)[resultIndex] = sum;
+		}
 		return result.as<AudioVisualizer::ScalarData>();
 	}
 

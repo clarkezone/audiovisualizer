@@ -18,7 +18,7 @@ namespace winrt::AudioVisualizer::implementation
 		com_ptr<IMFAttributes> m_spMftAttributes;
 		com_ptr<IMFSample> m_spSample;
 
-		std::mutex _mtxMftAccess;	// Nutex to avoid multiple threads modifying this MFT at the same time
+		winrt::slim_mutex _mtxMftAccess;	// Nutex to avoid multiple threads modifying this MFT at the same time
 #pragma endregion
 
 #pragma region Analyzer variables and methods
@@ -33,8 +33,8 @@ namespace winrt::AudioVisualizer::implementation
 
 		std::shared_ptr<::AudioVisualizer::AudioMath::CAudioAnalyzer> _analyzer;
 
-		std::mutex _analyzerAccessMutex;	// Mutex to lock analyzer configuration changing
-		std::mutex _outputQueueAccessMutex;
+		winrt::slim_mutex _analyzerAccessMutex;	// Mutex to lock analyzer configuration changing
+		winrt::slim_mutex _outputQueueAccessMutex;
 
 		std::queue<com_ptr<implementation::VisualizationDataFrame>> m_AnalyzerOutput;
 

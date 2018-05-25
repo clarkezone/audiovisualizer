@@ -14,7 +14,7 @@ namespace AudioVisualizer.test
 {
     class FakeVisualizationSource : IVisualizationSource
     {
-        public VisualizationDataFrame Frame;  
+        public VisualizationDataFrame Frame;
         public VisualizationDataFrame GetData()
         {
             return Frame;
@@ -47,22 +47,22 @@ namespace AudioVisualizer.test
         public ScaleType? ActualFrequencyScale => ScaleType.Linear;
     }
 
+
+
     [TestClass]
     public class SourceConverterPropertyTests
     {
         SourceConverter sut;
-        FakeVisualizationSource source;
+        FakeVisualizationSource testSource;
         List<string> propertiesChanged;
         TypeInfo typeInfo = (typeof(SourceConverter) as IReflectableType).GetTypeInfo();
-
 
         [TestInitialize]
         public void TestInitialize()
         {
             sut = new SourceConverter();
-            source = new FakeVisualizationSource();
-            sut.Source = source;
-
+            testSource = new FakeVisualizationSource();
+            sut.Source = testSource;
             propertiesChanged = new List<string>();
 
             sut.ConfigurationChanged += new TypedEventHandler<IVisualizationSource, string>(
@@ -73,16 +73,16 @@ namespace AudioVisualizer.test
                 );
         }
 
-        void TestProperty<T>(T testValue,string propertyName) where T : struct
+        void TestProperty<T>(T testValue, string propertyName) where T : struct
         {
-           var propertyInfo = typeInfo.GetDeclaredProperty(propertyName);
+            var propertyInfo = typeInfo.GetDeclaredProperty(propertyName);
             Assert.IsNotNull(propertyInfo, $"Property \'{propertyName}\' not found");
             Assert.IsNull(propertyInfo.GetValue(sut));
             Assert.IsFalse(propertiesChanged.Any());    // No notifications should be there
             propertyInfo.SetValue(sut, testValue);
             var value = (T?)propertyInfo.GetValue(sut);
             Assert.IsTrue(value.HasValue);
-            Assert.AreEqual(testValue, value.Value,$"Set/Get {propertyName}={testValue} failed");
+            Assert.AreEqual(testValue, value.Value, $"Set/Get {propertyName}={testValue} failed");
             CollectionAssert.AreEqual(new string[] { propertyName }, propertiesChanged, $"Missing ConfigChanged notification for {propertyName}");
             propertyInfo.SetValue(sut, testValue);
             CollectionAssert.AreEqual(new string[] { propertyName }, propertiesChanged, $"Invalid ConfigChanged notification for setting same value on {propertyName}");
@@ -143,93 +143,77 @@ namespace AudioVisualizer.test
             FakeVisualizationSource fakeSource = new FakeVisualizationSource();
             sut.Source = fakeSource;
             Assert.AreEqual(fakeSource, sut.Source);
-            CollectionAssert.AreEqual(new string[] { "Source" }, propertiesChanged,"Change notification missing assigning Source property");
+            CollectionAssert.AreEqual(new string[] { "Source" }, propertiesChanged, "Change notification missing assigning Source property");
             sut.Source = fakeSource;
-            CollectionAssert.AreEqual(new string[] { "Source" }, propertiesChanged,"Invalid change notification when assigning same value to Source");
+            CollectionAssert.AreEqual(new string[] { "Source" }, propertiesChanged, "Invalid change notification when assigning same value to Source");
             sut.Source = null;
-            CollectionAssert.AreEqual(new string[] { "Source","Source" }, propertiesChanged, "Change notification missing assigning null to Source property");
+            CollectionAssert.AreEqual(new string[] { "Source", "Source" }, propertiesChanged, "Change notification missing assigning null to Source property");
             sut.Source = null;
             CollectionAssert.AreEqual(new string[] { "Source", "Source" }, propertiesChanged, "Invalid change notification when assigning same value (null) to Source");
-        }
-
-
-    }
-
-    [TestClass]
-    public class SourceConverterPropertyValidationWithSourceSet
-    {
-        SourceConverter sut;
-        FakeVisualizationSource _source;
-        [TestInitialize]
-        public void TestInit()
-        {
-            sut = new SourceConverter();
-            _source = new FakeVisualizationSource();
-            sut.Source = _source;
         }
 
         [TestMethod]
         [TestCategory("SourceConverter")]
         public void SourceConverter_IsFpsPassedThrough()
         {
-            Assert.AreEqual(_source.Fps, sut.Fps);
+            Assert.AreEqual(testSource.Fps, sut.Fps);
         }
         [TestMethod]
         [TestCategory("SourceConverter")]
         public void SourceConverter_IsPlaybackStatePassedThrough()
         {
-            Assert.AreEqual(_source.PlaybackState, sut.PlaybackState);
-            _source.State = SourcePlaybackState.Playing;
-            Assert.AreEqual(_source.State, sut.PlaybackState);
+            Assert.AreEqual(testSource.PlaybackState, sut.PlaybackState);
+            testSource.State = SourcePlaybackState.Playing;
+            Assert.AreEqual(testSource.State, sut.PlaybackState);
         }
         [TestMethod]
         [TestCategory("SourceConverter")]
         public void SourceConverter_IsSuspendedPassedThrough()
         {
-            Assert.AreEqual(_source.IsSuspended, sut.IsSuspended);
-            _source.IsSuspended = !_source.IsSuspended;
-            Assert.AreEqual(_source.IsSuspended, sut.IsSuspended);
+            Assert.AreEqual(testSource.IsSuspended, sut.IsSuspended);
+            testSource.IsSuspended = !testSource.IsSuspended;
+            Assert.AreEqual(testSource.IsSuspended, sut.IsSuspended);
         }
         [TestMethod]
         [TestCategory("SourceConverter")]
         public void SourceConverter_IsPresentationTimePassedThrough()
         {
-            Assert.AreEqual(_source.PresentationTime, sut.PresentationTime);
-            _source.Time = TimeSpan.FromSeconds(10);
-            Assert.AreEqual(_source.PresentationTime, sut.PresentationTime);
+            Assert.AreEqual(testSource.PresentationTime, sut.PresentationTime);
+            testSource.Time = TimeSpan.FromSeconds(10);
+            Assert.AreEqual(testSource.PresentationTime, sut.PresentationTime);
         }
         [TestMethod]
         [TestCategory("SourceConverter")]
         public void SourceConverter_IsActualChannelCountPassedThrough()
         {
-            Assert.AreEqual(_source.ActualChannelCount, sut.ActualChannelCount);
-            
+            Assert.AreEqual(testSource.ActualChannelCount, sut.ActualChannelCount);
+
         }
         [TestMethod]
         [TestCategory("SourceConverter")]
         public void SourceConverter_IsActualFrequencyCountPassedThrough()
         {
-            Assert.AreEqual(_source.ActualFrequencyCount, sut.ActualFrequencyCount);
+            Assert.AreEqual(testSource.ActualFrequencyCount, sut.ActualFrequencyCount);
         }
         [TestMethod]
         [TestCategory("SourceConverter")]
         public void SourceConverter_IsActualMinFrequencyPassedThrough()
         {
-            Assert.AreEqual(_source.ActualMinFrequency, sut.ActualMinFrequency);
+            Assert.AreEqual(testSource.ActualMinFrequency, sut.ActualMinFrequency);
         }
 
         [TestMethod]
         [TestCategory("SourceConverter")]
         public void SourceConverter_IsActualMaxFrequencyPassedThrough()
         {
-            Assert.AreEqual(_source.ActualMaxFrequency, sut.ActualMaxFrequency);
+            Assert.AreEqual(testSource.ActualMaxFrequency, sut.ActualMaxFrequency);
         }
 
         [TestMethod]
         [TestCategory("SourceConverter")]
         public void SourceConverter_IsActualFrequencyScalePassedThrough()
         {
-            Assert.AreEqual(_source.ActualFrequencyScale, sut.ActualFrequencyScale);
+            Assert.AreEqual(testSource.ActualFrequencyScale, sut.ActualFrequencyScale);
         }
 
         [TestMethod]
@@ -274,81 +258,12 @@ namespace AudioVisualizer.test
             Assert.ThrowsException<ArgumentException>(() => { sut.MinFrequency = 20000.0f; });
         }
 
-        [TestCategory("SourceConverter")]
-        public void SourceConverter_GetData()
-        {
-
-            var frame = new VisualizationDataFrame(
-                TimeSpan.FromSeconds(1),
-                TimeSpan.FromTicks(166667),
-                ScalarData.CreateEmpty(2),
-                ScalarData.CreateEmpty(2),
-                SpectrumData.CreateEmpty(2, 1024, ScaleType.Linear, ScaleType.Linear, 0.0f, 22100.0f)
-                );
-            _source.Frame = frame;
-
-            // First step passthrough
-            var f = sut.GetData();
-            Assert.IsNotNull(f);
-            Assert.AreEqual(2, f.Spectrum.Count);
-            Assert.AreEqual(1024u, f.Spectrum.FrequencyCount);
-
-            _source.Frame = null;
-            f = sut.GetData();
-            Assert.IsNotNull(f);
-
-        }
-
-       
-        [TestCategory("SourceConverter")]
-        public void SourceConverter_RiseAndFall()
-        {
-            sut.Source = _source;
-
-            var frame1 = new VisualizationDataFrame(
-                TimeSpan.FromSeconds(1),
-                TimeSpan.FromTicks(166667),
-                ScalarData.CreateEmpty(2),
-                ScalarData.CreateEmpty(2),
-                SpectrumData.CreateEmpty(2, 10, ScaleType.Linear, ScaleType.Linear, 0.0f, 22100.0f)
-                );
-
-            var frame2 = new VisualizationDataFrame(
-                TimeSpan.FromSeconds(2),
-                TimeSpan.FromTicks(166667),
-                ScalarData.Create(new float[] { 0.5f, 1.0f }),
-                ScalarData.Create(new float[] { 1.0f, 0.5f }),
-                SpectrumData.Create(new float[][]
-                {
-                    new float[] { 1.0f,0,0,0,0,0,0,0,0,0 },
-                    new float[] { 0.5f,0,0,0,0,0,0,0,0,0 }
-                }, ScaleType.Linear, ScaleType.Linear, 0.0f, 22100.0f)
-                );
-
-            _source.Frame = frame1;
-            sut.SpectrumRiseTime = TimeSpan.FromMilliseconds(100);
-            sut.SpectrumFallTime = TimeSpan.FromMilliseconds(50);
-            sut.RmsRiseTime = TimeSpan.FromMilliseconds(80);
-            sut.RmsFallTime = TimeSpan.FromMilliseconds(40);
-            sut.PeakRiseTime = TimeSpan.FromMilliseconds(20);
-            sut.PeakFallTime = TimeSpan.FromMilliseconds(200);
-            var data1 = sut.GetData();
-            _source.Frame = frame2;
-            var data2 = sut.GetData();
-            Assert.IsNotNull(data2.RMS);
-            Assert.IsNotNull(data2.Peak);
-            Assert.IsNotNull(data2.Spectrum);
-
-            CollectionAssert.AreEqual(new float[] { 0.09403199f, 0.188063979f }, data2.RMS.ToArray());
-            CollectionAssert.AreEqual(new float[] { 0.5654025f, 0.282701254f }, data2.Peak.ToArray());
-            CollectionAssert.AreEqual(new float[] { 0.1535185f, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, data2.Spectrum[0].ToArray());
-            CollectionAssert.AreEqual(new float[] { 0.07675925f, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, data2.Spectrum[1].ToArray());
-        }
+ 
 
     }
 
     [TestClass]
-    public class SourceConverterPropertyValidationAfterInit
+    public class SourceConverterInit
     {
         SourceConverter sut;
         [TestInitialize]
@@ -502,181 +417,104 @@ namespace AudioVisualizer.test
         {
             Assert.IsNull(sut.FrequencyScale);
         }
+    }
 
+    [TestClass]
+    public class SourceConverterOperation
+    {
+        SourceConverter sut;
+        FakeVisualizationSource testSource;
+        VisualizationDataFrame testFrame;
 
-        public void SourceConverter_props()
+        UInt32 expectedChannelCount = 5;
+        UInt32 expectedFrequencyCount = 100;
+        float expectedMinFrequency = 200.0f;
+        float expectedMaxFrequency = 20000.0f;
+        TimeSpan expectedTime = TimeSpan.FromSeconds(1);
+        TimeSpan expectedDuration = TimeSpan.FromMilliseconds(16.7);
+
+        [TestInitialize]
+        public void TestInit()
         {
-            var converter = new SourceConverter();
+            sut = new SourceConverter();
+            testSource = new FakeVisualizationSource();
+            sut.Source = testSource;
 
-            List<string> propertiesChanged = new List<string>();
-
-            converter.ConfigurationChanged += new TypedEventHandler<IVisualizationSource, string>(
-                (sender,property) =>
-                {
-                    propertiesChanged.Add(property);
-                }
+            testFrame = new VisualizationDataFrame(
+                expectedTime,
+                expectedDuration,
+                ScalarData.CreateEmpty(expectedChannelCount),
+                ScalarData.CreateEmpty(expectedChannelCount),
+                SpectrumData.CreateEmpty(expectedChannelCount, expectedFrequencyCount, ScaleType.Linear, ScaleType.Linear, expectedMinFrequency, expectedMaxFrequency)
                 );
 
-            var source = new FakeVisualizationSource();
-            converter.Source = source;
-            Assert.AreEqual(source, converter.Source);
-            Assert.AreEqual(source.Fps, converter.Fps);
-            Assert.AreEqual(source.IsSuspended, converter.IsSuspended);
-            Assert.AreEqual(source.PlaybackState, converter.PlaybackState);
-            Assert.AreEqual(source.Time, converter.PresentationTime);
+            testSource.Frame = testFrame;
+        }
 
-            Assert.AreEqual(2u, converter.ActualChannelCount);
-            Assert.AreEqual(50u, converter.ActualFrequencyCount);
-            Assert.AreEqual(0.0f, converter.ActualMinFrequency);
-            Assert.AreEqual(20000.0f, converter.ActualMaxFrequency);
-            Assert.AreEqual(ScaleType.Linear, converter.ActualFrequencyScale);
-
-            source.AnalyzerTypes = AnalyzerType.RMS;
-            source.IsSuspended = !source.IsSuspended;
-            source.State = SourcePlaybackState.Playing;
-            source.Time = TimeSpan.FromSeconds(10);
-
-            Assert.AreEqual(source.AnalyzerTypes, AnalyzerType.RMS);
-            Assert.AreEqual(source.IsSuspended, converter.IsSuspended);
-            Assert.AreEqual(source.PlaybackState, converter.PlaybackState);
-            Assert.AreEqual(source.Time, converter.PresentationTime);
-
-            Assert.ThrowsException<ArgumentException>(() => { converter.FrequencyCount = 0; });
-            converter.FrequencyCount = 10;
-            Assert.IsNotNull(converter.FrequencyCount);
-            Assert.AreEqual(10u, converter.FrequencyCount.Value);
-            Assert.ThrowsException<ArgumentException>(() => { converter.ChannelCount = 0; });
-            converter.ChannelCount = 2;
-            Assert.IsNotNull(converter.FrequencyCount);
-            Assert.AreEqual(2u, converter.ChannelCount.Value);
-            Assert.ThrowsException<ArgumentException>(() => { converter.RmsRiseTime = TimeSpan.Zero; });
-            converter.RmsRiseTime = TimeSpan.FromTicks(1);
-            Assert.IsNotNull(converter.RmsRiseTime);
-            Assert.AreEqual(TimeSpan.FromTicks(1), converter.RmsRiseTime);
-            Assert.ThrowsException<ArgumentException>(() => { converter.RmsFallTime = TimeSpan.Zero; });
-            converter.RmsFallTime = TimeSpan.FromTicks(1);
-            Assert.IsNotNull(converter.RmsFallTime);
-            Assert.AreEqual(TimeSpan.FromTicks(1), converter.RmsFallTime);
-
-            Assert.ThrowsException<ArgumentException>(() => { converter.PeakRiseTime = TimeSpan.Zero; });
-            converter.PeakRiseTime = TimeSpan.FromTicks(1);
-            Assert.IsNotNull(converter.PeakRiseTime);
-            Assert.AreEqual(TimeSpan.FromTicks(1), converter.PeakRiseTime);
-            Assert.ThrowsException<ArgumentException>(() => { converter.PeakFallTime = TimeSpan.Zero; });
-            converter.PeakFallTime = TimeSpan.FromTicks(1);
-            Assert.IsNotNull(converter.PeakFallTime);
-            Assert.AreEqual(TimeSpan.FromTicks(1), converter.PeakFallTime);
-
-            Assert.ThrowsException<ArgumentException>(() => { converter.SpectrumRiseTime = TimeSpan.Zero; });
-            converter.SpectrumRiseTime = TimeSpan.FromTicks(1);
-            Assert.IsNotNull(converter.SpectrumRiseTime);
-            Assert.AreEqual(TimeSpan.FromTicks(1), converter.SpectrumRiseTime);
-            Assert.ThrowsException<ArgumentException>(() => { converter.SpectrumFallTime = TimeSpan.Zero; });
-            converter.SpectrumFallTime = TimeSpan.FromTicks(1);
-            Assert.IsNotNull(converter.SpectrumFallTime);
-            Assert.AreEqual(TimeSpan.FromTicks(1), converter.SpectrumFallTime);
-
-
-
-            converter.MinFrequency = 20.0f;
-            converter.MaxFrequency = 20000.0f;
-            converter.FrequencyScale = ScaleType.Logarithmic;
-
-            Assert.AreEqual(converter.FrequencyScale, ScaleType.Logarithmic);
-            Assert.AreEqual(converter.MinFrequency, 20.0f);
-            Assert.ThrowsException<ArgumentException>(() => { converter.MinFrequency = 0.0f; });
-            Assert.ThrowsException<ArgumentException>(() => { converter.MinFrequency = 20000.0f; });
-            Assert.ThrowsException<ArgumentException>(() => { converter.MinFrequency = -1.0f; });
-            Assert.AreEqual(converter.MaxFrequency, 20000.0f);
-            Assert.ThrowsException<ArgumentException>(() => { converter.MaxFrequency = 10.0f; });
-            converter.FrequencyScale = ScaleType.Linear;
-            converter.MinFrequency = 0.0f;
-            Assert.AreEqual(0.0f, converter.MinFrequency);
-            CollectionAssert.AreEqual(
-                new string[] { "Source","FrequencyCount","ChannelCount",
-                    "RmsRiseTime","RmsFallTime","PeakRiseTime","PeakFallTime",
-                    "SpectrumRiseTime","SpectrumFallTime",
-                    "MinFrequency","MaxFrequency","FrequencyScale","FrequencyScale","MinFrequency" },
-                propertiesChanged
-                );
-            converter = null;
-            GC.Collect();
+        [TestCategory("SourceConverter")]
+        [TestMethod]
+        public void SourceConverter_GetData_Passthrough()
+        {
+            var frame = sut.GetData();
+            Assert.AreEqual(testFrame, frame);  // Needs to be the same frame if no conversion parameters are set
+        }
+        [TestCategory("SourceConverter")]
+        [TestMethod]
+        public void SourceConverter_GetData_AnalyzerTypeEqRms()
+        {
+            sut.AnalyzerTypes = AnalyzerType.RMS;
+            var frame = sut.GetData();
+            Assert.AreEqual(testFrame.RMS, frame.RMS);
+            Assert.IsNull(frame.Peak);
+            Assert.IsNull(frame.Spectrum);
+        }
+        [TestCategory("SourceConverter")]
+        [TestMethod]
+        public void SourceConverter_GetData_AnalyzerTypeEqPeak()
+        {
+            sut.AnalyzerTypes = AnalyzerType.Peak;
+            var frame = sut.GetData();
+            Assert.IsNull(frame.RMS);
+            Assert.AreEqual(testFrame.Peak, frame.Peak);
+            Assert.IsNull(frame.Spectrum);
+        }
+        [TestCategory("SourceConverter")]
+        [TestMethod]
+        public void SourceConverter_GetData_AnalyzerTypeEqSpectrum()
+        {
+            sut.AnalyzerTypes = AnalyzerType.Spectrum;
+            var frame = sut.GetData();
+            Assert.IsNull(frame.RMS);
+            Assert.IsNull(frame.Peak);
+            Assert.AreEqual(testFrame.Spectrum, frame.Spectrum);
         }
 
 
-        public void SourceConverter_GetData()
+        void SourceConverter_RiseAndFall()
         {
-            SourceConverter converter = new SourceConverter();
-            FakeVisualizationSource source = new FakeVisualizationSource();
+            var spectralData = Enumerable.Repeat<float>(1.0f, (int)expectedFrequencyCount);
+            var nextFrame = new VisualizationDataFrame(
+                testFrame.Time.Add(testFrame.Duration),
+                testFrame.Duration,
+                ScalarData.Create(Enumerable.Repeat<float>(1.0f, (int)expectedChannelCount).ToArray()),
+                ScalarData.Create(Enumerable.Repeat<float>(2.0f, (int)expectedChannelCount).ToArray()),
+                SpectrumData.Create( 
+                    Enumerable.Repeat(spectralData.ToArray(),(int)expectedChannelCount).ToArray(), ScaleType.Linear, ScaleType.Linear, expectedMinFrequency, expectedMaxFrequency)
+                    );
 
-            converter.Source = source;
+            sut.SpectrumRiseTime = TimeSpan.FromMilliseconds(100);
+            sut.SpectrumFallTime = TimeSpan.FromMilliseconds(50);
+            sut.RmsRiseTime = TimeSpan.FromMilliseconds(80);
+            sut.RmsFallTime = TimeSpan.FromMilliseconds(40);
+            sut.PeakRiseTime = TimeSpan.FromMilliseconds(20);
+            sut.PeakFallTime = TimeSpan.FromMilliseconds(200);
 
-            var frame = new VisualizationDataFrame(
-                TimeSpan.FromSeconds(1),
-                TimeSpan.FromTicks(166667),
-                ScalarData.CreateEmpty(2),
-                ScalarData.CreateEmpty(2),
-                SpectrumData.CreateEmpty(2,1024,ScaleType.Linear,ScaleType.Linear,0.0f,22100.0f)
-                );
-            source.Frame = frame;
-
-            // First step passthrough
-            var f = converter.GetData();
-            Assert.IsNotNull(f);
-            Assert.AreEqual(2, f.Spectrum.Count);
-            Assert.AreEqual(1024u, f.Spectrum.FrequencyCount);
-
-            source.Frame = null;
-            f = converter.GetData();
-            Assert.IsNotNull(f);
-
-        }
-
-        public void SourceConverter_RiseAndFall()
-        {
-            SourceConverter converter = new SourceConverter();
-            FakeVisualizationSource source = new FakeVisualizationSource();
-
-            converter.Source = source;
-
-            var frame1 = new VisualizationDataFrame(
-                TimeSpan.FromSeconds(1),
-                TimeSpan.FromTicks(166667),
-                ScalarData.CreateEmpty(2),
-                ScalarData.CreateEmpty(2),
-                SpectrumData.CreateEmpty(2, 10, ScaleType.Linear, ScaleType.Linear, 0.0f, 22100.0f)
-                );
-
-            var frame2 = new VisualizationDataFrame(
-                TimeSpan.FromSeconds(2),
-                TimeSpan.FromTicks(166667),
-                ScalarData.Create(new float[] { 0.5f, 1.0f }),
-                ScalarData.Create(new float[] { 1.0f, 0.5f }),
-                SpectrumData.Create(new float[][] 
-                {
-                    new float[] { 1.0f,0,0,0,0,0,0,0,0,0 },
-                    new float[] { 0.5f,0,0,0,0,0,0,0,0,0 }
-                },ScaleType.Linear,ScaleType.Linear,0.0f,22100.0f)
-                );
-
-            source.Frame = frame1;
-            converter.SpectrumRiseTime = TimeSpan.FromMilliseconds(100);
-            converter.SpectrumFallTime = TimeSpan.FromMilliseconds(50);
-            converter.RmsRiseTime = TimeSpan.FromMilliseconds(80);
-            converter.RmsFallTime = TimeSpan.FromMilliseconds(40);
-            converter.PeakRiseTime = TimeSpan.FromMilliseconds(20);
-            converter.PeakFallTime = TimeSpan.FromMilliseconds(200);
-            var data1 = converter.GetData();
-            source.Frame = frame2;
-            var data2 = converter.GetData();
-            Assert.IsNotNull(data2.RMS);
-            Assert.IsNotNull(data2.Peak);
-            Assert.IsNotNull(data2.Spectrum);
-
-            CollectionAssert.AreEqual(new float[] {0.09403199f , 0.188063979f }, data2.RMS.ToArray());
-            CollectionAssert.AreEqual(new float[] { 0.5654025f,0.282701254f }, data2.Peak.ToArray());
-            CollectionAssert.AreEqual(new float[] { 0.1535185f, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, data2.Spectrum[0].ToArray());
-            CollectionAssert.AreEqual(new float[] { 0.07675925f, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, data2.Spectrum[1].ToArray());
+            var data = sut.GetData();
+            testSource.Frame = nextFrame;
+            data = sut.GetData();
+            Assert.IsNotNull(data.RMS);
+            Assert.IsNotNull(data.Peak);
+            Assert.IsNotNull(data.Spectrum);
         }
     }
 }

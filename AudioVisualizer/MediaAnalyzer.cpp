@@ -77,7 +77,7 @@ namespace winrt::AudioVisualizer::implementation
 
 		if (currentPosition != -1)	// If no presentation position then return nullptr
 		{
-			std::lock_guard<std::mutex> lock(_outputQueueAccessMutex);
+			winrt::slim_lock_guard lock(_outputQueueAccessMutex);
 			return Analyzer_FFwdQueueTo(currentPosition);
 		}
 		return nullptr;
@@ -279,7 +279,7 @@ namespace winrt::AudioVisualizer::implementation
 		pStreamInfo->cbSize = 0;   // If no media type is set, use zero.
 		pStreamInfo->cbAlignment = 0;
 
-		std::lock_guard<std::mutex> lock(_mtxMftAccess);
+		winrt::slim_lock_guard lock(_mtxMftAccess);
 		if (m_spOutputType != nullptr) {
 			pStreamInfo->cbSize = MFGetAttributeUINT32(m_spOutputType.get(), MF_MT_AUDIO_BLOCK_ALIGNMENT, 0);
 		}
@@ -296,7 +296,7 @@ namespace winrt::AudioVisualizer::implementation
 		{
 			return E_POINTER;
 		}
-		std::lock_guard<std::mutex> lock(_mtxMftAccess);
+		winrt::slim_lock_guard lock(_mtxMftAccess);
 		m_spMftAttributes.copy_to(ppAttributes);
 		return S_OK;
 	}
@@ -357,7 +357,7 @@ namespace winrt::AudioVisualizer::implementation
 		}
 
 		HRESULT hr = S_OK;
-		std::lock_guard<std::mutex> lock(_mtxMftAccess);
+		winrt::slim_lock_guard lock(_mtxMftAccess);
 
 		// If the output type is set, return that type as our preferred input type.
 		if (m_spOutputType == nullptr)
@@ -420,7 +420,7 @@ namespace winrt::AudioVisualizer::implementation
 		}
 
 		HRESULT hr = S_OK;
-		std::lock_guard<std::mutex> lock(_mtxMftAccess);
+		winrt::slim_lock_guard lock(_mtxMftAccess);
 
 		if (m_spInputType == nullptr)
 		{
@@ -455,7 +455,7 @@ namespace winrt::AudioVisualizer::implementation
 			return E_INVALIDARG;
 		}
 
-		std::lock_guard<std::mutex> lock(_mtxMftAccess);
+		winrt::slim_lock_guard lock(_mtxMftAccess);
 
 		// If we have an input sample, the client cannot change the type now.
 		if (m_spSample != nullptr)
@@ -587,7 +587,7 @@ namespace winrt::AudioVisualizer::implementation
 		// arrive in temporal order. In the case, the decoder must hold a queue of 
 		// samples. For the video effect, each sample is transformed independently, so
 		// there is no reason to queue multiple input samples.
-		std::lock_guard<std::mutex> lock(_mtxMftAccess);
+		winrt::slim_lock_guard lock(_mtxMftAccess);
 
 		if (m_spSample == nullptr)
 		{
@@ -610,7 +610,7 @@ namespace winrt::AudioVisualizer::implementation
 		{
 			return E_POINTER;
 		}
-		std::lock_guard<std::mutex> lock(_mtxMftAccess);
+		winrt::slim_lock_guard lock(_mtxMftAccess);
 
 		// The MFT can produce an output sample if (and only if) there an input sample.
 		if (m_spSample != nullptr)
@@ -654,7 +654,7 @@ namespace winrt::AudioVisualizer::implementation
 		ULONG_PTR
 	)
 	{
-		std::lock_guard<std::mutex> lock(_mtxMftAccess);
+		winrt::slim_lock_guard lock(_mtxMftAccess);
 
 		HRESULT hr = S_OK;
 
@@ -739,7 +739,7 @@ namespace winrt::AudioVisualizer::implementation
 
 		HRESULT hr = S_OK;
 
-		std::lock_guard<std::mutex> lock(_mtxMftAccess);
+		winrt::slim_lock_guard lock(_mtxMftAccess);
 
 		// Cache the sample. We do the actual work in ProcessOutput.
 		m_spSample.copy_from(pSample);
@@ -764,7 +764,7 @@ namespace winrt::AudioVisualizer::implementation
 
 		HRESULT hr = S_OK;
 
-		std::lock_guard<std::mutex> lock(_mtxMftAccess);
+		winrt::slim_lock_guard lock(_mtxMftAccess);
 
 		if (m_spSample == nullptr)
 		{
@@ -870,7 +870,7 @@ namespace winrt::AudioVisualizer::implementation
 		// Allow processing after a flush event.
 		_bFlushPending = false;
 
-		std::lock_guard<std::mutex> lock(_mtxMftAccess);
+		winrt::slim_lock_guard lock(_mtxMftAccess);
 		HRESULT hr = S_OK;
 		long position = -1;
 		if (_analyzer->GetPosition() == -1)	// Sample index not set, get time from sample
@@ -950,7 +950,7 @@ namespace winrt::AudioVisualizer::implementation
 
 			if (1) {	// This dummy if statement is needed for the scoped lock
 
-				std::lock_guard<std::mutex> lock(_analyzerAccessMutex);
+				winrt::slim_lock_guard lock(_analyzerAccessMutex);
 				if ((int)_analyzerTypes & (int)AnalyzerType::RMS)
 					rms = make_self<ScalarData>(m_nChannels);
 
@@ -987,7 +987,7 @@ namespace winrt::AudioVisualizer::implementation
 			// Only push the result if reset is not pending
 			if (!_bFlushPending && bStepSuccess)
 			{
-				std::lock_guard<std::mutex> lock(_outputQueueAccessMutex);
+				winrt::slim_lock_guard lock(_outputQueueAccessMutex);
 				Analyzer_CompactOutputQueue();
 				m_AnalyzerOutput.push(dataFrame);
 			}
@@ -1000,7 +1000,7 @@ namespace winrt::AudioVisualizer::implementation
 		_bFlushPending = true;
 		// Release input sample and reset the analyzer and queues
 		// Clean up any state from buffer copying
-		std::lock_guard<std::mutex> lock(_analyzerAccessMutex);
+		winrt::slim_lock_guard lock(_analyzerAccessMutex);
 		_analyzer->Flush();
 		m_spSample = nullptr;
 		return S_OK;
@@ -1019,7 +1019,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	HRESULT MediaAnalyzer::Analyzer_ClearOutputQueue()
 	{
-		std::lock_guard<std::mutex> lock(_outputQueueAccessMutex);
+		winrt::slim_lock_guard lock(_outputQueueAccessMutex);
 		while (!m_AnalyzerOutput.empty())
 		{
 			m_AnalyzerOutput.pop();

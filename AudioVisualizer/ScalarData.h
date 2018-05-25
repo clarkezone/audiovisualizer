@@ -55,6 +55,8 @@ namespace winrt::AudioVisualizer::implementation
         AudioVisualizer::ScaleType AmplitudeScale();
         AudioVisualizer::ScalarData ConvertToDecibels(float minValue, float maxValue);
         AudioVisualizer::ScalarData ApplyRiseAndFall(AudioVisualizer::ScalarData const& previous, Windows::Foundation::TimeSpan const& riseTime, Windows::Foundation::TimeSpan const& fallTime, Windows::Foundation::TimeSpan const& timeFromPrevious);
+		AudioVisualizer::ScalarData CombineChannels(array_view<float const> map);
+
         Windows::Foundation::Collections::IIterator<float> First();
         float GetAt(uint32_t index);
 		uint32_t Size() { return _size; }

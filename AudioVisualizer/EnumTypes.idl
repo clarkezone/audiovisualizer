@@ -18,13 +18,13 @@ namespace AudioVisualizer
 		DpiChanged = 2
 	};	
 
-	
 	enum AnalyzerType
 	{
-		RMS = 1,
-		Peak = 2,
-		Spectrum = 4,
-		All = 7
+		None = 0,
+		RMS = 0x1,
+		Peak = 0x2,
+		Spectrum = 0x4,
+		All = 0x7
 	};
 
 	enum SourcePlaybackState
