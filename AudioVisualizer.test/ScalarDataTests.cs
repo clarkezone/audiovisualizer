@@ -220,7 +220,7 @@ namespace AudioVisualizer.test
         [TestCategory("ScalarData")]
         public void ScalarData_CombineChannelsWithNullMapThrows()
         {
-            Assert.ThrowsException<ArgumentException>(
+            Assert.ThrowsException<NullReferenceException>(
                 ()=>
                 {
                     ScalarData.CreateEmpty(2).CombineChannels(null);

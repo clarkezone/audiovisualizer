@@ -96,6 +96,10 @@ namespace winrt::AudioVisualizer::implementation
 
 	AudioVisualizer::ScalarData ScalarData::CombineChannels(array_view<float const> map)
 	{
+		if (map.data() == nullptr)
+		{
+			throw hresult_error(E_POINTER);
+		}
 		if (map.size() < Size()) {
 			throw hresult_invalid_argument();
 		}
@@ -107,7 +111,6 @@ namespace winrt::AudioVisualizer::implementation
 
 		auto result = make_self<ScalarData>(newSize, AmplitudeScale(), false);
 
-		float *pResult = reinterpret_cast<float *>(result->_pData);
 		uint32_t mapIndex = 0;
 		for (size_t resultIndex = 0; resultIndex < newSize; resultIndex++)
 		{

@@ -43,13 +43,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	AudioVisualizer::IVisualizationSource SourceConverter::Source()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		return _source;
 	}
 
 	void SourceConverter::Source(AudioVisualizer::IVisualizationSource const& value)
 	{
-		concurrency::reader_writer_lock::scoped_lock lock(_lock);
+		std::lock_guard lock(_lock);
 		if (value == _source) {
 			return;	// Both values nullptr, no change
 		}
@@ -76,13 +76,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<uint32_t> SourceConverter::FrequencyCount()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		return _frequencyCount;
 	}
 
 	void SourceConverter::FrequencyCount(Windows::Foundation::IReference<uint32_t> const& value)
 	{
-		concurrency::reader_writer_lock::scoped_lock lock(_lock);
+		std::lock_guard lock(_lock);
 		if (value && value.GetUInt32() == 0) {
 			throw hresult_invalid_argument();
 		}
@@ -96,13 +96,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<uint32_t> SourceConverter::ChannelCount()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		return _channelCount;
 	}
 
 	void SourceConverter::ChannelCount(Windows::Foundation::IReference<uint32_t> const& value)
 	{
-		concurrency::reader_writer_lock::scoped_lock lock(_lock);
+		std::lock_guard lock(_lock);
 
 		if (value && value.GetUInt32() == 0) {
 			throw hresult_invalid_argument();
@@ -127,13 +127,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<float> SourceConverter::MinFrequency()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		return _minFrequency;
 	}
 
 	void SourceConverter::MinFrequency(Windows::Foundation::IReference<float> const& value)
 	{
-		concurrency::reader_writer_lock::scoped_lock lock(_lock);
+		std::lock_guard lock(_lock);
 
 		if (value) {
 			float newValue = value.GetSingle();
@@ -154,14 +154,14 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<float> SourceConverter::MaxFrequency()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 
 		return _maxFrequency;
 	}
 
 	void SourceConverter::MaxFrequency(Windows::Foundation::IReference<float> const& value)
 	{
-		concurrency::reader_writer_lock::scoped_lock lock(_lock);
+		std::lock_guard lock(_lock);
 
 		if (value) {
 			float newValue = value.GetSingle();
@@ -183,13 +183,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<AudioVisualizer::ScaleType> SourceConverter::FrequencyScale()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		return _frequencyScale;
 	}
 
 	void SourceConverter::FrequencyScale(Windows::Foundation::IReference<AudioVisualizer::ScaleType> const& value)
 	{
-		concurrency::reader_writer_lock::scoped_lock lock(_lock);
+		std::lock_guard lock(_lock);
 		if (value)
 		{
 			if (value.Value() == ScaleType::Logarithmic && _minFrequency)
@@ -209,13 +209,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<Windows::Foundation::TimeSpan> SourceConverter::RmsRiseTime()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		return _rmsRiseTime;
 	}
 
 	void SourceConverter::RmsRiseTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value)
 	{
-		concurrency::reader_writer_lock::scoped_lock lock(_lock);
+		std::lock_guard lock(_lock);
 		if (IsValueReferenceEqual(value, _rmsRiseTime))
 			return;
 
@@ -227,13 +227,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<Windows::Foundation::TimeSpan> SourceConverter::RmsFallTime()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		return _rmsFallTime;
 	}
 
 	void SourceConverter::RmsFallTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value)
 	{
-		concurrency::reader_writer_lock::scoped_lock lock(_lock);
+		std::lock_guard lock(_lock);
 		if (IsValueReferenceEqual(value, _rmsFallTime))
 			return;
 
@@ -244,13 +244,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<Windows::Foundation::TimeSpan> SourceConverter::PeakRiseTime()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		return _peakRiseTime;
 	}
 
 	void SourceConverter::PeakRiseTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value)
 	{
-		concurrency::reader_writer_lock::scoped_lock lock(_lock);
+		std::lock_guard lock(_lock);
 		if (IsValueReferenceEqual(value, _peakRiseTime))
 			return;
 
@@ -261,13 +261,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<Windows::Foundation::TimeSpan> SourceConverter::PeakFallTime()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);;
+		std::lock_guard lock(_lock);;
 		return _peakFallTime;
 	}
 
 	void SourceConverter::PeakFallTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value)
 	{
-		concurrency::reader_writer_lock::scoped_lock lock(_lock);
+		std::lock_guard lock(_lock);
 		if (IsValueReferenceEqual(value, _peakFallTime))
 			return;
 
@@ -278,13 +278,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<Windows::Foundation::TimeSpan> SourceConverter::SpectrumRiseTime()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		return _spectrumRiseTime;
 	}
 
 	void SourceConverter::SpectrumRiseTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value)
 	{
-		concurrency::reader_writer_lock::scoped_lock lock(_lock);
+		std::lock_guard lock(_lock);
 		if (IsValueReferenceEqual(value, _spectrumRiseTime))
 			return;
 
@@ -295,13 +295,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<Windows::Foundation::TimeSpan> SourceConverter::SpectrumFallTime()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		return _spectrumFallTime;
 	}
 
 	void SourceConverter::SpectrumFallTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value)
 	{
-		concurrency::reader_writer_lock::scoped_lock lock(_lock);
+		std::lock_guard lock(_lock);
 		if (IsValueReferenceEqual(value, _spectrumFallTime))
 			return;
 
@@ -312,7 +312,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	bool SourceConverter::IsSuspended()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		if (!_source)
 		{
 			throw hresult_error(E_NOT_VALID_STATE, L"Source not set");
@@ -327,7 +327,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	float SourceConverter::Fps()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		if (!_source)
 		{
 			throw hresult_error(E_NOT_VALID_STATE, L"Source not set");
@@ -342,13 +342,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	AudioVisualizer::AnalyzerType SourceConverter::AnalyzerTypes()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		return _analyzerTypes;
 	}
 
 	void SourceConverter::AnalyzerTypes(AudioVisualizer::AnalyzerType const& value)
 	{
-		concurrency::reader_writer_lock::scoped_lock lock(_lock);
+		std::lock_guard lock(_lock);
 		if (_analyzerTypes == value) {
 			return;	// No change
 		}
@@ -359,7 +359,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<Windows::Foundation::TimeSpan> SourceConverter::PresentationTime()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		if (!_source)
 		{
 			throw hresult_error(E_NOT_VALID_STATE, L"Source not set");
@@ -369,7 +369,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	AudioVisualizer::SourcePlaybackState SourceConverter::PlaybackState()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		if (!_source)
 		{
 			throw hresult_error(E_NOT_VALID_STATE, L"Source not set");
@@ -379,32 +379,32 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<uint32_t> SourceConverter::ActualFrequencyCount()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
-		return get_ActualFrequencyCount();
+		std::lock_guard lock(_lock);
+		return _actualFrequencyCount();
 	}
 
 	Windows::Foundation::IReference<uint32_t> SourceConverter::ActualChannelCount()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
-		return get_ActualChannelCount();
+		std::lock_guard lock(_lock);
+		return _actualChannelCount();
 	}
 
 	Windows::Foundation::IReference<float> SourceConverter::ActualMinFrequency()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
-		return get_ActualMinFrequency();
+		std::lock_guard lock(_lock);
+		return _actualMinFrequency();
 	}
 
 	Windows::Foundation::IReference<float> SourceConverter::ActualMaxFrequency()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
-		return get_ActualMaxFrequency();
+		std::lock_guard lock(_lock);
+		return _actualMaxFrequency();
 	}
 
 	Windows::Foundation::IReference<AudioVisualizer::ScaleType> SourceConverter::ActualFrequencyScale()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
-		return get_ActualFrequencyScale();
+		std::lock_guard lock(_lock);
+		return _actualFrequencyScale();
 	}
 
 	event_token SourceConverter::ConfigurationChanged(Windows::Foundation::TypedEventHandler<AudioVisualizer::IVisualizationSource, hstring> const& handler)
@@ -417,7 +417,7 @@ namespace winrt::AudioVisualizer::implementation
 		_configurationChangedEvent.remove(token);
 	}
 
-	Windows::Foundation::IReference<uint32_t> SourceConverter::get_ActualFrequencyCount()
+	Windows::Foundation::IReference<uint32_t> SourceConverter::_actualFrequencyCount()
 	{
 		if (_frequencyCount) {
 			return _frequencyCount;
@@ -428,7 +428,7 @@ namespace winrt::AudioVisualizer::implementation
 		return nullptr;
 	}
 
-	Windows::Foundation::IReference<uint32_t> SourceConverter::get_ActualChannelCount()
+	Windows::Foundation::IReference<uint32_t> SourceConverter::_actualChannelCount()
 	{
 		if (_channelCount) {
 			return _channelCount;
@@ -439,7 +439,7 @@ namespace winrt::AudioVisualizer::implementation
 		return nullptr;
 	}
 
-	Windows::Foundation::IReference<float> SourceConverter::get_ActualMinFrequency()
+	Windows::Foundation::IReference<float> SourceConverter::_actualMinFrequency()
 	{
 		if (_minFrequency) {
 			return _minFrequency;
@@ -451,7 +451,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	}
 
-	Windows::Foundation::IReference<float> SourceConverter::get_ActualMaxFrequency()
+	Windows::Foundation::IReference<float> SourceConverter::_actualMaxFrequency()
 	{
 		if (_maxFrequency) {
 			return _maxFrequency;
@@ -462,7 +462,7 @@ namespace winrt::AudioVisualizer::implementation
 		return nullptr;
 	}
 
-	Windows::Foundation::IReference<AudioVisualizer::ScaleType> SourceConverter::get_ActualFrequencyScale()
+	Windows::Foundation::IReference<AudioVisualizer::ScaleType> SourceConverter::_actualFrequencyScale()
 	{
 		if (_frequencyScale) {
 			return _frequencyScale;
@@ -487,7 +487,7 @@ namespace winrt::AudioVisualizer::implementation
 	*/
 	AudioVisualizer::VisualizationDataFrame SourceConverter::GetData()
 	{
-		concurrency::reader_writer_lock::scoped_lock_read lock(_lock);
+		std::lock_guard lock(_lock);
 		if (!_source)
 		{
 			return nullptr;
@@ -534,12 +534,12 @@ namespace winrt::AudioVisualizer::implementation
 			spectrum = ApplyRiseAndFall(spectrum, _previousSpectrum, _spectrumRiseTime, _spectrumFallTime);
 			_previousSpectrum = spectrum;
 		}
-		if (((uint32_t)AnalyzerTypes() & (uint32_t)AnalyzerType::RMS) && source.RMS())
+		if (((uint32_t) _analyzerTypes & (uint32_t)AnalyzerType::RMS) && source.RMS())
 		{
 			rms = ApplyRiseAndFall(source.RMS(), _previousRMS, _rmsRiseTime, _rmsFallTime);
 			_previousRMS = rms;
 		}
-		if (((uint32_t)AnalyzerTypes() & (uint32_t)AnalyzerType::Peak) && source.Peak())
+		if (((uint32_t) _analyzerTypes & (uint32_t)AnalyzerType::Peak) && source.Peak())
 		{
 			peak = ApplyRiseAndFall(source.Peak(), _previousPeak, _peakRiseTime, _peakFallTime);
 			_previousPeak = peak;
@@ -579,11 +579,11 @@ namespace winrt::AudioVisualizer::implementation
 			return data;
 		}
 
-		UINT32 frequencyCount = get_ActualFrequencyCount() ? get_ActualFrequencyCount().Value() : data.Size();
-		float minFrequency = get_ActualMinFrequency() ? get_ActualMinFrequency().Value() : data.MinFrequency();
-		float maxFrequency = get_ActualMaxFrequency() ? get_ActualMaxFrequency().Value() : data.MaxFrequency();
+		UINT32 frequencyCount = _actualFrequencyCount() ? _actualFrequencyCount().Value() : data.Size();
+		float minFrequency = _actualMinFrequency() ? _actualMinFrequency().Value() : data.MinFrequency();
+		float maxFrequency = _actualMaxFrequency() ? _actualMaxFrequency().Value() : data.MaxFrequency();
 
-		ScaleType fScale = get_ActualFrequencyScale() ? get_ActualFrequencyScale().Value() : data.FrequencyScale();
+		ScaleType fScale = _actualFrequencyScale() ? _actualFrequencyScale().Value() : data.FrequencyScale();
 
 		if (fScale == ScaleType::Linear && data.FrequencyScale() == ScaleType::Linear)
 		{

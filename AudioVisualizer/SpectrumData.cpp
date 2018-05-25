@@ -37,10 +37,10 @@ namespace winrt::AudioVisualizer::implementation
 
     AudioVisualizer::SpectrumData SpectrumData::LinearTransform(uint32_t elementCount, float fromFrequency, float toFrequency)
     {
-		if (_amplitudeScale != ScaleType::Linear || _frequencyScale != ScaleType::Linear || elementCount < 1)
-			throw hresult_invalid_argument();
+		if (_amplitudeScale != ScaleType::Linear || _frequencyScale != ScaleType::Linear)
+			throw hresult_error(E_NOT_VALID_STATE);
 
-		if (fromFrequency >= toFrequency)
+		if (fromFrequency >= toFrequency || elementCount < 1)
 				throw hresult_invalid_argument();
 
 		auto result = make_self<SpectrumData>(
@@ -101,13 +101,29 @@ namespace winrt::AudioVisualizer::implementation
 
     AudioVisualizer::SpectrumData SpectrumData::ApplyRiseAndFall(AudioVisualizer::SpectrumData const& previous, Windows::Foundation::TimeSpan const& riseTime, Windows::Foundation::TimeSpan const& fallTime, Windows::Foundation::TimeSpan const& timeFromPrevious)
     {
-        throw hresult_not_implemented();
+		if (_amplitudeScale != ScaleType::Linear)
+			throw hresult_error(E_NOT_VALID_STATE);
+
+		if (previous && (previous.Size() != Size() || previous.FrequencyCount() != FrequencyCount()))
+		{
+			throw hresult_invalid_argument(L"Previous data not the same size");
+		}
+		auto result = make_self<SpectrumData>(Size(), FrequencyCount(), AmplitudeScale(), FrequencyScale(), MinFrequency(), MaxFrequency(), false);
+		DirectX::XMVECTOR *pLastData = (previous) ? winrt::from_abi<SpectrumData>(previous)->_pData : nullptr;
+
+		float normalizedRiseTime = (float)timeFromPrevious.count() / (float)riseTime.count();
+		float normalizedFallTime = (float)timeFromPrevious.count() / (float)fallTime.count();
+
+		AudioMath::ApplyRiseAndFall(pLastData, _pData, result->_pData, _vElementsCount * _channels, normalizedRiseTime, normalizedFallTime);
+		
+		return result.as<AudioVisualizer::SpectrumData>();
     }
 
     AudioVisualizer::SpectrumData SpectrumData::ConvertToDecibels(float minValue, float maxValue)
     {
 		if (_amplitudeScale == ScaleType::Logarithmic)
 			throw hresult_error(E_NOT_VALID_STATE);
+
 		if (minValue >= maxValue)
 			throw hresult_invalid_argument();
 
@@ -155,12 +171,16 @@ namespace winrt::AudioVisualizer::implementation
 
     float SpectrumData::GetFrequency(uint32_t elementIndex)
     {
-        throw hresult_not_implemented();
+		return _frequencyScale == ScaleType::Linear ?
+			_minimumFrequency + _frequencyStep * elementIndex :
+			_minimumFrequency * powf(_frequencyStep, (float)elementIndex);
     }
 
     float SpectrumData::GetCenterFrequency(uint32_t elementIndex)
     {
-        throw hresult_not_implemented();
+		return _frequencyScale == ScaleType::Linear ?
+			_minimumFrequency + _frequencyStep * ((float)elementIndex + 0.5f):
+			_minimumFrequency * powf(_frequencyStep, (float)elementIndex + 0.5f);
     }
 
     Windows::Foundation::Collections::IIterator<Windows::Foundation::Collections::IVectorView<float>> SpectrumData::First()

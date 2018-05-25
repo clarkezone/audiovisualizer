@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "SourceConverter.g.h"
-#include <concrt.h>
 
 namespace winrt::AudioVisualizer::implementation
 {
@@ -29,7 +28,7 @@ namespace winrt::AudioVisualizer::implementation
 		AudioVisualizer::ScalarData _previousRMS{ nullptr };
 		AudioVisualizer::ScalarData _previousPeak{ nullptr };
 
-		concurrency::reader_writer_lock _lock;
+		std::mutex _lock;
 		Windows::Foundation::TimeSpan _timeFromPrevious;
 		 
 		winrt::event<Windows::Foundation::TypedEventHandler<IVisualizationSource, hstring>> _configurationChangedEvent;
@@ -44,11 +43,12 @@ namespace winrt::AudioVisualizer::implementation
 
 		AudioVisualizer::ScalarData ApplyRiseAndFall(AudioVisualizer::ScalarData data, AudioVisualizer::ScalarData previous, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> riseTime, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> fallTime);
 
-		Windows::Foundation::IReference<uint32_t> get_ActualFrequencyCount();
-		Windows::Foundation::IReference<uint32_t> get_ActualChannelCount();
-		Windows::Foundation::IReference<float> get_ActualMinFrequency();
-		Windows::Foundation::IReference<float> get_ActualMaxFrequency();
-		Windows::Foundation::IReference<AudioVisualizer::ScaleType> get_ActualFrequencyScale();
+		// Non-locking implementation functions
+		Windows::Foundation::IReference<uint32_t> _actualFrequencyCount();
+		Windows::Foundation::IReference<uint32_t> _actualChannelCount();
+		Windows::Foundation::IReference<float> _actualMinFrequency();
+		Windows::Foundation::IReference<float> _actualMaxFrequency();
+		Windows::Foundation::IReference<AudioVisualizer::ScaleType> _actualFrequencyScale();
 
         SourceConverter();
 
