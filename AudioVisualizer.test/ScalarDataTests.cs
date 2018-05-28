@@ -11,13 +11,31 @@ namespace AudioVisualizer.test
     [TestClass]
     public class ScalarDataOperation
     {
+        ScalarData sut;
+        [TestInitialize]
+        public void TestInit()
+        {
+            sut = ScalarData.CreateEmpty(2);
+        }
+        [TestMethod]
+        [TestCategory("ScalarData")]
+        public void ScalarData_IVectorView_Size()
+        {
+            Assert.AreEqual(2,sut.Count());
+        }
+        [TestMethod]
+        [TestCategory("ScalarData")]
+        public void ScalarData_IVectorView_GetAt()
+        {
+            Assert.AreEqual(0, sut[0]);
+            Assert.AreEqual(0, sut[1]);
+        }
+
         [TestMethod]
         [TestCategory("ScalarData")]
         public void ScalarData_CreateEmpty()
         {
             var data = ScalarData.CreateEmpty(2);
-            Assert.AreEqual(2, data.Count());
-            Assert.AreEqual(2, data.Count);
             Assert.AreEqual(ScaleType.Linear, data.AmplitudeScale);
             Assert.AreEqual(0.0f, data[0]);
             Assert.AreEqual(0.0f, data[1]);
@@ -189,6 +207,18 @@ namespace AudioVisualizer.test
             () =>
             {
                 ScalarData.CreateEmpty(2).ConvertToDecibels(-100, 20).ApplyRiseAndFall(null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            }
+            );
+        }
+        [TestCategory("ScalarData")]
+        [TestMethod]
+        public void ScalarData_RiseAndFall_WithPreviousLogScaleArgThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(
+            () =>
+            {
+                var previous = ScalarData.CreateEmpty(2).ConvertToDecibels(-100, 20);
+                ScalarData.CreateEmpty(2).ApplyRiseAndFall(previous, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
             }
             );
         }

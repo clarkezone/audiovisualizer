@@ -104,6 +104,11 @@ namespace winrt::AudioVisualizer::implementation
 		if (_amplitudeScale != ScaleType::Linear)
 			throw hresult_error(E_NOT_VALID_STATE);
 
+		if (previous && previous.AmplitudeScale() != ScaleType::Linear)
+		{
+			throw hresult_invalid_argument();
+		}
+
 		if (previous && (previous.Size() != Size() || previous.FrequencyCount() != FrequencyCount()))
 		{
 			throw hresult_invalid_argument(L"Previous data not the same size");
@@ -119,6 +124,24 @@ namespace winrt::AudioVisualizer::implementation
 		return result.as<AudioVisualizer::SpectrumData>();
     }
 
+	AudioVisualizer::SpectrumData SpectrumData::ApplyRiseAndFallToEmpty(AudioVisualizer::SpectrumData const& previous, Windows::Foundation::TimeSpan const& riseTime, Windows::Foundation::TimeSpan const& fallTime, Windows::Foundation::TimeSpan const& timeFromPrevious)
+	{
+		if (!previous)
+			throw hresult_invalid_argument();
+		if (previous.AmplitudeScale() != ScaleType::Linear)
+			throw hresult_invalid_argument();
+
+		auto result = make_self<SpectrumData>(previous.Size(), previous.FrequencyCount(), previous.AmplitudeScale(), previous.FrequencyScale(), previous.MinFrequency(), previous.MaxFrequency(), false);
+
+		size_t vSize = (previous.FrequencyCount() + 3) >> 2;
+
+		float normalizedRiseTime = (float)timeFromPrevious.count() / (float)riseTime.count();
+		float normalizedFallTime = (float)timeFromPrevious.count() / (float)fallTime.count();
+
+		AudioMath::ApplyRiseAndFall(winrt::from_abi<SpectrumData>(previous)->_pData, nullptr, result->_pData, vSize * previous.Size(), normalizedRiseTime, normalizedFallTime);
+		
+		return result.as<AudioVisualizer::SpectrumData>();
+	}
     AudioVisualizer::SpectrumData SpectrumData::ConvertToDecibels(float minValue, float maxValue)
     {
 		if (_amplitudeScale == ScaleType::Logarithmic)
@@ -139,8 +162,9 @@ namespace winrt::AudioVisualizer::implementation
 
 		if (map.size() < _channels)
 			throw hresult_invalid_argument();
+
 		if (_amplitudeScale != ScaleType::Linear)
-			throw hresult_invalid_argument();
+			throw hresult_error(E_NOT_VALID_STATE);
 
 		UINT32 outputChannels = map.size() / _channels;
 		auto result = make_self<SpectrumData>(
@@ -265,11 +289,6 @@ namespace winrt::AudioVisualizer::implementation
 			}
 		}
 		return result.as<AudioVisualizer::SpectrumData>();
-    }
-
-    AudioVisualizer::SpectrumData SpectrumData::ApplyRiseAndFallToEmpty(AudioVisualizer::SpectrumData const& previous, Windows::Foundation::TimeSpan const& riseTime, Windows::Foundation::TimeSpan const& fallTime, Windows::Foundation::TimeSpan const& timeFromPrevious)
-    {
-        throw hresult_not_implemented();
     }
 
 	SpectrumData::SpectrumData(uint32_t cChannels, uint32_t cElements, AudioVisualizer::ScaleType const & amplitudeScale, AudioVisualizer::ScaleType const & frequencyScale, float minFrequency, float maxFrequency, bool bInitWithZeros)

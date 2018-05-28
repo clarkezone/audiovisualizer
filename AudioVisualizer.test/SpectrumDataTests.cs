@@ -473,7 +473,96 @@ namespace AudioVisualizer.test
         {
             Assert.ThrowsException<COMException>(() =>
             {
-                var d = SpectrumData.CreateEmpty(2, 10, ScaleType.Logarithmic, ScaleType.Linear, 0, 20000).ConvertToDecibels(-100, 0).CombineChannels(new float[] { 1, 1 });
+                var d = SpectrumData.CreateEmpty(2, 10, ScaleType.Logarithmic, ScaleType.Linear, 0, 20000).CombineChannels(new float[] { 1, 1 });
+            });
+        }
+
+        float[][] g_ExpectedRFResult = new float[][]
+        { new float[] { 0.3934682f,0.7869364f,1.18040466f,1.5738728f,1.967341f },
+                new float[] { 3.934682f,7.869364f,11.8040457f,15.7387276f,19.67341f } };
+        [TestMethod]
+        [TestCategory("SpectrumData")]
+        public void SpectrumData_ApplyRiseAndFall()
+        {
+            var previous = SpectrumData.CreateEmpty(2, 5, ScaleType.Linear, ScaleType.Linear, 0, 20000);
+            var result = ltd.ApplyRiseAndFall(previous, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(1));
+            CollectionAssert.AreEqual(g_ExpectedRFResult[0], result[0].ToArray());
+            CollectionAssert.AreEqual(g_ExpectedRFResult[1], result[1].ToArray());
+        }
+        [TestMethod]
+        [TestCategory("SpectrumData")]
+        public void SpectrumData_ApplyRiseAndFall_WithNullPrevious()
+        {
+            var result = ltd.ApplyRiseAndFall(null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(1));
+            CollectionAssert.AreEqual(g_ExpectedRFResult[0], result[0].ToArray());
+            CollectionAssert.AreEqual(g_ExpectedRFResult[1], result[1].ToArray());
+        }
+
+        [TestMethod]
+        [TestCategory("SpectrumData")]
+        public void SpectrumData_ApplyRiseAndFall_LogAmpScaleThrows()
+        {
+            Assert.ThrowsException<COMException>(() =>
+            {
+                SpectrumData.CreateEmpty(2, 10, ScaleType.Logarithmic, ScaleType.Linear, 0, 20000).ApplyRiseAndFall(null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            });
+        }
+        [TestMethod]
+        [TestCategory("SpectrumData")]
+        public void SpectrumData_ApplyRiseAndFall_WithPreviousLogAmpScaleThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var p = SpectrumData.CreateEmpty(2, 10, ScaleType.Logarithmic, ScaleType.Linear, 0, 20000);
+                SpectrumData.CreateEmpty(2, 10, ScaleType.Linear, ScaleType.Linear, 0, 20000).ApplyRiseAndFall(p, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            });
+        }
+
+        [TestMethod]
+        [TestCategory("SpectrumData")]
+        public void SpectrumData_ApplyRiseAndFall_WithNEChannelCountThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var p = SpectrumData.CreateEmpty(1, 10, ScaleType.Linear, ScaleType.Linear, 0, 20000);
+                SpectrumData.CreateEmpty(2, 10, ScaleType.Linear, ScaleType.Linear, 0, 20000).ApplyRiseAndFall(p, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            });
+        }
+        [TestMethod]
+        [TestCategory("SpectrumData")]
+        public void SpectrumData_ApplyRiseAndFall_WithNEElementCountThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var p = SpectrumData.CreateEmpty(2, 20, ScaleType.Linear, ScaleType.Linear, 0, 20000);
+                SpectrumData.CreateEmpty(2, 10, ScaleType.Linear, ScaleType.Linear, 0, 20000).ApplyRiseAndFall(p, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            });
+        }
+
+        [TestMethod]
+        [TestCategory("SpectrumData")]
+        public void SpectrumData_ApplyRiseAndFallToEmpty()
+        {
+            SpectrumData.ApplyRiseAndFallToEmpty(ltd, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1));
+        }
+
+        [TestMethod]
+        [TestCategory("SpectrumData")]
+        public void SpectrumData_ApplyRiseAndFallToEmpty_WithNullPreviousThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                SpectrumData.ApplyRiseAndFallToEmpty(null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1));
+            });
+        }
+        [TestMethod]
+        [TestCategory("SpectrumData")]
+        public void SpectrumData_ApplyRiseAndFallToEmpty_WithLogAmpScalePreviousThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var p = SpectrumData.CreateEmpty(2, 10, ScaleType.Logarithmic, ScaleType.Linear, 0, 20000);
+                SpectrumData.ApplyRiseAndFallToEmpty(p, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1));
             });
         }
     }

@@ -6,34 +6,6 @@
 
 namespace winrt::AudioVisualizer::implementation
 {
-	template<typename T>
-	bool IsValueReferenceEqual(Windows::Foundation::IReference<T> const &value1, Windows::Foundation::IReference<T> const &value2)
-	{
-		if (!value1 && !value2) // Both values are nullptr, no change
-		{
-			return true;
-		}
-		else if (value1 && value2 && value1.Value() == value2.Value())	// No change in value, return
-		{
-			return true;
-		}
-		return false;
-	}
-
-	template<typename T>
-	bool IsObjectEqual(T const &value1, T const &value2)
-	{
-		if (!value1 && !value2) // Both values are nullptr, no change
-		{
-			return true;
-		}
-		else if (value1 && value2 && winrt::get_abi(value1) == winrt::get_abi(value2))	// No change in value, return
-		{
-			return true;
-		}
-		return false;
-	}
-
 	SourceConverter::SourceConverter()
 	{
 		_analyzerTypes = AnalyzerType::All;
@@ -83,9 +55,11 @@ namespace winrt::AudioVisualizer::implementation
 	void SourceConverter::FrequencyCount(Windows::Foundation::IReference<uint32_t> const& value)
 	{
 		std::lock_guard lock(_lock);
+	
 		if (value && value.GetUInt32() == 0) {
 			throw hresult_invalid_argument();
 		}
+
 		if (value == _frequencyCount)
 			return;
 
@@ -107,7 +81,7 @@ namespace winrt::AudioVisualizer::implementation
 		if (value && value.GetUInt32() == 0) {
 			throw hresult_invalid_argument();
 		}
-		if (IsValueReferenceEqual(value, _channelCount))
+		if (value == _channelCount)
 			return;
 
 		_channelCount = value;
@@ -145,7 +119,7 @@ namespace winrt::AudioVisualizer::implementation
 				throw hresult_invalid_argument();
 			}
 		}
-		if (IsValueReferenceEqual(value, _minFrequency))
+		if (value == _minFrequency)
 			return;
 		_minFrequency = value;
 		_cachedOutputFrame = nullptr;
@@ -173,7 +147,7 @@ namespace winrt::AudioVisualizer::implementation
 				throw hresult_invalid_argument();
 			}
 		}
-		if (IsValueReferenceEqual(value, _maxFrequency))
+		if (value == _maxFrequency)
 			return;
 
 		_maxFrequency = value;
@@ -198,7 +172,7 @@ namespace winrt::AudioVisualizer::implementation
 					throw hresult_invalid_argument();
 			}
 		}
-		if (IsValueReferenceEqual(value, _frequencyScale))
+		if (value == _frequencyScale)
 			return;
 
 		_frequencyScale = value;
@@ -216,7 +190,7 @@ namespace winrt::AudioVisualizer::implementation
 	void SourceConverter::RmsRiseTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value)
 	{
 		std::lock_guard lock(_lock);
-		if (IsValueReferenceEqual(value, _rmsRiseTime))
+		if (value == _rmsRiseTime)
 			return;
 
 		_rmsRiseTime = value;
@@ -234,7 +208,7 @@ namespace winrt::AudioVisualizer::implementation
 	void SourceConverter::RmsFallTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value)
 	{
 		std::lock_guard lock(_lock);
-		if (IsValueReferenceEqual(value, _rmsFallTime))
+		if (value == _rmsFallTime)
 			return;
 
 		_rmsFallTime = value;
@@ -251,7 +225,7 @@ namespace winrt::AudioVisualizer::implementation
 	void SourceConverter::PeakRiseTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value)
 	{
 		std::lock_guard lock(_lock);
-		if (IsValueReferenceEqual(value, _peakRiseTime))
+		if (value == _peakRiseTime)
 			return;
 
 		_peakRiseTime = value;
@@ -268,7 +242,7 @@ namespace winrt::AudioVisualizer::implementation
 	void SourceConverter::PeakFallTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value)
 	{
 		std::lock_guard lock(_lock);
-		if (IsValueReferenceEqual(value, _peakFallTime))
+		if (value == _peakFallTime)
 			return;
 
 		_peakFallTime = value;
@@ -285,7 +259,7 @@ namespace winrt::AudioVisualizer::implementation
 	void SourceConverter::SpectrumRiseTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value)
 	{
 		std::lock_guard lock(_lock);
-		if (IsValueReferenceEqual(value, _spectrumRiseTime))
+		if (value == _spectrumRiseTime)
 			return;
 
 		_spectrumRiseTime = value;
@@ -302,7 +276,7 @@ namespace winrt::AudioVisualizer::implementation
 	void SourceConverter::SpectrumFallTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value)
 	{
 		std::lock_guard lock(_lock);
-		if (IsValueReferenceEqual(value, _spectrumFallTime))
+		if (value == _spectrumFallTime)
 			return;
 
 		_spectrumFallTime = value;
