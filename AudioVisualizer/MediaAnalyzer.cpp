@@ -33,7 +33,7 @@ namespace winrt::AudioVisualizer::implementation
 		_analyzerTypes(AnalyzerType::All)
 	{
 		_analyzer = std::make_shared<::AudioVisualizer::AudioMath::CAudioAnalyzer>(CircleBufferSize);
-
+		
 		HRESULT hr = MFCreateAttributes(m_spMftAttributes.put(), 4);
 		if (FAILED(hr))
 			throw_hresult(hr);
