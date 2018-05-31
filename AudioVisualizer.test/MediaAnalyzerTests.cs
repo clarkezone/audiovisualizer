@@ -244,5 +244,26 @@ namespace AudioVisualizer.test
         {
             _mft.SetInputMediaType(0, CreateFloatEncodingProperty((uint)sampleRate, (uint)channels), true);
         }
+
+        [TestCategory("IMFTransform")]
+        [DataTestMethod()]
+        [DataRow(22050, 1)]
+        [DataRow(32000, 1)]
+        [DataRow(44100, 1)]
+        [DataRow(48000, 1)]
+        [DataRow(96000, 1)]
+        [DataRow(192000, 1)]
+        [DataRow(22050, 2)]
+        [DataRow(32000, 2)]
+        [DataRow(44100, 2)]
+        [DataRow(48000, 2)]
+        [DataRow(96000, 2)]
+        [DataRow(192000, 2)]
+        [DataRow(48000, 5)]
+        public void MediaAnalyzer_Mft_Process(int sampleRate,int channels)
+        {
+            MediaFoundation.MediaPipelineFake pipeline = new MediaFoundation.MediaPipelineFake(_mft,(uint)sampleRate,(uint)channels);
+            
+        }
     }
 }

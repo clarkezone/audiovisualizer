@@ -339,81 +339,81 @@ namespace AudioVisualizer.test
 
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_AnalyzerTypesAreAll()
+        public void SourceConverter_AfterInit_AnalyzerTypesAreAll()
         {
             Assert.AreEqual(AnalyzerType.All, sut.AnalyzerTypes);
         }
 
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_SourceIsNull()
+        public void SourceConverter_AfterInit_SourceIsNull()
         {
             Assert.IsNull(sut.Source);
         }
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_FrequencyCountIsNull()
+        public void SourceConverter_AfterInit_FrequencyCountIsNull()
         {
             Assert.IsNull(sut.FrequencyCount);
         }
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_ChannelCountIsNull()
+        public void SourceConverter_AfterInit_ChannelCountIsNull()
         {
             Assert.IsNull(sut.ChannelCount);
         }
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_RmsRiseTimeIsNull()
+        public void SourceConverter_AfterInit_RmsRiseTimeIsNull()
         {
             Assert.IsNull(sut.RmsRiseTime);
         }
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_RmsFallTimeIsNull()
+        public void SourceConverter_AfterInit_RmsFallTimeIsNull()
         {
             Assert.IsNull(sut.RmsFallTime);
         }
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_PeakRiseTimeIsNull()
+        public void SourceConverter_AfterInit_PeakRiseTimeIsNull()
         {
             Assert.IsNull(sut.PeakRiseTime);
         }
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_PeakFallTimeIsNull()
+        public void SourceConverter_AfterInit_PeakFallTimeIsNull()
         {
             Assert.IsNull(sut.PeakFallTime);
         }
 
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_SpectrumRiseTimeIsNull()
+        public void SourceConverter_AfterInit_SpectrumRiseTimeIsNull()
         {
             Assert.IsNull(sut.SpectrumRiseTime);
         }
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_SpectrumFallTimeIsNull()
+        public void SourceConverter_AfterInit_SpectrumFallTimeIsNull()
         {
             Assert.IsNull(sut.SpectrumFallTime);
         }
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_MinFrequencyIsNull()
+        public void SourceConverter_AfterInit_MinFrequencyIsNull()
         {
             Assert.IsNull(sut.MinFrequency);
         }
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_MaxFrequencyIsNull()
+        public void SourceConverter_AfterInit_MaxFrequencyIsNull()
         {
             Assert.IsNull(sut.MaxFrequency);
         }
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_FrequencyScaleIsNull()
+        public void SourceConverter_AfterInit_FrequencyScaleIsNull()
         {
             Assert.IsNull(sut.FrequencyScale);
         }
@@ -489,8 +489,9 @@ namespace AudioVisualizer.test
             Assert.AreEqual(testFrame.Spectrum, frame.Spectrum);
         }
 
-
-        void SourceConverter_RiseAndFall()
+        [TestCategory("SourceConverter")]
+        [TestMethod]
+        public void SourceConverter_GetData_RiseAndFall()
         {
             var spectralData = Enumerable.Repeat<float>(1.0f, (int)expectedFrequencyCount);
             var nextFrame = new VisualizationDataFrame(

@@ -99,6 +99,7 @@
     <Compile Include="CreateResourcesArgsTests.cs" />
     <Compile Include="MediaAnalyzerTests.cs" />
     <Compile Include="MFInterop.cs" />
+    <Compile Include="MFPipeline.cs" />
     <Compile Include="PlaybackSource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScalarDataTests.cs" />
