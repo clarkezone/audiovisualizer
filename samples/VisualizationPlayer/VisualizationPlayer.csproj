@@ -150,20 +150,20 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.0.5</Version>
+      <Version>6.1.5</Version>
     </PackageReference>
     <PackageReference Include="Win2D.uwp">
-      <Version>1.21.0</Version>
+      <Version>1.23.0</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\source\dll\uwp.dll.vcxproj">
-      <Project>{c33b9eba-20ba-4a00-a88d-94b5287b4600}</Project>
-      <Name>uwp.dll</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="VisualizationPlayer_TemporaryKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\AudioVisualizer\AudioVisualizer.vcxproj">
+      <Project>{da1a2266-1149-4a19-8a3a-3f1ca7717a6f}</Project>
+      <Name>AudioVisualizer</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

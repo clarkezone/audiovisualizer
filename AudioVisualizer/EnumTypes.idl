@@ -18,6 +18,7 @@ namespace AudioVisualizer
 		DpiChanged = 2
 	};	
 
+	[flags]
 	enum AnalyzerType
 	{
 		None = 0,

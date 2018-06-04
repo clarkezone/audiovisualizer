@@ -1,0 +1,11 @@
+import "VisualizationDataFrame.idl";
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	unsealed runtimeclass VisualizerControl : Windows.UI.Xaml.Controls.Control
+	{
+		VisualizerControl();	
+	};
+}
+

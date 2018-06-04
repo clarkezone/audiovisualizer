@@ -88,6 +88,9 @@
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Link>
+      <GenerateDebugInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">DebugFull</GenerateDebugInformation>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="aligned_allocator.h" />
@@ -95,12 +98,15 @@
     <ClInclude Include="AudioBuffer.h" />
     <ClInclude Include="AudioMath.h" />
     <ClInclude Include="CreateResourcesEventArgs.h" />
+    <ClInclude Include="DiscreteVUBar.h" />
+    <ClInclude Include="VisualizerControl.h" />
     <ClInclude Include="MediaAnalyzer.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PlaybackSource.h" />
     <ClInclude Include="ScalarData.h" />
     <ClInclude Include="SourceConverter.h" />
     <ClInclude Include="SpectrumData.h" />
+    <ClInclude Include="util.h" />
     <ClInclude Include="VisualizationDataFrame.h" />
     <ClInclude Include="VisualizerDrawEventArgs.h" />
     <ClInclude Include="XDSP.h" />
@@ -110,6 +116,8 @@
     <ClCompile Include="AudioBuffer.cpp" />
     <ClCompile Include="AudioMath.cpp" />
     <ClCompile Include="CreateResourcesEventArgs.cpp" />
+    <ClCompile Include="DiscreteVUBar.cpp" />
+    <ClCompile Include="VisualizerControl.cpp" />
     <ClCompile Include="MediaAnalyzer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -124,6 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="CreateResourcesEventArgs.idl" />
+    <Midl Include="DiscreteVUBar.idl" />
     <Midl Include="MediaAnalyzer.idl" />
     <Midl Include="PlaybackSource.idl" />
     <Midl Include="ScalarData.idl" />
@@ -133,6 +142,7 @@
     <Midl Include="EnumTypes.idl" />
     <Midl Include="VisualizationDataFrame.idl" />
     <Midl Include="VisualizationSource.idl" />
+    <Midl Include="VisualizerControl.idl" />
     <Midl Include="VisualizerDrawEventArgs.idl" />
   </ItemGroup>
   <ItemGroup>

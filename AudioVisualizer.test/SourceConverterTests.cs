@@ -14,6 +14,7 @@ namespace AudioVisualizer.test
 {
     class FakeVisualizationSource : IVisualizationSource
     {
+        public uint? ExpectedChannels = 2;
         public VisualizationDataFrame Frame;
         public VisualizationDataFrame GetData()
         {
@@ -36,7 +37,7 @@ namespace AudioVisualizer.test
 
         public event TypedEventHandler<IVisualizationSource, string> ConfigurationChanged;
 
-        public uint? ActualChannelCount => 2;
+        public uint? ActualChannelCount => ExpectedChannels;
 
         public uint? ActualFrequencyCount => 50;
 
@@ -154,6 +155,24 @@ namespace AudioVisualizer.test
 
         [TestMethod]
         [TestCategory("SourceConverter")]
+        public void SourceConverter_Property_ChannelMap()
+        {
+            sut.ChannelCount = 2;
+            propertiesChanged.Clear();  // Remove the channelcount notification
+            float[] map1 = new float[] { 0.25f, 0.75f };
+            sut.ChannelMapping = map1;
+            CollectionAssert.AreEqual(map1, sut.ChannelMapping);
+            CollectionAssert.AreEqual(new string[] { "ChannelMap" }, propertiesChanged, "Change notification missing assigning ChannelMap property");
+            sut.ChannelMapping = map1;
+            CollectionAssert.AreEqual(new string[] { "ChannelMap" }, propertiesChanged, "Invalid change notification when assigning same value to ChannelMap");
+            sut.ChannelMapping = null;
+            CollectionAssert.AreEqual(new string[] { "ChannelMap", "ChannelMap" }, propertiesChanged, "Change notification missing assigning null to ChannelMap property");
+            sut.ChannelMapping = null;
+            CollectionAssert.AreEqual(new string[] { "ChannelMap", "ChannelMap" }, propertiesChanged, "Invalid change notification when assigning same value (null) to ChannelMap");
+        }
+
+        [TestMethod]
+        [TestCategory("SourceConverter")]
         public void SourceConverter_IsFpsPassedThrough()
         {
             Assert.AreEqual(testSource.Fps, sut.Fps);
@@ -229,6 +248,22 @@ namespace AudioVisualizer.test
             Assert.ThrowsException<ArgumentException>(() => { sut.ChannelCount = 0; });
         }
 
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_SettingChannelMapWithoutCountThrows()
+        {
+            Assert.ThrowsException<COMException>(() => { sut.ChannelMapping = new float[] { 0 }; });
+        }
+
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_SettingChannelMapWithLessSizeThanCountThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() => {
+                sut.ChannelCount = 2;
+                sut.ChannelMapping = new float[] { 0 };
+            });
+        }
         [TestMethod]
         [TestCategory("SourceConverter")]
         public void SourceConverter_SettingMinFrequencyToZeroWithLogScaleThrows()
@@ -491,7 +526,7 @@ namespace AudioVisualizer.test
 
         [TestCategory("SourceConverter")]
         [TestMethod]
-        public void SourceConverter_GetData_RiseAndFall()
+        public void SourceConverter_RiseAndFall()
         {
             var spectralData = Enumerable.Repeat<float>(1.0f, (int)expectedFrequencyCount);
             var nextFrame = new VisualizationDataFrame(
@@ -516,6 +551,112 @@ namespace AudioVisualizer.test
             Assert.IsNotNull(data.RMS);
             Assert.IsNotNull(data.Peak);
             Assert.IsNotNull(data.Spectrum);
+        }
+    }
+
+    [TestClass]
+    public class SourceConverter_CombineChannels
+    {
+        SourceConverter sut;
+        FakeVisualizationSource testSource;
+        VisualizationDataFrame testFrame;
+
+        UInt32 expectedChannelCount = 5;
+
+        [TestInitialize]
+        public void TestInit()
+        {
+            sut = new SourceConverter();
+            testSource = new FakeVisualizationSource();
+            testSource.ExpectedChannels = expectedChannelCount;
+            sut.Source = testSource;
+
+            testFrame = new VisualizationDataFrame(
+                TimeSpan.Zero,
+                TimeSpan.FromMilliseconds(16.7),
+                ScalarData.CreateEmpty(expectedChannelCount),
+                ScalarData.CreateEmpty(expectedChannelCount),
+                SpectrumData.CreateEmpty(expectedChannelCount, 10, ScaleType.Linear, ScaleType.Linear, 0, 10000));
+                
+
+            testSource.Frame = testFrame;
+        }
+        [TestCategory("SourceConverter")]
+        [TestMethod]
+        public void SourceConverter_CombineChannels_IsRMSChannelCountCorrect()
+        {
+            sut.ChannelCount = 2;
+            var frame = sut.GetData();
+            Assert.AreEqual(2, frame.RMS.Count());
+        }
+        [TestCategory("SourceConverter")]
+        [TestMethod]
+        public void SourceConverter_CombineChannels_IsPeakChannelCountCorrect()
+        {
+            sut.ChannelCount = 2;
+            var frame = sut.GetData();
+            Assert.AreEqual(2, frame.Peak.Count());
+        }
+        [TestCategory("SourceConverter")]
+        [TestMethod]
+        public void SourceConverter_CombineChannels_IsSpectrumChannelCountCorrect()
+        {
+            sut.ChannelCount = 2;
+            var frame = sut.GetData();
+            Assert.AreEqual(2, frame.Spectrum.Count());
+        }
+
+        [TestCategory("SourceConverter")]
+        [DataTestMethod]
+        [DataRow(2u, 1u, new float[] { 3.0f })]
+        [DataRow(5u, 1u, new float[] { 31.0f })]
+        [DataRow(1u, 2u, new float[] { 1.0f,1.0f })]
+        [DataRow(2u, 2u, new float[] { 1.0f, 2.0f })]
+        [DataRow(3u, 2u, new float[] { 1.0f, 2.0f })]
+        [DataRow(4u, 2u, new float[] { 5.0f, 10.0f })]
+        [DataRow(5u, 2u, new float[] { 9.0f, 18.0f })]
+        [DataRow(6u, 2u, new float[] { 17.0f, 34.0f })]
+        [DataRow(3u, 5u, new float[] { 1.0f, 2.0f, 4.0f, 0.0f, 0.0f })]
+        [DataRow(5u, 3u, new float[] { 1.0f, 2.0f, 4.0f })]
+        public void SourceConverter_CombineChannels_WoMap(uint inputChannels,uint outChannels,float [] expectedRms)
+        {
+            float[] input = new float[inputChannels];
+            float value = 1.0f;
+            for (int index = 0; index < inputChannels; index++,value *= 2.0f)
+            {
+                input[index] = value;
+            }
+
+            var inputFrame = new VisualizationDataFrame(TimeSpan.Zero, TimeSpan.FromMilliseconds(16), ScalarData.Create(input), null, null);
+            testSource.ExpectedChannels = inputChannels;
+            testSource.Frame = inputFrame;
+            sut.ChannelCount = outChannels;
+
+            var outFrame = sut.GetData();
+                     
+            CollectionAssert.AreEqual(expectedRms, outFrame.RMS.ToArray());
+        }
+        [TestCategory("SourceConverter")]
+        [DataTestMethod]
+        [DataRow(3u, 2u, new float[] { 0.1f,0.2f },new float[] { 0.5f,0.0f })]
+        public void SourceConverter_CombineChannels_WithMap(uint inputChannels, uint outChannels, float [] map, float[] expectedRms)
+        {
+            float[] input = new float[inputChannels];
+            float value = 1.0f;
+            for (int index = 0; index < inputChannels; index++, value *= 2.0f)
+            {
+                input[index] = value;
+            }
+
+            var inputFrame = new VisualizationDataFrame(TimeSpan.Zero, TimeSpan.FromMilliseconds(16), ScalarData.Create(input), null, null);
+            testSource.ExpectedChannels = inputChannels;
+            testSource.Frame = inputFrame;
+            sut.ChannelCount = outChannels;
+            sut.ChannelMapping = map;
+
+            var outFrame = sut.GetData();
+
+            CollectionAssert.AreEqual(expectedRms, outFrame.RMS.ToArray());
         }
     }
 }

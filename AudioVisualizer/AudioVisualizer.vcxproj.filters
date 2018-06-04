@@ -25,6 +25,8 @@
     <ClCompile Include="MediaAnalyzer.cpp" />
     <ClCompile Include="PlaybackSource.cpp" />
     <ClCompile Include="SourceConverter.cpp" />
+    <ClCompile Include="VisualizerControl.cpp" />
+    <ClCompile Include="DiscreteVUBar.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -41,6 +43,9 @@
     <ClInclude Include="MediaAnalyzer.h" />
     <ClInclude Include="PlaybackSource.h" />
     <ClInclude Include="SourceConverter.h" />
+    <ClInclude Include="util.h" />
+    <ClInclude Include="VisualizerControl.h" />
+    <ClInclude Include="DiscreteVUBar.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ScalarData.idl" />
@@ -54,6 +59,8 @@
     <Midl Include="SpectralAnalyzerSettings.idl" />
     <Midl Include="PlaybackSource.idl" />
     <Midl Include="SourceConverter.idl" />
+    <Midl Include="VisualizerControl.idl" />
+    <Midl Include="DiscreteVUBar.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

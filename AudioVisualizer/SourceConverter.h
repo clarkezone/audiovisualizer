@@ -24,6 +24,9 @@ namespace winrt::AudioVisualizer::implementation
 		AudioVisualizer::VisualizationDataFrame _cachedOutputFrame{ nullptr };
 		bool _bCacheData;
 
+		std::vector<float> _channelMap;			// External value
+		std::vector<float> _channelCombineMap;	// Internal, built value
+
 		AudioVisualizer::SpectrumData _previousSpectrum{ nullptr };
 		AudioVisualizer::ScalarData _previousRMS{ nullptr };
 		AudioVisualizer::ScalarData _previousPeak{ nullptr };
@@ -34,6 +37,8 @@ namespace winrt::AudioVisualizer::implementation
 		winrt::event<Windows::Foundation::TypedEventHandler<IVisualizationSource, hstring>> _configurationChangedEvent;
 		winrt::event_token _sourceChanged;
 
+		void ConfigureChannelMap();
+		void CreateDefautChannelMap(const uint32_t inputChannels, const uint32_t outputChannels);
 		AudioVisualizer::VisualizationDataFrame CloneFrame(AudioVisualizer::VisualizationDataFrame const &source);
 		AudioVisualizer::VisualizationDataFrame ProcessFrame(AudioVisualizer::VisualizationDataFrame const& source);
 

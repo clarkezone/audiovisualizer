@@ -4,6 +4,10 @@
 #include "SpectrumData.h"
 #include "VisualizationDataFrame.h"
 
+
+
+using namespace util;
+
 namespace winrt::AudioVisualizer::implementation
 {
 	SourceConverter::SourceConverter()
@@ -37,12 +41,15 @@ namespace winrt::AudioVisualizer::implementation
 			_source.ConfigurationChanged(
 				Windows::Foundation::TypedEventHandler<IVisualizationSource, hstring>(
 					[this](IVisualizationSource sender, hstring propertyName) {
-				_configurationChangedEvent(sender, propertyName);
-			}
-					)
+				// Source configuration changed
+				if (propertyName == L"ChannelCount") {
+					ConfigureChannelMap();
+				}
+			})
 			);
 		}
 		_cachedOutputFrame = nullptr;
+		ConfigureChannelMap();
 		_configurationChangedEvent(*this, hstring(L"Source"));
 	}
 
@@ -74,6 +81,19 @@ namespace winrt::AudioVisualizer::implementation
 		return _channelCount;
 	}
 
+	/*
+		Setting channel count will guarantee a set number of channels for output data irrespective of input channel count
+		If ChannelMapping is not set then channels are mapped as following
+		if channelCount is 1 then all input channels are added up
+		if channelCount is 2 then channels are mapped as following
+		ChannelCount	InputChannels
+		2				1					out0 = in0, out1 = in0
+		2				3					out0 = in0, out1 = in1
+		2				4					out0 = in0+in2, out1 = in1+in3
+		2				5					out0 = in0+in3, out1 = in1+in4
+		2				6					out0 = in0+in4, out1 = in1+in5
+		otherwise respective inputs copied to output, missing outputs are clipped and missing inputs are of value 0
+	*/
 	void SourceConverter::ChannelCount(Windows::Foundation::IReference<uint32_t> const& value)
 	{
 		std::lock_guard lock(_lock);
@@ -86,17 +106,123 @@ namespace winrt::AudioVisualizer::implementation
 
 		_channelCount = value;
 		_cachedOutputFrame = nullptr;
+		ConfigureChannelMap();
+
 		_configurationChangedEvent(*this, hstring(L"ChannelCount"));
+		
 	}
 
 	com_array<float> SourceConverter::ChannelMapping()
 	{
-		throw hresult_not_implemented();
+		std::lock_guard lock(_lock);
+		return !_channelMap.empty() ? com_array<float>(_channelMap) : com_array<float>();
 	}
 
 	void SourceConverter::ChannelMapping(array_view<float const> value)
 	{
-		throw hresult_not_implemented();
+		std::lock_guard lock(_lock);
+
+		if (value.data() != nullptr)
+		{
+			if (!_channelCount) {
+				throw hresult_error(E_NOT_VALID_STATE, L"Need to set ChannelCount first");
+			}
+			if (value.size() < _channelCount.Value()) {
+				throw hresult_invalid_argument(L"Map has to have at least ChannelCount elements");
+			}
+
+			if (std::equal(_channelMap.cbegin(), _channelMap.cend(), value.cbegin(), value.cend()))
+				return;
+
+			_channelMap = std::vector<float>(value.cbegin(), value.cend());
+		}
+		else {
+			if (_channelMap.empty())
+				return;
+			_channelMap.clear();
+		}
+
+		ConfigureChannelMap();
+
+		_cachedOutputFrame = nullptr;
+		_configurationChangedEvent(*this, hstring(L"ChannelMap"));
+	}
+
+	void SourceConverter::ConfigureChannelMap()
+	{
+		_channelCombineMap.clear();
+		if (!_channelCount)
+			return;
+
+		if (_source && _source.ActualChannelCount()) {
+			// Build the map if source is set and channel count is known
+			auto inputChannels = _source.ActualChannelCount().Value();
+			auto outputChannels = _channelCount.Value();
+
+
+			if (_channelMap.empty()) {
+				if (inputChannels == outputChannels)
+					return;	// No conversion
+
+				// Default mapping
+				switch (outputChannels)
+				{
+				case 1:
+					_channelCombineMap.resize(inputChannels);
+					std::fill(_channelCombineMap.begin(), _channelCombineMap.end(), 1.0f);	// Copy input to all outputs
+					break;
+				case 2:
+					switch (inputChannels)
+					{
+					case 1:	// Mono to stereo
+						_channelCombineMap = { 1.0f,1.0f };
+						break;
+					case 3:	// 2.1 to stereo
+						_channelCombineMap = {	1.0f,0.0f,0.0f, 
+												0.0f,1.0f,0.0f };
+						break;
+					case 4: // Quadro to stereo
+						_channelCombineMap = { 1.0f,0.0f,1.0f,0.0f,
+												0.0f,1.0f,0.0f,1.0f };
+						break;
+					case 5: // Surround to stereo
+						_channelCombineMap = {	1.0f,0.0f,0.0f,1.0f,0.0f,
+												0.0f,1.0f,0.0f,0.0f,1.0f };
+						break;
+					case 6: // 5.1 Surround to stereo
+						_channelCombineMap = {	1.0f,0.0f,0.0f,0.0f,1.0f,0.0f,
+												0.0f,1.0f,0.0f,0.0f,0.0f,1.0f };
+						break;
+					default:
+						CreateDefautChannelMap(inputChannels, outputChannels);
+						break;
+					}
+					break;
+				default:
+					CreateDefautChannelMap(inputChannels, outputChannels);
+					break;
+				}
+			}
+			else {
+				// Custom mapping
+				CreateDefautChannelMap(inputChannels, outputChannels);
+			}
+		}
+	}
+
+	void SourceConverter::CreateDefautChannelMap(const uint32_t inputChannels, const uint32_t outputChannels)
+	{
+		_channelCombineMap.resize(inputChannels * outputChannels);
+		size_t mapIndex = 0;
+		for (size_t outputIndex = 0; outputIndex < outputChannels; outputIndex++)
+		{
+			for (size_t inputIndex = 0; inputIndex < inputChannels; inputIndex++, mapIndex++)
+			{
+				_channelCombineMap[mapIndex] = _channelMap.empty() ?
+					(inputIndex == outputIndex ? 1.0f : 0.0f) : // No channel map
+					mapIndex < _channelMap.size() ? _channelMap[mapIndex] : 0.0f; // Copy channel map value
+			}
+		}
 	}
 
 	Windows::Foundation::IReference<float> SourceConverter::MinFrequency()
@@ -498,24 +624,34 @@ namespace winrt::AudioVisualizer::implementation
 
 	AudioVisualizer::VisualizationDataFrame SourceConverter::ProcessFrame(AudioVisualizer::VisualizationDataFrame const & source)
 	{
-		AudioVisualizer::ScalarData rms{ nullptr };
-		AudioVisualizer::ScalarData peak{ nullptr };
-		AudioVisualizer::SpectrumData spectrum{ nullptr };
+		AudioVisualizer::ScalarData rms = enum_has_flag(_analyzerTypes, AnalyzerType::RMS) ? source.RMS() : nullptr;
+		AudioVisualizer::ScalarData peak = enum_has_flag(_analyzerTypes, AnalyzerType::Peak) ? source.Peak() :  nullptr ;
+		AudioVisualizer::SpectrumData spectrum = enum_has_flag(_analyzerTypes, AnalyzerType::Spectrum) ? source.Spectrum() : nullptr;
 
-		if (((uint32_t)_analyzerTypes & (uint32_t)AnalyzerType::Spectrum) && source.Spectrum())
+		if (spectrum)
 		{
-			spectrum = ApplyFrequencyTransforms(source.Spectrum());
+			if (!_channelCombineMap.empty()) {
+				spectrum = spectrum.CombineChannels(_channelCombineMap);
+			}
+
+			spectrum = ApplyFrequencyTransforms(spectrum);
 			spectrum = ApplyRiseAndFall(spectrum, _previousSpectrum, _spectrumRiseTime, _spectrumFallTime);
 			_previousSpectrum = spectrum;
 		}
-		if (((uint32_t) _analyzerTypes & (uint32_t)AnalyzerType::RMS) && source.RMS())
+		if (rms)
 		{
-			rms = ApplyRiseAndFall(source.RMS(), _previousRMS, _rmsRiseTime, _rmsFallTime);
+			if (!_channelCombineMap.empty()) {
+				rms = rms.CombineChannels(_channelCombineMap);
+			}
+			rms = ApplyRiseAndFall(rms, _previousRMS, _rmsRiseTime, _rmsFallTime);
 			_previousRMS = rms;
 		}
-		if (((uint32_t) _analyzerTypes & (uint32_t)AnalyzerType::Peak) && source.Peak())
+		if (peak)
 		{
-			peak = ApplyRiseAndFall(source.Peak(), _previousPeak, _peakRiseTime, _peakFallTime);
+			if (!_channelCombineMap.empty()) {
+				peak = source.Peak().CombineChannels(_channelCombineMap);
+			}
+			peak = ApplyRiseAndFall(peak, _previousPeak, _peakRiseTime, _peakFallTime);
 			_previousPeak = peak;
 		}		
 		return make<VisualizationDataFrame>(source.Time(), source.Duration(), rms, peak, spectrum);

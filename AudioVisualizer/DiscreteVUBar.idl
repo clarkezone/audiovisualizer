@@ -1,0 +1,11 @@
+import "VisualizerControl.idl";
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass DiscreteVUBar : VisualizerControl
+	{
+		DiscreteVUBar();
+	}
+}
+
