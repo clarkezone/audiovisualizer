@@ -4,9 +4,8 @@ import "BarVisualizer.idl";
 namespace AudioVisualizer
 {
 	[default_interface]
-	runtimeclass DiscreteVUBar : VisualizerControl, IBarVisualizer
+	runtimeclass SpectrumVisualizer : VisualizerControl, IBarVisualizer
 	{
-		DiscreteVUBar();
+		SpectrumVisualizer();
 	}
 }
-

@@ -1,16 +1,21 @@
 ﻿#pragma once
 
-#include "DiscreteVUBar.g.h"
+#include "SpectrumVisualizer.g.h"
 #include "VisualizerControl.h"
+#include <winrt/Windows.UI.h>
+#include <winrt/Windows.UI.Xaml.h>
 
 namespace winrt::AudioVisualizer::implementation
 {
-    struct DiscreteVUBar : DiscreteVUBarT<DiscreteVUBar, AudioVisualizer::implementation::VisualizerControl>
+    struct SpectrumVisualizer : SpectrumVisualizerT<SpectrumVisualizer, AudioVisualizer::implementation::VisualizerControl>
     {
-		virtual void OnDraw(Microsoft::Graphics::Canvas::CanvasDrawingSession drawingSession, VisualizationDataFrame dataFrame, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> presentationTime);
+		Windows::UI::Color _unlitElement;
+		std::vector<AudioVisualizer::MeterBarLevel> _levels;
+		Windows::UI::Xaml::Controls::Orientation _orientation;
+		uint32_t _channelIndex;
+		Windows::UI::Xaml::Thickness _relativeElementMargin;
 	public:
-		DiscreteVUBar() = default;
-
+        SpectrumVisualizer();
 		com_array<AudioVisualizer::MeterBarLevel> Levels();
 		void Levels(array_view<AudioVisualizer::MeterBarLevel const> value);
 		Windows::UI::Xaml::Controls::Orientation Orientation();
@@ -21,14 +26,12 @@ namespace winrt::AudioVisualizer::implementation
 		void RelativeElementMargin(Windows::UI::Xaml::Thickness const& value);
 		Windows::UI::Color UnlitElement();
 		void UnlitElement(Windows::UI::Color const& value);
-
-
     };
 }
 
 namespace winrt::AudioVisualizer::factory_implementation
 {
-    struct DiscreteVUBar : DiscreteVUBarT<DiscreteVUBar, implementation::DiscreteVUBar>
+    struct SpectrumVisualizer : SpectrumVisualizerT<SpectrumVisualizer, implementation::SpectrumVisualizer>
     {
     };
 }

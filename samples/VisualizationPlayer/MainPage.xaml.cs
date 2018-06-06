@@ -97,7 +97,7 @@ namespace VisualizationPlayer
         }
 
 
-        private void PositionDisplay_Draw(IVisualizer sender, VisualizerDrawEventArgs args)
+        private void PositionDisplay_Draw(VisualizerControl sender, VisualizerDrawEventArgs args)
         {
             if (args.PresentationTime != null)
             {

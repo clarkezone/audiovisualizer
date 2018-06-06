@@ -1,11 +1,15 @@
 import "VisualizationDataFrame.idl";
+import "VisualizationSource.idl";
+
 
 namespace AudioVisualizer
 {
 	[default_interface]
 	unsealed runtimeclass VisualizerControl : Windows.UI.Xaml.Controls.Control
 	{
-		VisualizerControl();	
+		VisualizerControl();
+		IVisualizationSource Source;
+		Windows.UI.Color BackgroundColor;
 	};
 }
 

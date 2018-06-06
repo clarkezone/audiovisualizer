@@ -93,12 +93,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="aligned_allocator.h" />
     <ClInclude Include="AudioAnalyzer.h" />
+    <ClInclude Include="AudioAnalyzer2.h" />
     <ClInclude Include="AudioBuffer.h" />
     <ClInclude Include="AudioMath.h" />
     <ClInclude Include="CreateResourcesEventArgs.h" />
+    <ClInclude Include="CustomVisualizer.h" />
     <ClInclude Include="DiscreteVUBar.h" />
+    <ClInclude Include="ring_buffer.h" />
+    <ClInclude Include="SpectrumVisualizer.h" />
+    <ClInclude Include="Tracing.h" />
     <ClInclude Include="VisualizerControl.h" />
     <ClInclude Include="MediaAnalyzer.h" />
     <ClInclude Include="pch.h" />
@@ -113,10 +117,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AudioAnalyzer.cpp" />
+    <ClCompile Include="AudioAnalyzer2.cpp" />
     <ClCompile Include="AudioBuffer.cpp" />
     <ClCompile Include="AudioMath.cpp" />
     <ClCompile Include="CreateResourcesEventArgs.cpp" />
+    <ClCompile Include="CustomVisualizer.cpp" />
     <ClCompile Include="DiscreteVUBar.cpp" />
+    <ClCompile Include="DllMain.cpp" />
+    <ClCompile Include="ring_buffer.cpp" />
+    <ClCompile Include="SpectrumVisualizer.cpp" />
+    <ClCompile Include="Tracing.cpp" />
     <ClCompile Include="VisualizerControl.cpp" />
     <ClCompile Include="MediaAnalyzer.cpp" />
     <ClCompile Include="pch.cpp">
@@ -131,7 +141,10 @@
     <ClCompile Include="VisualizerDrawEventArgs.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="AudioAnalyzer.idl" />
+    <Midl Include="BarVisualizer.idl" />
     <Midl Include="CreateResourcesEventArgs.idl" />
+    <Midl Include="CustomVisualizer.idl" />
     <Midl Include="DiscreteVUBar.idl" />
     <Midl Include="MediaAnalyzer.idl" />
     <Midl Include="PlaybackSource.idl" />
@@ -140,6 +153,7 @@
     <Midl Include="SpectralAnalyzerSettings.idl" />
     <Midl Include="SpectrumData.idl" />
     <Midl Include="EnumTypes.idl" />
+    <Midl Include="SpectrumVisualizer.idl" />
     <Midl Include="VisualizationDataFrame.idl" />
     <Midl Include="VisualizationSource.idl" />
     <Midl Include="VisualizerControl.idl" />

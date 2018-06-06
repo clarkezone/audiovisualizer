@@ -1,0 +1,14 @@
+import "VisualizerControl.idl";
+import "VisualizerDrawEventArgs.idl";
+import "CreateResourcesEventArgs.idl";
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass CustomVisualizer : VisualizerControl
+	{
+		CustomVisualizer();
+		event Windows.Foundation.TypedEventHandler<VisualizerControl,VisualizerDrawEventArgs> Draw;
+		event Windows.Foundation.TypedEventHandler<IInspectable, CreateResourcesEventArgs> CreateResources;
+	}
+}

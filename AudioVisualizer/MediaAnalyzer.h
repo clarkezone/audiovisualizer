@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "MediaAnalyzer.g.h"
-#include "AudioAnalyzer.h"
+#include "AudioAnalyzer2.h"
 #include <memory>
 #include <queue>
 #include <mutex>
@@ -53,7 +53,6 @@ namespace winrt::AudioVisualizer::implementation
 
 		winrt::event<Windows::Foundation::TypedEventHandler<IVisualizationSource,hstring>> _configurationChangedEvent;
 
-		HRESULT Analyzer_TestInputType(IMFMediaType *pType);
 		HRESULT Analyzer_SetMediaType(IMFMediaType *pType);
 		HRESULT Analyzer_Initialize();
 		HRESULT Analyzer_ProcessSample(IMFSample *pSample);

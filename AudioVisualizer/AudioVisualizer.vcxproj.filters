@@ -20,25 +20,29 @@
     <ClCompile Include="CreateResourcesEventArgs.cpp" />
     <ClCompile Include="VisualizationDataFrame.cpp" />
     <ClCompile Include="VisualizerDrawEventArgs.cpp" />
-    <ClCompile Include="AudioAnalyzer.cpp" />
     <ClCompile Include="AudioBuffer.cpp" />
     <ClCompile Include="MediaAnalyzer.cpp" />
     <ClCompile Include="PlaybackSource.cpp" />
     <ClCompile Include="SourceConverter.cpp" />
     <ClCompile Include="VisualizerControl.cpp" />
     <ClCompile Include="DiscreteVUBar.cpp" />
+    <ClCompile Include="SpectrumVisualizer.cpp" />
+    <ClCompile Include="CustomVisualizer.cpp" />
+    <ClCompile Include="DllMain.cpp" />
+    <ClCompile Include="Tracing.cpp" />
+    <ClCompile Include="AudioAnalyzer2.cpp" />
+    <ClCompile Include="AudioAnalyzer.cpp" />
+    <ClCompile Include="ring_buffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="ScalarData.h" />
-    <ClInclude Include="aligned_allocator.h" />
     <ClInclude Include="AudioMath.h" />
     <ClInclude Include="XDSP.h" />
     <ClInclude Include="SpectrumData.h" />
     <ClInclude Include="CreateResourcesEventArgs.h" />
     <ClInclude Include="VisualizationDataFrame.h" />
     <ClInclude Include="VisualizerDrawEventArgs.h" />
-    <ClInclude Include="AudioAnalyzer.h" />
     <ClInclude Include="AudioBuffer.h" />
     <ClInclude Include="MediaAnalyzer.h" />
     <ClInclude Include="PlaybackSource.h" />
@@ -46,6 +50,12 @@
     <ClInclude Include="util.h" />
     <ClInclude Include="VisualizerControl.h" />
     <ClInclude Include="DiscreteVUBar.h" />
+    <ClInclude Include="SpectrumVisualizer.h" />
+    <ClInclude Include="CustomVisualizer.h" />
+    <ClInclude Include="Tracing.h" />
+    <ClInclude Include="AudioAnalyzer2.h" />
+    <ClInclude Include="AudioAnalyzer.h" />
+    <ClInclude Include="ring_buffer.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ScalarData.idl" />
@@ -61,6 +71,10 @@
     <Midl Include="SourceConverter.idl" />
     <Midl Include="VisualizerControl.idl" />
     <Midl Include="DiscreteVUBar.idl" />
+    <Midl Include="CustomVisualizer.idl" />
+    <Midl Include="SpectrumVisualizer.idl" />
+    <Midl Include="BarVisualizer.idl" />
+    <Midl Include="AudioAnalyzer.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

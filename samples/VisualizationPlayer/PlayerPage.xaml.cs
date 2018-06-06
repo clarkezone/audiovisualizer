@@ -80,7 +80,7 @@ namespace VisualizationPlayer
         TimeSpan _frameDuration = TimeSpan.FromMilliseconds(16.7);
         CanvasTextFormat _spectrumTextFormat;
 
-        private void spectrum_Draw(AudioVisualizer.IVisualizer sender, AudioVisualizer.VisualizerDrawEventArgs args)
+        private void spectrum_Draw(AudioVisualizer.VisualizerControl sender, AudioVisualizer.VisualizerDrawEventArgs args)
         {
             var drawingSession = (CanvasDrawingSession)args.DrawingSession;
 

@@ -11,6 +11,27 @@
 
 namespace winrt::AudioVisualizer::implementation
 {
+
+	AudioVisualizer::IVisualizationSource VisualizerControl::Source()
+	{
+		return _visualizationSource;
+	}
+
+	void VisualizerControl::Source(AudioVisualizer::IVisualizationSource const& value)
+	{
+		_visualizationSource = value;
+	}
+
+	Windows::UI::Color VisualizerControl::BackgroundColor()
+	{
+		return _drawingSessionClearColor;
+	}
+
+	void VisualizerControl::BackgroundColor(Windows::UI::Color const& value)
+	{
+		_drawingSessionClearColor = value;
+	}
+
 	void VisualizerControl::CreateDevice()
 	{
 		using namespace Microsoft::Graphics::Canvas;
@@ -79,7 +100,7 @@ namespace winrt::AudioVisualizer::implementation
 		CreateSwapChainWithSizeAndDpi(size, logicalDpi);
 	}
 
-	void VisualizerControl::DrawLoop(Windows::Foundation::IAsyncAction const& operation)
+	void VisualizerControl::DrawLoop(Windows::Foundation::IAsyncAction const& /*action*/)
 	{
 		SetThreadDescription(GetCurrentThread(), L"VisualizerControl draw loop");
 		while (TRUE)
@@ -195,7 +216,7 @@ namespace winrt::AudioVisualizer::implementation
 	VisualizerControl::VisualizerControl()
 	{
 		_cancelDrawLoop = CreateEventEx(nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_ALL_ACCESS);
-
+		_drawingSessionClearColor = Windows::UI::Colors::Transparent();
 		InitializeSwapChain();
 		RegisterEventHandlers();
 	}

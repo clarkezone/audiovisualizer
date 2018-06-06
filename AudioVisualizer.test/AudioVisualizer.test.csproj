@@ -96,7 +96,9 @@
     <SDKReference Include="TestPlatform.Universal, Version=$(UnitTestPlatformVersion)" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AudioAnalyzerTests.cs" />
     <Compile Include="CreateResourcesArgsTests.cs" />
+    <Compile Include="FakeVisualizationSource.cs" />
     <Compile Include="VisualizerControlTest.cs" />
     <Compile Include="MediaAnalyzerTests.cs" />
     <Compile Include="MFInterop.cs" />

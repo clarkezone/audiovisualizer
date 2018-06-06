@@ -7,6 +7,7 @@
 #include <mfapi.h>
 #include <mfidl.h>
 #include <Mferror.h>
+#include "Tracing.h"
 
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "mfuuid.lib")
@@ -32,6 +33,7 @@ namespace winrt::AudioVisualizer::implementation
 		_playbackState(SourcePlaybackState::Stopped),
 		_analyzerTypes(AnalyzerType::All)
 	{
+		::AudioVisualizer::Diagnostics::Trace_ctor(L"MediaAnalyzer");
 		_analyzer = std::make_shared<::AudioVisualizer::AudioMath::CAudioAnalyzer>(CircleBufferSize);
 		
 		HRESULT hr = MFCreateAttributes(m_spMftAttributes.put(), 4);
@@ -364,9 +366,9 @@ namespace winrt::AudioVisualizer::implementation
 		{
 			// The output type is not set. Create a partial media type.
 
-			Microsoft::WRL::ComPtr<IMFMediaType> spPartialMediaType;
+			com_ptr<IMFMediaType> spPartialMediaType;
 
-			hr = MFCreateMediaType(&spPartialMediaType);
+			hr = MFCreateMediaType(spPartialMediaType.put());
 			if (FAILED(hr))
 			{
 				return hr;
@@ -390,7 +392,7 @@ namespace winrt::AudioVisualizer::implementation
 				return MF_E_NO_MORE_TYPES;	// We really want float PCM, only 1 type (allow index==0)
 			}
 
-			spPartialMediaType.CopyTo(ppType);
+			spPartialMediaType.copy_to(ppType);
 			return S_OK;
 		}
 		else if (dwTypeIndex > 0)
@@ -465,9 +467,21 @@ namespace winrt::AudioVisualizer::implementation
 
 		// Validate the type, if non-NULL.
 		if (pType != nullptr) {
-			HRESULT hr = Analyzer_TestInputType(pType);
+			GUID majorType;
+			HRESULT hr = pType->GetMajorType(&majorType);
 			if (FAILED(hr))
 				return hr;
+			if (majorType != MFMediaType_Audio)
+				return MF_E_INVALIDMEDIATYPE;
+			GUID minorType;
+			hr = pType->GetGUID(MF_MT_SUBTYPE, &minorType);
+			if (FAILED(hr))
+				return hr;
+			if (minorType != MFAudioFormat_Float)
+				return MF_E_INVALIDMEDIATYPE;
+
+			// Media type is ok
+			hr = S_OK;
 		}
 
 		// The type is OK. Set the type, unless the caller was just testing.
@@ -638,8 +652,8 @@ namespace winrt::AudioVisualizer::implementation
 	// Sends an event to an input stream.
 	//-------------------------------------------------------------------
 	STDMETHODIMP MediaAnalyzer::ProcessEvent(
-		DWORD              ,
-		IMFMediaEvent      *
+		DWORD     /*dwStreamIndex*/,
+		IMFMediaEvent *     /*pEvent*/
 	)
 	{
 		return S_OK;
@@ -797,25 +811,6 @@ namespace winrt::AudioVisualizer::implementation
 		return S_OK;
 	}
 
-	HRESULT MediaAnalyzer::Analyzer_TestInputType(IMFMediaType * pMediaType)
-	{
-		if (pMediaType == nullptr)	// Allow nullptr
-			return S_OK;
-		GUID majorType;
-		HRESULT hr = pMediaType->GetMajorType(&majorType);
-		if (FAILED(hr))
-			return hr;
-		if (majorType != MFMediaType_Audio)
-			return MF_E_INVALIDMEDIATYPE;
-		GUID minorType;
-		hr = pMediaType->GetGUID(MF_MT_SUBTYPE, &minorType);
-		if (FAILED(hr))
-			return hr;
-		if (minorType != MFAudioFormat_Float)
-			return MF_E_INVALIDMEDIATYPE;
-		return S_OK;
-	}
-
 	HRESULT MediaAnalyzer::Analyzer_SetMediaType(IMFMediaType * pType)
 	{
 		m_FramesPerSecond = 0;
@@ -870,7 +865,6 @@ namespace winrt::AudioVisualizer::implementation
 		// Allow processing after a flush event.
 		_bFlushPending = false;
 
-		std::lock_guard lock(_mtxMftAccess);
 		HRESULT hr = S_OK;
 		long position = -1;
 		if (_analyzer->GetPosition() == -1)	// Sample index not set, get time from sample
@@ -885,8 +879,8 @@ namespace winrt::AudioVisualizer::implementation
 #endif
 		}
 
-		ComPtr<IMFMediaBuffer> spBuffer;
-		hr = pSample->ConvertToContiguousBuffer(&spBuffer);
+		com_ptr<IMFMediaBuffer> spBuffer;
+		hr = pSample->ConvertToContiguousBuffer(spBuffer.put());
 		if (FAILED(hr))
 			return hr;
 
@@ -1045,9 +1039,6 @@ namespace winrt::AudioVisualizer::implementation
 
 		while (!m_AnalyzerOutput.empty())
 		{
-			//TimeSpan time = { 0 }, duration = { 0 };
-			//ComPtr<IReference<TimeSpan>> frameTime, frameDuration;
-
 			if (m_AnalyzerOutput.front()->IsBefore(position))
 			{
 				return nullptr; // Current position is before the frames in visualization queue - wait until we catch up

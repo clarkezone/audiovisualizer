@@ -11,11 +11,45 @@ namespace AudioVisualizer.test
     [TestClass]
     public class VisualizerControlTest
     {
+        VisualizerControl sut;
+
+        [TestInitialize]
+        public void TestInit()
+        {
+            sut = new AudioVisualizer.VisualizerControl();
+        }
+
         [UITestMethod]
         [TestCategory("VisualizerControl")]
-        public void VisualizerControl_Init()
+        public void VisualizerControl_DefaultSourceIsNull()
         {
-            var ctrl = new AudioVisualizer.VisualizerControl();
+            Assert.IsNull(sut.Source);
         }
+
+        [UITestMethod]
+        [TestCategory("VisualizerControl")]
+        public void VisualizerControl_CanSetSource()
+        {
+            FakeVisualizationSource source = new FakeVisualizationSource();
+            sut.Source = source;
+            Assert.AreEqual(source, sut.Source);
+        }
+
+        [UITestMethod]
+        [TestCategory("VisualizerControl")]
+        public void VisualizerControl_DefaultBackgroundIsTransparent()
+        {
+            Assert.AreEqual(Windows.UI.Colors.Transparent, sut.BackgroundColor);
+        }
+        [UITestMethod]
+        [TestCategory("VisualizerControl")]
+        public void VisualizerControl_CanSetBackground()
+        {
+            sut.BackgroundColor = Windows.UI.Colors.White;
+            Assert.AreEqual(Windows.UI.Colors.White, sut.BackgroundColor);
+        }
+
+
+
     }
 }
