@@ -21,8 +21,10 @@ namespace winrt::AudioVisualizer::implementation
 
 		uint32_t _stepFrames;
 		uint32_t _overlapFrames;
-		Windows::Foundation::IReference<int64_t> _position;
 		float _fOutSampleRate;
+		
+		bool _bSeedPosition;
+		Windows::Foundation::IReference<int64_t> _seedPosition;
 
 		DirectX::XMVECTOR *_pWindow;
 		DirectX::XMVECTOR *_pFftReal;
@@ -59,21 +61,13 @@ namespace winrt::AudioVisualizer::implementation
 			CloseHandle(_threadPoolSemaphore);
 			_bIsClosed = true;
 		}
-		AudioAnalyzer(uint32_t inputBufferSize, bool backgroundProcessing);
+		AudioAnalyzer(uint32_t bufferSize, uint32_t inputChannels, uint32_t sampleRate, uint32_t inputStep, uint32_t inputOverlap, uint32_t fftLength,bool asyncProcessing);
 
-		void Configure(uint32_t inputChannels, uint32_t sampleRate,uint32_t inputStep, uint32_t inputOverlap, uint32_t fftLength);
 		void ProcessInput(Windows::Media::AudioFrame const& frame);
 
 		AudioVisualizer::AnalyzerType AnalyzerTypes();
 		void AnalyzerTypes(AudioVisualizer::AnalyzerType const& value);
-		uint32_t InputChannelCount();
-		uint32_t InputSampleRate();
-		uint32_t InputStepFrameCount();
-		uint32_t InputStepOverlap();
-		uint32_t FftLength();
 		float FrequencyStep();
-		Windows::Foundation::IReference<int64_t> Position();
-		void Position(Windows::Foundation::IReference<int64_t> const& value);
 		event_token Output(Windows::Foundation::TypedEventHandler<AudioVisualizer::AudioAnalyzer, AudioVisualizer::VisualizationDataFrame> const& handler);
 		void Output(event_token const& token);
 		void Close();

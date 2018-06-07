@@ -6,19 +6,11 @@ namespace AudioVisualizer
 	[default_interface]
 	runtimeclass AudioAnalyzer : Windows.Foundation.IClosable
 	{
-		AudioAnalyzer(UInt32 inputBufferSize,Boolean backgroundProcessing);
-
-		void Configure(UInt32 inputChannels, UInt32 sampleRate, UInt32 inputStep, UInt32 inputOverlap, UInt32 fftLength);
+		AudioAnalyzer(UInt32 bufferSize, UInt32 inputChannels, UInt32 sampleRate, UInt32 inputStep, UInt32 inputOverlap, UInt32 fftLength,Boolean backgroundProcessing);
 		void ProcessInput(Windows.Media.AudioFrame frame);
 
 		AnalyzerType AnalyzerTypes;
-		UInt32 InputChannelCount{ get; };
-		UInt32 InputSampleRate{ get; };
-		UInt32 InputStepFrameCount{ get; };
-		UInt32 InputStepOverlap{ get; };
-		UInt32 FftLength{ get; };
 		Single FrequencyStep{ get; };
-		Windows.Foundation.IReference<Int64>  Position;
 
 		event Windows.Foundation.TypedEventHandler<AudioAnalyzer, VisualizationDataFrame> Output;
 	}

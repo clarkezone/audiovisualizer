@@ -3,82 +3,92 @@
 
 namespace AudioVisualizer
 {
-	size_t ring_buffer::add(const float * pFrames, size_t sampleCount)	// Add specified number of samples to the buffer
+	/* Add specified number of samples to the ring buffer. Downsample if neccessary */
+	void ring_buffer::add_samples(const float * pSamples, size_t sampleCount)
 	{
-		if (sampleCount > _downsampleFactor * (_size - _frameSize))
-			throw winrt::hresult_invalid_argument();
+		if (_data.empty())
+			throw winrt::hresult_error(E_NOT_VALID_STATE);
+		// The buffer needs to be as large to fit all samples + one frame
+		if (sampleCount > _downsampleRate * (_data.size() - _frameSize))
+			throw winrt::hresult_invalid_argument(L"Audio frame larger than the buffer");	
 
-		size_t currentLength = length() * _frameSize;	// Record current samples in buffer
+		size_t samplesInBufferBeforeAdd = samples_in_buffer();	// Record current samples in buffer
+		size_t samplesCopied = sampleCount / _downsampleRate;
 
-														// Copy sampleCount number of samples to the buffer, validate _writeIndex against _size 
-														// To avoid copying when size is zero (uninitialized buffer)
-		for (size_t index = 0; index < sampleCount; index++)
+		// Copy sampleCount number of samples to the buffer, validate _writeIndex against _size 
+		// To avoid copying when size is zero (uninitialized buffer)
+
+		for (size_t sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++)
 		{
-			if (_downsampleFactor == 1 || _downsampleCounter < _frameSize)
+			// Copy input samples if no downsampling or copying the samples from first frame
+			if (_downsampleRate == 1 || _downsampleCounter < _frameSize)
 			{
-				_pData[_writeIndex++] = pFrames[index];
-				if (_writeIndex >= (int)_size)	// Wrap pointer over end
-					_writeIndex = 0;
+				*_writePointer = pSamples[sampleIndex];
+				_writePointer++;
+				if (_writePointer == _data.end()) {	// Wrap pointer over end
+					_writePointer = _data.begin();
+				}
 			}
-			if (_downsampleFactor != 1)
+			// If downsampling increate the downsample counter
+			if (_downsampleRate != 1)
 			{
 				_downsampleCounter++;
-				if (_downsampleCounter >= _downsampleFactor * _frameSize)
+				if (_downsampleCounter >= _downsampleRate * _frameSize)
 					_downsampleCounter = 0;
 			}
 		}
-		// Are we going to overflow?If overflow happened, 
-		// advance read pointer so _size - _frameSize samples are available
-		if (currentLength + (sampleCount / _downsampleFactor) >= _size)
+		// If overflow happened, advance read pointer so _size - _frameSize samples are available
+		if (samplesInBufferBeforeAdd + samplesCopied >= _data.size())
 		{
-			_readIndex = _writeIndex + (int)_frameSize;
-			if (_readIndex >= (int)_size)
-			{
-				_readIndex -= (int)_size;
+			if (_writePointer + _frameSize != _data.end()) {
+				_readPointer = _writePointer + _frameSize;
 			}
-				return ((currentLength + (sampleCount)-_size) / _frameSize) + 1;
+			else {
+				_readPointer = _data.cbegin();
+			}
+			readPositionFrameIndex += (samplesInBufferBeforeAdd + samplesCopied - _data.size()) / _frameSize;
 		}
-		return 0;
 	}
-	size_t ring_buffer::get(float * pDest, size_t outputBufferLength, const float * pWindow)
+	void ring_buffer::get_deinterleaved(float * pOutput, size_t outputBufferStride)
 	{
-		if (_stepLength == 0)
-			return 0;
+		if (_data.empty())
+			throw winrt::hresult_error(E_NOT_VALID_STATE);
 
-		size_t outputStride = outputBufferLength != 0 ? outputBufferLength : _stepLength;
-		if (outputStride < _stepLength)
-			return 0;
+		if (outputBufferStride < _stepFrames)
+			throw winrt::hresult_invalid_argument();
 
 		if (empty()) // Not enough data to be copied
-			return 0;
+			throw winrt::hresult_error(E_NOT_VALID_STATE);
 
-		int overlapSamples = (int)(_stepOverlap * _frameSize);
-		// Calculate the index to start copying from, wrap the index over the start if needed
-		int srcIndex = _readIndex >= overlapSamples ? _readIndex - overlapSamples : (int)_size - overlapSamples + _readIndex;
+		int overlapSamples = (int)(_overlapFrames * _frameSize);
+
+		auto readIndex = _readPointer - _data.cbegin();
+
+		// Create source iterator counting back overlap samples from current read position
+		std::vector<float>::const_iterator source = 
+			readIndex >= overlapSamples ? 
+				_readPointer - overlapSamples : 
+				_data.cbegin() + (_data.size() - (overlapSamples - readIndex));
 
 		// Iterate over all the output items
-		for (size_t frameIndex = 0; frameIndex < outputStride; frameIndex++)
+		for (size_t frameIndex = 0; frameIndex < outputBufferStride; frameIndex++)
 		{
 			// Copy or pad output values
-			for (size_t channelIndex = 0, outIndex = frameIndex; channelIndex < _frameSize; channelIndex++, outIndex += outputStride)
+			for (size_t channelIndex = 0, outIndex = frameIndex; channelIndex < _frameSize; channelIndex++, outIndex += outputBufferStride)
 			{
-				if (frameIndex < _stepLength)
+				if (frameIndex < _overlapFrames + _stepFrames)
 				{
-					if (pWindow != nullptr)
-						pDest[outIndex] = _pData[srcIndex++] * pWindow[frameIndex];
-					else
-						pDest[outIndex] = _pData[srcIndex++];
-					if (srcIndex >= (int)_size)
-						srcIndex = 0;
+					pOutput[outIndex] = *source++;
+					if (source == _data.cend())
+						source = _data.cbegin();
 				}
 				else
 				{
-					pDest[outIndex] = 0.0f;
+					pOutput[outIndex] = 0.0f;
 				}
 			}
 		}
-		_readIndex = srcIndex;
-
-		return (long)_downsampleFactor * (_stepLength - _stepOverlap);
+		_readPointer = source;
+		readPositionFrameIndex += (int64_t)(_stepFrames);
 	}
 }

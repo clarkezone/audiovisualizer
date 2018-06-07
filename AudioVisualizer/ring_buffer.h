@@ -1,87 +1,67 @@
 #pragma once
 namespace AudioVisualizer
 {
-	class ring_buffer
+	struct ring_buffer
 	{
-		float *_pData;
-		int _readIndex;
-		int _writeIndex;
-		size_t _size;
-		size_t _stepLength;
-		size_t _stepOverlap;
+		std::vector<float> _data;
+		std::vector<float>::const_iterator _readPointer;
+		std::vector<float>::iterator _writePointer;
+		size_t _stepFrames;
+		size_t _overlapFrames;
 		size_t _frameSize;
-		size_t _downsampleFactor;
+		size_t _downsampleRate;
 		size_t _downsampleCounter;
+
+
 	public:
+		int64_t readPositionFrameIndex;
 
-		ring_buffer(size_t buffer_size) :
-			_pData(nullptr),
-			_size(buffer_size),
-			_readIndex(0),
-			_writeIndex(0),
-			_stepLength(0),
-			_stepOverlap(0),
-			_downsampleFactor(1),
+		ring_buffer() : _stepFrames(0),
+			_overlapFrames(0),
+			_frameSize(0),
+			_downsampleRate(0),
 			_downsampleCounter(0),
-			_frameSize(0)
+			readPositionFrameIndex(0)
 		{
-			_pData = (float *)malloc(buffer_size * sizeof(float));
+			
+		}
+		ring_buffer(size_t buffer_size,size_t frameSize,size_t stepFrames,size_t overlapFrames,size_t downsampleRate) :
+			_stepFrames(stepFrames),
+			_overlapFrames(overlapFrames),
+			_frameSize(frameSize),
+			_downsampleRate(downsampleRate),
+			_downsampleCounter(0),
+			readPositionFrameIndex(0)
+		{
+			_data.resize(buffer_size + frameSize);	// Allocate buffer + one frame		
+			_readPointer = _data.cbegin();
+			_writePointer = _data.begin();
 			clear();
-		}
-
-		~ring_buffer()
-		{
-			if (_pData != nullptr)
-				free(_pData);
-			_pData = nullptr;
-		}
-
-		size_t size() const { return _size; }
-
-		// Buffer configuration
-		size_t stepLength() const { return _stepLength; }
-		size_t stepOverlap() const { return _stepOverlap; }
-		size_t frameSize() const { return _frameSize; }
-		void frameSize(size_t frameSize) { _frameSize = frameSize; }
-		size_t downsampleFactor() const { return _downsampleFactor; }
-
-		HRESULT configure(size_t stepLength, size_t overlap, size_t downsampleFactor) // Set output and overlap length in frames
-
-		{
-			if (overlap >= stepLength)
-				return E_INVALIDARG;
-
-			_stepLength = stepLength;
-			_stepOverlap = overlap;
-			_downsampleFactor = downsampleFactor;
-			_downsampleCounter = 0;
-
-			return S_OK;
 		}
 
 		bool empty()
 		{
-			return length() < (_stepLength - _stepOverlap);
+			return samples_in_buffer() < _stepFrames * _frameSize;
 		}
 
-		size_t length() const // Returns available data length in buffer in frames
+		size_t samples_in_buffer() const // Returns available data length in buffer in frames
 		{
-			size_t samplesAvailable = _readIndex <= _writeIndex ? (size_t)(_writeIndex - _readIndex) : _size + _writeIndex - _readIndex;
-			return samplesAvailable / _frameSize;
+			return _readPointer <= _writePointer ? (size_t)(_writePointer - _readPointer) : _writePointer + _data.size() - _readPointer;
 		}
 
 		void flush()	// Sets buffer length to 0
 		{
-			_readIndex = _writeIndex = 0;
+			_readPointer = _data.cbegin();
+			_writePointer = _data.begin();
 		}
 
 		void clear()	// Clears buffers used and unused space
 		{
-			if (_pData != nullptr && _size > 0)
-				memset(_pData, 0, _size * sizeof(float));
+			std::fill(_data.begin(), _data.end(), 0.0f);
 		}
+		size_t downsampleRate() const { return _downsampleRate; }
 
-		size_t add(const float *pFrames, size_t sampleCount);
-		size_t get(float *pDest, size_t outputBufferLength = 0, const float *pWindow = 0);
+		void add_samples(const float *pSamples, size_t sampleCount);
+		void get_deinterleaved(float *pOutput, size_t outputBufferStride);
 	};
 }
