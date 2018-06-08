@@ -55,6 +55,7 @@ namespace winrt::AudioVisualizer::implementation
 		void Calculate(DirectX::XMVECTOR *pRms, DirectX::XMVECTOR *pPeak, DirectX::XMVECTOR *pSpectrum);
 	public:
 		AudioAnalyzer() = delete;
+		AudioAnalyzer(std::nullptr_t = nullptr) noexcept {}
 		~AudioAnalyzer() {
 			FreeBuffers();
 			CloseHandle(_threadPoolSemaphore);
@@ -68,6 +69,10 @@ namespace winrt::AudioVisualizer::implementation
 		void AnalyzerTypes(AudioVisualizer::AnalyzerType const& value);
 		float SpectrumStep();
 		uint32_t SpectrumElementCount();
+		bool IsSuspended();
+		void IsSuspended(bool value);
+		void Flush();
+		void Flush(int64_t seedPosition);
 		event_token Output(Windows::Foundation::TypedEventHandler<AudioVisualizer::AudioAnalyzer, AudioVisualizer::VisualizationDataFrame> const& handler);
 		void Output(event_token const& token);
 		void Close();

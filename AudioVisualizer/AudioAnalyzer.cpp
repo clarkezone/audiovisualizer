@@ -147,11 +147,12 @@ namespace winrt::AudioVisualizer::implementation
 				_inputBuffer.readPositionFrameIndex = _seedPosition.Value();
 				_bSeedPosition = false;
 			} 
-			else if (frame.RelativeTime()) {
-				_inputBuffer.readPositionFrameIndex = time_to_frames(frame.RelativeTime().Value());
+			else  {
+				_inputBuffer.readPositionFrameIndex = frame.RelativeTime() ? time_to_frames(frame.RelativeTime().Value()) : 0;
 				_bSeedPosition = false;
-			}
+			} 
 		}
+		_bIsFlushPending = false;
 		auto buffer = frame.LockBuffer(Windows::Media::AudioBufferAccessMode::Read);
 		auto bufferReference = buffer.CreateReference();
 		auto memoryBuffer = bufferReference.as<::Windows::Foundation::IMemoryBufferByteAccess>();
@@ -357,6 +358,38 @@ namespace winrt::AudioVisualizer::implementation
 	uint32_t AudioAnalyzer::SpectrumElementCount()
 	{
 		return _fftLength >> 1;
+	}
+
+	
+	void AudioAnalyzer::Flush()
+	{
+		std::scoped_lock<std::mutex> _lock(_inputBufferAccess);
+		_seedPosition = nullptr;	// Get from stream
+		_bIsFlushPending = true;
+		_inputBuffer.flush();
+	}
+	
+	void AudioAnalyzer::Flush(int64_t seedPosition)
+	{
+		std::scoped_lock<std::mutex> _lock(_inputBufferAccess);
+		_seedPosition = seedPosition;
+		_bIsFlushPending = true;
+		_inputBuffer.flush();
+	}
+
+	bool AudioAnalyzer::IsSuspended()
+	{
+		return _bIsSuspended;
+	}
+
+	void AudioAnalyzer::IsSuspended(bool value)
+	{
+		if (value != _bIsSuspended) {
+			_bIsSuspended = value;
+			if (_asyncProcessing && !value) {
+				ScheduleProcessing();
+			}
+		}
 	}
 
 	event_token AudioAnalyzer::Output(Windows::Foundation::TypedEventHandler<AudioVisualizer::AudioAnalyzer, AudioVisualizer::VisualizationDataFrame> const& handler)

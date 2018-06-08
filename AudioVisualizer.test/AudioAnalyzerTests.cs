@@ -203,6 +203,41 @@ namespace AudioVisualizer.test
         }
         [TestMethod]
         [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_ProcessInput_SuspendStopsProcessing()
+        {
+            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            RegisterOutputHandler(sut);
+            sut.IsSuspended = true;
+            sut.ProcessInput(inputFrame);
+            Assert.AreEqual(0, outputFrames.Count);
+        }
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public async Task AudioAnalyzer_ProcessInput_ResumeContinuesProcessing()
+        {
+            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, true);
+            RegisterOutputHandler(sut);
+            sut.IsSuspended = true;
+            sut.ProcessInput(inputFrame);
+            sut.IsSuspended = false;
+            await Task.Delay(50);
+            Assert.AreEqual(1, outputFrames.Count);
+        }
+
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public async Task AudioAnalyzer_ProcessInputAsync_GeneratesOneOutputFrame()
+        {
+            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, true);
+            RegisterOutputHandler(sut);
+            sut.ProcessInput(inputFrame);
+            await Task.Delay(50);
+            Assert.AreEqual(1, outputFrames.Count);
+        }
+
+
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_ProcessInput_IsFirstOutputFrameTimeCorrect()
         {
             var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
@@ -220,6 +255,40 @@ namespace AudioVisualizer.test
             sut.ProcessInput(inputFrame);
             Assert.AreEqual(TimeSpan.FromTicks(10166666),outputFrames[1].Time);
         }
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_ProcessInput_IsTimeCorrectAfterFlush()
+        {
+            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            RegisterOutputHandler(sut);
+            inputFrame.RelativeTime = TimeSpan.FromSeconds(2);
+            sut.Flush();
+            sut.ProcessInput(inputFrame);
+            Assert.AreEqual(outputFrames.First().Time, TimeSpan.FromSeconds(2));
+        }
+
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_ProcessInput_IsTimeCorrectAfterFlushWithFrameTimeNotSet()
+        {
+            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            RegisterOutputHandler(sut);
+            inputFrame.RelativeTime = null;
+            sut.Flush();
+            sut.ProcessInput(inputFrame);
+            Assert.AreEqual(outputFrames.First().Time, TimeSpan.Zero);
+        }
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_ProcessInput_IsTimeCorrectAfterFlushWithSeed()
+        {
+            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            RegisterOutputHandler(sut);
+            sut.Flush(480000);
+            sut.ProcessInput(inputFrame);
+            Assert.AreEqual(outputFrames.First().Time, TimeSpan.FromSeconds(10));
+        }
+
         [TestMethod]
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_ProcessInput_IsOutputFrameDurationCorrect()

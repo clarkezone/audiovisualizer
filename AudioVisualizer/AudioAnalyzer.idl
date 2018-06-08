@@ -12,6 +12,9 @@ namespace AudioVisualizer
 		AnalyzerType AnalyzerTypes;
 		Single SpectrumStep { get; };
 		UInt32 SpectrumElementCount{ get; };
+		Boolean IsSuspended;
+		void Flush();
+		void Flush(Int64 seedPosition);
 
 		event Windows.Foundation.TypedEventHandler<AudioAnalyzer, VisualizationDataFrame> Output;
 	}

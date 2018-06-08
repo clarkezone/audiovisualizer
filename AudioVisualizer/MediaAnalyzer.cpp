@@ -8,6 +8,8 @@
 #include <mfidl.h>
 #include <Mferror.h>
 #include "Tracing.h"
+#include <windows.media.core.interop.h>
+#include <windows.media.audio.h>
 
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "mfuuid.lib")
@@ -15,7 +17,7 @@
 
 namespace winrt::AudioVisualizer::implementation
 {
-	const size_t CircleBufferSize = 960000;	// 10 sec worth of stereo audio at 48k
+	const size_t RingBufferSize = 960000;	// 10 sec worth of stereo audio at 48k
 
 	MediaAnalyzer::MediaAnalyzer() :
 		m_FramesPerSecond(0),
@@ -25,16 +27,15 @@ namespace winrt::AudioVisualizer::implementation
 		m_StepFrameCount(0),
 		m_StepFrameOverlap(0),
 		m_StepTotalFrames(0),
-		m_FftLength(2048),
+		_fftLength(2048),
 		m_FftLengthLog2(11),
 		m_fOutputFps(60.0f),
-		m_fInputOverlap(0.5f),
+		_fInputOverlap(0.5f),
 		m_bIsSuspended(false),
 		_playbackState(SourcePlaybackState::Stopped),
 		_analyzerTypes(AnalyzerType::All)
 	{
 		::AudioVisualizer::Diagnostics::Trace_ctor(L"MediaAnalyzer");
-		_analyzer = std::make_shared<::AudioVisualizer::AudioMath::CAudioAnalyzer>(CircleBufferSize);
 		
 		HRESULT hr = MFCreateAttributes(m_spMftAttributes.put(), 4);
 		if (FAILED(hr))
@@ -43,6 +44,13 @@ namespace winrt::AudioVisualizer::implementation
 		_threadPoolSemaphore = CreateSemaphore(nullptr, 1, 1, nullptr);
 		if (_threadPoolSemaphore == NULL)
 			throw hresult_error(E_FAIL);
+
+		MULTI_QI qiFactory[1] = { { &__uuidof(IAudioFrameNativeFactory),nullptr,S_OK } };
+		hr = CoCreateInstanceFromApp(CLSID_AudioFrameNativeFactory, nullptr, CLSCTX_INPROC_SERVER, nullptr, 1, qiFactory);
+		check_hresult(hr);
+		check_hresult(qiFactory[0].hr);
+		
+		*_audioFrameFactory.put_void() = qiFactory[0].pItf;
 	}
 
 	MediaAnalyzer::~MediaAnalyzer()
@@ -63,12 +71,13 @@ namespace winrt::AudioVisualizer::implementation
 		if (overlap < 0.0f || overlap > 1.0f)	// Set some sensible overlap limits
 			throw hresult_invalid_argument();
 
-		m_FftLength = fftLength;
-		m_fInputOverlap = overlap;
+		_fftLength = fftLength;
+		_fInputOverlap = overlap;
 
 		// If input type is set then calculate the necessary variables and initialize
-		if (m_spInputType != nullptr)
-			Analyzer_Initialize();
+		if (m_spInputType != nullptr) {
+			CreateAnalyzer();
+		}
 
 		_configurationChangedEvent(*this, hstring(L""));
 	}
@@ -518,9 +527,9 @@ namespace winrt::AudioVisualizer::implementation
 		if ((dwFlags & MFT_SET_TYPE_TEST_ONLY) == 0)
 		{
 			m_spOutputType.copy_from(pType);
-			HRESULT hr = Analyzer_SetMediaType(pType);	// Using MFT output type to configure analyzer
+			CreateAnalyzer();
 			_configurationChangedEvent(*this, hstring(L""));
-			return hr;
+			return S_OK;
 		}
 		return S_OK;
 	}
@@ -785,9 +794,10 @@ namespace winrt::AudioVisualizer::implementation
 			return MF_E_TRANSFORM_NEED_MORE_INPUT;
 		}
 
-		hr = Analyzer_ProcessSample(m_spSample.get());
+		_bFlushPending = false;	// Reset pending flush after first fresh frame
 
-		pOutputSamples->pSample = m_spSample.get();
+		auto audioFrame = ConvertToAudioFrame(m_spSample.get());
+		_analyzer.ProcessInput(audioFrame);
 		m_spSample = nullptr;
 
 		// Set status flags.
@@ -795,6 +805,14 @@ namespace winrt::AudioVisualizer::implementation
 		*pdwStatus = 0;
 
 		return hr;
+	}
+
+	Windows::Media::AudioFrame MediaAnalyzer::ConvertToAudioFrame(IMFSample *pSample)
+	{
+		// Convert sample to audio frame
+		com_ptr<ABI::Windows::Media::IAudioFrame> frame;
+		check_hresult(_audioFrameFactory->CreateFromMFSample(pSample, true, IID_PPV_ARGS(frame.put())));
+		return frame.as<Windows::Media::AudioFrame>();
 	}
 
 	HRESULT MediaAnalyzer::SetPresentationClock(IMFPresentationClock * pPresentationClock)
@@ -811,182 +829,30 @@ namespace winrt::AudioVisualizer::implementation
 		return S_OK;
 	}
 
-	HRESULT MediaAnalyzer::Analyzer_SetMediaType(IMFMediaType * pType)
+	void MediaAnalyzer::CreateAnalyzer()
 	{
-		m_FramesPerSecond = 0;
-		HRESULT hr = pType->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, &m_FramesPerSecond);
-		if (FAILED(hr))
-			goto exit;
-		m_nChannels = 0;
-		hr = pType->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &m_nChannels);
-		if (FAILED(hr))
-			goto exit;
-
-		if (m_FftLength != 0)	// If FFT has been configured, then reconfigure analyzer as input type has changed
-			hr = Analyzer_Initialize();
-	exit:
-#ifdef _TRACE
-		Diagnostics::Trace::Log_SetMediaType(pType, hr);
-#endif
-		return hr;
-	}
-
-	HRESULT MediaAnalyzer::Analyzer_Initialize()
-	{
-
-		m_FftLengthLog2 = 1;
-		while ((size_t)1 << m_FftLengthLog2 != m_FftLength)
-			m_FftLengthLog2++;
-
-		m_StepFrameCount = time_to_frames(1.0f / m_fOutputFps);
-		m_StepFrameOverlap = (size_t)(m_fInputOverlap * m_StepFrameCount);
-		m_StepTotalFrames = m_StepFrameCount + m_StepFrameOverlap;
-
-		_analyzer->ConfigureInput(m_nChannels);
-		_analyzer->ConfigureAnalyzer(m_FftLength, m_StepTotalFrames, m_StepFrameOverlap);
-
-#ifdef _TRACE
-		Diagnostics::Trace::Log_Initialize(m_FftLength, m_StepTotalFrames, m_StepFrameOverlap, _analyzer->GetDownsampleRate());
-#endif
-		return S_OK;
-	}
-
-	HRESULT MediaAnalyzer::Analyzer_ProcessSample(IMFSample * pSample)
-	{
-		if (m_FramesPerSecond == 0 || m_nChannels == 0)
-			return E_NOT_VALID_STATE;
-		if (m_FftLength == 0)
-			return E_NOT_VALID_STATE;
-
-#ifdef _TRACE
-		Diagnostics::Trace::Log_ProcessSample(pSample);
-#endif
-
-		// Allow processing after a flush event.
-		_bFlushPending = false;
-
-		HRESULT hr = S_OK;
-		long position = -1;
-		if (_analyzer->GetPosition() == -1)	// Sample index not set, get time from sample
-		{
-			REFERENCE_TIME sampleTime = 0;
-			hr = pSample->GetSampleTime(&sampleTime);
-			if (FAILED(hr))
-				return hr;
-			position = time_to_frames(sampleTime);
-#ifdef _TRACE
-			Diagnostics::Trace::Log_SetInputPosition(position);
-#endif
+		UINT32 sampleRate = 0;
+		m_spInputType->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, &sampleRate);
+		size_t stepFrameCount = (size_t)(sampleRate / m_fOutputFps);
+		size_t overlapFrames = _fInputOverlap * stepFrameCount;
+		UINT32 channelCount = 0;
+		m_spInputType->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &channelCount);
+		if (_analyzer) {
+			_analyzer.Output(_analyzerOutput);
 		}
-
-		com_ptr<IMFMediaBuffer> spBuffer;
-		hr = pSample->ConvertToContiguousBuffer(spBuffer.put());
-		if (FAILED(hr))
-			return hr;
-
-		float *pBufferData = nullptr;
-		DWORD cbCurrentLength = 0;
-		hr = spBuffer->Lock((BYTE **)&pBufferData, nullptr, &cbCurrentLength);
-		if (FAILED(hr))
-			return hr;
-
-		_analyzer->AddInput(pBufferData, cbCurrentLength / sizeof(float), position);
-
-		spBuffer->Unlock();
-
-		Analyzer_ScheduleProcessing();
-
-		return S_OK;
+		_analyzer = make<AudioAnalyzer>(RingBufferSize, channelCount, sampleRate, stepFrameCount, overlapFrames, _fftLength, true);
+		_analyzer.AnalyzerTypes(_analyzerTypes);
+		_analyzerOutput = _analyzer.Output(
+			Windows::Foundation::TypedEventHandler<AudioVisualizer::AudioAnalyzer, AudioVisualizer::VisualizationDataFrame>(this, &MediaAnalyzer::OnAnalyzerOutput)
+		);
 	}
 
-	//-----------------------------------------------
-	// ScheduleInputProcessing
-	// Validate if background processing is running and if not initiate
-	//-----------------------------------------------
-	HRESULT MediaAnalyzer::Analyzer_ScheduleProcessing()
+	void MediaAnalyzer::OnAnalyzerOutput(AudioVisualizer::AudioAnalyzer analyzer, AudioVisualizer::VisualizationDataFrame dataFrame)
 	{
-		if (m_bIsSuspended)	// Do not schedule another work item when suspended
-			return S_OK;
-
-		// See if the access semaphore is signaled
-		DWORD dwWaitResult = WaitForSingleObject(_threadPoolSemaphore, 0);
-		if (dwWaitResult == WAIT_OBJECT_0)
-		{
-			// Execute data processing on threadpool
-			Windows::System::Threading::ThreadPool::RunAsync(
-				Windows::System::Threading::WorkItemHandler(
-					[this] (Windows::Foundation::IAsyncAction action) {
-				Analyzer_ProcessData();
-				ReleaseSemaphore(_threadPoolSemaphore, 1, nullptr);
-				}),
-				Windows::System::Threading::WorkItemPriority::High
-			);
-			return S_OK;
-		}
-		else if (dwWaitResult == WAIT_TIMEOUT)
-		{
-			return S_FALSE;	// Analysis is already running
-		}
-		else
-			return E_FAIL;
 	}
 
-	void MediaAnalyzer::Analyzer_ProcessData()
-	{
-		// Process data until not suspended, not in a reset and output is available
-		while (!m_bIsSuspended && !_bFlushPending && _analyzer->IsOutputAvailable())
-		{
-			long position = -1;
-			bool bStepSuccess = false;
-			com_ptr<implementation::ScalarData> rms = nullptr;
-			com_ptr<implementation::ScalarData> peak = nullptr;
-			com_ptr<implementation::SpectrumData> spectrum = nullptr;
 
-			if (1) {	// This dummy if statement is needed for the scoped lock
 
-				std::lock_guard lock(_analyzerAccessMutex);
-				if ((int)_analyzerTypes & (int)AnalyzerType::RMS)
-					rms = make_self<ScalarData>(m_nChannels);
-
-				if ((int)_analyzerTypes & (int)AnalyzerType::Peak)
-					peak = make_self<ScalarData>(m_nChannels);
-
-				if ((int)_analyzerTypes & (int)AnalyzerType::Spectrum)
-				{
-					float maxFreq = (float)(m_FramesPerSecond >> 1) / (float)_analyzer->GetDownsampleRate();
-
-					spectrum = make_self<SpectrumData>(
-						m_nChannels,
-						m_FftLength >> 1,
-						ScaleType::Linear,
-						ScaleType::Linear,
-						0.0f,
-						maxFreq,
-						false);
-				}
-
-				bStepSuccess = _analyzer->Step(&position, rms->_pData, peak->_pData, spectrum->_pData);
-				// End of scoped lock for analyzer access
-			}
-
-			
-			auto dataFrame = make_self<VisualizationDataFrame>(
-				Windows::Foundation::TimeSpan(frames_to_time(position)),
-				Windows::Foundation::TimeSpan((REFERENCE_TIME)(1e7 / m_fOutputFps)),
-				rms.as<AudioVisualizer::ScalarData>(),
-				peak.as<AudioVisualizer::ScalarData>(),
-				spectrum.as<AudioVisualizer::SpectrumData>()
-				);
-
-			// Only push the result if reset is not pending
-			if (!_bFlushPending && bStepSuccess)
-			{
-				std::lock_guard lock(_outputQueueAccessMutex);
-				Analyzer_CompactOutputQueue();
-				m_AnalyzerOutput.push(dataFrame);
-			}
-		}
-	}
 
 	HRESULT MediaAnalyzer::Analyzer_Flush()
 	{
@@ -994,8 +860,7 @@ namespace winrt::AudioVisualizer::implementation
 		_bFlushPending = true;
 		// Release input sample and reset the analyzer and queues
 		// Clean up any state from buffer copying
-		std::lock_guard lock(_analyzerAccessMutex);
-		_analyzer->Flush();
+		_analyzer.Flush();
 		m_spSample = nullptr;
 		return S_OK;
 	}
@@ -1024,12 +889,13 @@ namespace winrt::AudioVisualizer::implementation
 	void MediaAnalyzer::Analyzer_Resume()
 	{
 		m_bIsSuspended = false;
-		Analyzer_ScheduleProcessing();
+		_analyzer.IsSuspended(false);
 	}
 
 	void MediaAnalyzer::Analyzer_Suspend()
 	{
 		m_bIsSuspended = true;
+		_analyzer.IsSuspended(true);
 	}
 
 	AudioVisualizer::VisualizationDataFrame MediaAnalyzer::Analyzer_FFwdQueueTo(REFERENCE_TIME position)

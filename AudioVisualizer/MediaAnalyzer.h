@@ -1,12 +1,12 @@
 ﻿#pragma once
 
 #include "MediaAnalyzer.g.h"
-#include "AudioAnalyzer2.h"
 #include <memory>
 #include <queue>
 #include <mutex>
 #include "VisualizationDataFrame.h"
-
+#include <windows.media.core.interop.h>
+#include "AudioAnalyzer.h"
 
 namespace winrt::AudioVisualizer::implementation
 {
@@ -31,9 +31,10 @@ namespace winrt::AudioVisualizer::implementation
 
 		const size_t cMaxOutputQueueSize = 600;	// Keep 10sec worth of data for 60fps output
 
-		std::shared_ptr<::AudioVisualizer::AudioMath::CAudioAnalyzer> _analyzer;
+		AudioVisualizer::AudioAnalyzer _analyzer{ nullptr };
+		winrt::event_token _analyzerOutput;
+		com_ptr<IAudioFrameNativeFactory> _audioFrameFactory;
 
-		std::mutex _analyzerAccessMutex;	// Mutex to lock analyzer configuration changing
 		std::mutex _outputQueueAccessMutex;
 
 		std::queue<com_ptr<implementation::VisualizationDataFrame>> m_AnalyzerOutput;
@@ -41,11 +42,11 @@ namespace winrt::AudioVisualizer::implementation
 		size_t m_StepFrameCount;	// How many samples does calculate consume each step
 		size_t m_StepFrameOverlap;
 		size_t m_StepTotalFrames;
-		size_t m_FftLength;
+		size_t _fftLength;
 		size_t m_FftLengthLog2;
 
 		float m_fOutputFps;
-		float m_fInputOverlap;
+		float _fInputOverlap;
 
 		AnalyzerType  _analyzerTypes;
 
@@ -53,18 +54,21 @@ namespace winrt::AudioVisualizer::implementation
 
 		winrt::event<Windows::Foundation::TypedEventHandler<IVisualizationSource,hstring>> _configurationChangedEvent;
 
+		void CreateAnalyzer();
+		Windows::Media::AudioFrame ConvertToAudioFrame(IMFSample *pSample);
+		void OnAnalyzerOutput(AudioVisualizer::AudioAnalyzer analyzer, AudioVisualizer::VisualizationDataFrame frame);
+
+		/*/
 		HRESULT Analyzer_SetMediaType(IMFMediaType *pType);
-		HRESULT Analyzer_Initialize();
-		HRESULT Analyzer_ProcessSample(IMFSample *pSample);
+		//HRESULT Analyzer_Initialize();
 		HRESULT Analyzer_ScheduleProcessing();
-		void Analyzer_ProcessData();
+		void Analyzer_ProcessData();*/
 		HRESULT Analyzer_Flush();
 		HRESULT Analyzer_CompactOutputQueue();
 		HRESULT Analyzer_ClearOutputQueue();
 		void Analyzer_Resume();
 		void Analyzer_Suspend();
 		AudioVisualizer::VisualizationDataFrame Analyzer_FFwdQueueTo(REFERENCE_TIME time);
-
 
 		inline long time_to_samples(REFERENCE_TIME time) const { return m_nChannels * (long)((time * m_FramesPerSecond + 5000000L) / 10000000L); }
 		inline long time_to_frames(REFERENCE_TIME time) const { return (long)((time * m_FramesPerSecond + 5000000L) / 10000000L); }
