@@ -35,8 +35,7 @@ namespace winrt::AudioVisualizer::implementation
 		std::mutex _inputBufferAccess;
 		HANDLE _threadPoolSemaphore;	// Controls threadpool execution - schedule only one instance of execution
 
-
-		void AllocateBuffers();
+		void InitWindow();
 		void FreeBuffers();
 
 		winrt::event<Windows::Foundation::TypedEventHandler<AudioVisualizer::AudioAnalyzer, AudioVisualizer::VisualizationDataFrame>> _output;
@@ -67,7 +66,8 @@ namespace winrt::AudioVisualizer::implementation
 
 		AudioVisualizer::AnalyzerType AnalyzerTypes();
 		void AnalyzerTypes(AudioVisualizer::AnalyzerType const& value);
-		float FrequencyStep();
+		float SpectrumStep();
+		uint32_t SpectrumElementCount();
 		event_token Output(Windows::Foundation::TypedEventHandler<AudioVisualizer::AudioAnalyzer, AudioVisualizer::VisualizationDataFrame> const& handler);
 		void Output(event_token const& token);
 		void Close();

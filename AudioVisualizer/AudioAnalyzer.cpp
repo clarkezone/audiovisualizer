@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "AudioAnalyzer.h"
 #include <DirectXMath.h>
-#include <XDSP.h>
+#include "XDSP.h"
 #include <memorybuffer.h>
 #include <winrt/windows.system.threading.h>
 #include "ScalarData.h"
@@ -10,7 +10,25 @@
 #include "util.h"
 
 using namespace DirectX;
-using namespace util;
+using namespace XDSP;
+
+
+// This function is moved out of class due to a compiler bug (vs 15.7.3) where
+// compiler is unable to resolve XMVECTOR operator overloads when moved inside the namespace definition block below
+void CreateBlackmannNuttalWindow(XMVECTOR *pWindow,size_t nElements)
+{
+	// Initialize window, use Blackman-Nuttall window for low sidelobes
+	float a0 = 0.3635819f,a1 = 0.4891775f,a2 = 0.1365995f,a3 = 0.0106411f;
+	XMVECTOR va0 = XMVectorReplicate(a0);
+	XMVECTOR vElementIndex = XMVectorSet(0, 1, 2, 3), vElementStep = XMVectorReplicate(4.0f);
+	float fIndexScaler = 1.0f / (float)(nElements-1);
+	size_t vWindowElements = (nElements + 3) >> 2;
+	for (size_t vIndex = 0; vIndex < vWindowElements; vIndex++, vElementIndex += vElementStep)
+	{
+		XMVECTOR vCosArg = XMVectorScale(DirectX::g_XMTwoPi * vElementIndex, fIndexScaler);
+		pWindow[vIndex] = va0 - a1 * XMVectorCos(vCosArg) + a2 * XMVectorCos(vCosArg * 2.0f) - a3 * XMVectorCos(vCosArg * 3.0f);
+	}
+}
 
 namespace winrt::AudioVisualizer::implementation
 {
@@ -70,35 +88,26 @@ namespace winrt::AudioVisualizer::implementation
 
 		_stepFrames = inputStep / downsampleFactor;
 		_overlapFrames = inputOverlap / downsampleFactor;
-
-		AllocateBuffers();
-
-		// Initialize window, use Blackman-Nuttall window for low sidelobes
-		float a0 = 0.3635819f, a1 = 0.4891775f, a2 = 0.1365995f, a3 = 0.0106411f;
-		XMVECTOR vElementIndex = XMVectorSet(0, 1, 2, 3), vElementStep = XMVectorReplicate(4.0f);
-		float fIndexScaler = 1.0f / (_stepFrames - 1.0f);
-		size_t vWindowElements = _stepFrames >> 2;
-		for (size_t vIndex = 0; vIndex < vWindowElements; vIndex++, vElementIndex += vElementStep)
-		{
-			XMVECTOR vCosArg = XMVectorScale(DirectX::g_XMTwoPi * vElementIndex, fIndexScaler);
-			_pWindow[vIndex] =
-				XMVectorSubtract(XMVectorReplicate(a0),
-					XMVectorAdd(XMVectorScale(XMVectorCos(vCosArg), a1),
-						XMVectorSubtract(XMVectorScale(XMVectorCos(XMVectorScale(vCosArg, 2)), a2), XMVectorScale(XMVectorCos(XMVectorScale(vCosArg, 3)), a3))
-					));
-		}
-		XDSP::FFTInitializeUnityTable(_pFftUnityTable, _fftLength);
-	}
-
-	void AudioAnalyzer::AllocateBuffers()
-	{
-		_pWindow = static_cast<XMVECTOR *>(_aligned_malloc_dbg(((_stepFrames + 3) >> 2) * sizeof(XMVECTOR), 16, __FILE__, __LINE__));
+		
+		InitWindow();
 		_pFftReal = static_cast<XMVECTOR *>(_aligned_malloc_dbg(_fftLength * sizeof(XMVECTOR) * _inputChannels, 16, __FILE__, __LINE__));	// For real data allocate space for all channels
 		_pFftUnityTable = static_cast<XMVECTOR *> (_aligned_malloc_dbg(2 * _fftLength * sizeof(XMVECTOR), 16, __FILE__, __LINE__));	// Complex values 
 		_pFftBuffers = static_cast<XMVECTOR *>(_aligned_malloc_dbg(2 * _fftLength * sizeof(XMVECTOR), 16, __FILE__, __LINE__));	// Preallocate buffers for FFT calculation 2*length of Fft
-
-		if (_pFftReal == nullptr || _pWindow == nullptr || _pFftUnityTable == nullptr || _pFftBuffers == nullptr)
+		if (_pFftReal == nullptr || _pFftUnityTable == nullptr || _pFftBuffers == nullptr)
 			throw std::bad_alloc();
+		XDSP::FFTInitializeUnityTable(_pFftUnityTable, _fftLength);
+	}
+
+	void AudioAnalyzer::InitWindow()
+	{
+		if (_pWindow != nullptr) {
+			_aligned_free_dbg(_pWindow);
+		}
+		_pWindow = static_cast<XMVECTOR *>(_aligned_malloc_dbg((((_stepFrames + _overlapFrames) + 3) >> 2) * sizeof(XMVECTOR), 16, __FILE__, __LINE__));
+		if (_pWindow == nullptr) {
+			throw std::bad_alloc();
+		}		
+		CreateBlackmannNuttalWindow(_pWindow, _stepFrames + _overlapFrames);
 	}
 
 	void AudioAnalyzer::FreeBuffers()
@@ -215,15 +224,15 @@ namespace winrt::AudioVisualizer::implementation
 				_inputBuffer.get_deinterleaved((float*)_pFftReal, _fftLength);
 			}
 
-			if (enum_has_flag(_analyzerTypes, AnalyzerType::RMS)) {
+			if (util::enum_has_flag(_analyzerTypes, AnalyzerType::RMS)) {
 				rms = make_self<ScalarData>(_inputChannels);
 			}
 
-			if (enum_has_flag(_analyzerTypes, AnalyzerType::Peak)) {
+			if (util::enum_has_flag(_analyzerTypes, AnalyzerType::Peak)) {
 				peak = make_self<ScalarData>(_inputChannels);
 			}
 
-			if (enum_has_flag(_analyzerTypes, AnalyzerType::Spectrum))
+			if (util::enum_has_flag(_analyzerTypes, AnalyzerType::Spectrum))
 			{
 				float maxFreq = (float)(_sampleRate >> 1) / (float)_inputBuffer.downsampleRate();
 
@@ -265,8 +274,8 @@ namespace winrt::AudioVisualizer::implementation
 
 		if (pRms != nullptr || pPeak != nullptr)
 		{
-			size_t vFromFrame = _overlapFrames >> 2, vToFrame = (_stepFrames - _overlapFrames) >> 2;
-			float rmsScaler = 1.0f / ((vToFrame - vFromFrame) << 2);
+			size_t vFromFrame = _overlapFrames >> 2, vToFrame = (_stepFrames + _overlapFrames) >> 2;
+			float rmsScaler = 1.0f / _stepFrames;
 
 			for (size_t channelIndex = 0, vOffset = 0; channelIndex < _inputChannels; channelIndex++, vOffset += vStep)
 			{
@@ -292,10 +301,13 @@ namespace winrt::AudioVisualizer::implementation
 		}
 		if (pSpectrum != nullptr)
 		{
+			size_t spectrumFrames = _stepFrames + _overlapFrames;
+			size_t vSpectrumFrames = (spectrumFrames + 3) >> 2;
+			
 			// First window the data
-			for (size_t vIndex = 0; vIndex < (_stepFrames >> 2); vIndex++)
+			for (size_t channelIndex = 0, vBaseIndex = 0; channelIndex < _inputChannels; channelIndex++, vBaseIndex += vStep)
 			{
-				for (size_t channelIndex = 0, vElementIndex = vIndex; channelIndex < _inputChannels; channelIndex++, vElementIndex += vStep)
+				for (size_t vIndex = 0, vElementIndex=vBaseIndex; vIndex < vSpectrumFrames; vIndex++,vElementIndex++)
 				{
 					_pFftReal[vElementIndex] *= _pWindow[vIndex];
 				}
@@ -338,9 +350,13 @@ namespace winrt::AudioVisualizer::implementation
 		_analyzerTypes = value;
 	}
 
-	float AudioAnalyzer::FrequencyStep()
+	float AudioAnalyzer::SpectrumStep()
 	{
-		return _fftLength != 0 ? (float)_sampleRate / (float)_fftLength / 2.0f : 0.0f;
+		return (float)_sampleRate / (float)_fftLength / (float)_inputBuffer.downsampleRate();
+	}
+	uint32_t AudioAnalyzer::SpectrumElementCount()
+	{
+		return _fftLength >> 1;
 	}
 
 	event_token AudioAnalyzer::Output(Windows::Foundation::TypedEventHandler<AudioVisualizer::AudioAnalyzer, AudioVisualizer::VisualizationDataFrame> const& handler)

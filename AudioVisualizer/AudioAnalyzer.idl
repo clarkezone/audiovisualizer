@@ -10,7 +10,8 @@ namespace AudioVisualizer
 		void ProcessInput(Windows.Media.AudioFrame frame);
 
 		AnalyzerType AnalyzerTypes;
-		Single FrequencyStep{ get; };
+		Single SpectrumStep { get; };
+		UInt32 SpectrumElementCount{ get; };
 
 		event Windows.Foundation.TypedEventHandler<AudioAnalyzer, VisualizationDataFrame> Output;
 	}

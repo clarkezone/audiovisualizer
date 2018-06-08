@@ -116,7 +116,10 @@
     <ClInclude Include="XDSP.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AudioAnalyzer.cpp" />
+    <ClCompile Include="AudioAnalyzer.cpp">
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotSet</EnableEnhancedInstructionSet>
+      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
+    </ClCompile>
     <ClCompile Include="AudioAnalyzer2.cpp" />
     <ClCompile Include="AudioBuffer.cpp" />
     <ClCompile Include="AudioMath.cpp" />
