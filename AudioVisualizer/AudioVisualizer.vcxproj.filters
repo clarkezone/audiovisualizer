@@ -20,7 +20,6 @@
     <ClCompile Include="CreateResourcesEventArgs.cpp" />
     <ClCompile Include="VisualizationDataFrame.cpp" />
     <ClCompile Include="VisualizerDrawEventArgs.cpp" />
-    <ClCompile Include="AudioBuffer.cpp" />
     <ClCompile Include="MediaAnalyzer.cpp" />
     <ClCompile Include="PlaybackSource.cpp" />
     <ClCompile Include="SourceConverter.cpp" />
@@ -30,7 +29,6 @@
     <ClCompile Include="CustomVisualizer.cpp" />
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="Tracing.cpp" />
-    <ClCompile Include="AudioAnalyzer2.cpp" />
     <ClCompile Include="AudioAnalyzer.cpp" />
     <ClCompile Include="ring_buffer.cpp" />
   </ItemGroup>
@@ -43,7 +41,6 @@
     <ClInclude Include="CreateResourcesEventArgs.h" />
     <ClInclude Include="VisualizationDataFrame.h" />
     <ClInclude Include="VisualizerDrawEventArgs.h" />
-    <ClInclude Include="AudioBuffer.h" />
     <ClInclude Include="MediaAnalyzer.h" />
     <ClInclude Include="PlaybackSource.h" />
     <ClInclude Include="SourceConverter.h" />
@@ -53,7 +50,6 @@
     <ClInclude Include="SpectrumVisualizer.h" />
     <ClInclude Include="CustomVisualizer.h" />
     <ClInclude Include="Tracing.h" />
-    <ClInclude Include="AudioAnalyzer2.h" />
     <ClInclude Include="AudioAnalyzer.h" />
     <ClInclude Include="ring_buffer.h" />
   </ItemGroup>

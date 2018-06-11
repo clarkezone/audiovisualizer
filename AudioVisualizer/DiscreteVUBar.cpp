@@ -5,54 +5,84 @@
 
 namespace winrt::AudioVisualizer::implementation
 {
+	DiscreteVUBar::DiscreteVUBar()
+	{
+		_levels.resize(24);
+		int level = -60;
+		for (size_t i = 0; i < 24; i++, level += 3)
+		{
+			_levels[i].Level = (float)level;
+			if (level < -6)
+				_levels[i].Color = Windows::UI::ColorHelper::FromArgb(255, 0, 255, 0);
+			else if (level <= 0)
+				_levels[i].Color = Windows::UI::ColorHelper::FromArgb(255, 255, 0, 0);
+			else
+				_levels[i].Color = Windows::UI::ColorHelper::FromArgb(255, 0, 0, 0);
+		}
+		_minAmp = -60.0f;
+		_maxAmp = -12.0f;
+		_channelIndex = 0;
+		_orientation = Windows::UI::Xaml::Controls::Orientation::Vertical;
+		_elementMargin = Windows::UI::Xaml::ThicknessHelper::FromUniformLength(0);
+		_unlitElement = Windows::UI::ColorHelper::FromArgb( 0, 96, 96, 96 );
+
+		SizeChanged(Windows::UI::Xaml::SizeChangedEventHandler(
+			[=](Windows::Foundation::IInspectable const& sender, Windows::UI::Xaml::SizeChangedEventArgs const& args)
+			{
+				_controlSize = args.NewSize();
+			}
+		));
+	}
+
 	com_array<AudioVisualizer::MeterBarLevel> DiscreteVUBar::Levels()
 	{
-		throw hresult_not_implemented();
+		return com_array<MeterBarLevel>(_levels);
 	}
 
 	void DiscreteVUBar::Levels(array_view<AudioVisualizer::MeterBarLevel const> value)
 	{
-		throw hresult_not_implemented();
+		_levels.resize(value.size());
+		std::copy(value.begin(), value.end(), _levels.begin());
 	}
 
 	Windows::UI::Xaml::Controls::Orientation DiscreteVUBar::Orientation()
 	{
-		throw hresult_not_implemented();
+		return _orientation;
 	}
 
 	void DiscreteVUBar::Orientation(Windows::UI::Xaml::Controls::Orientation const& value)
 	{
-		throw hresult_not_implemented();
+		_orientation = value;
 	}
 
 	uint32_t DiscreteVUBar::ChannelIndex()
 	{
-		throw hresult_not_implemented();
+		return _channelIndex;
 	}
 
 	void DiscreteVUBar::ChannelIndex(uint32_t value)
 	{
-		throw hresult_not_implemented();
+		_channelIndex = value;
 	}
 
 	Windows::UI::Xaml::Thickness DiscreteVUBar::RelativeElementMargin()
 	{
-		throw hresult_not_implemented();
+		return _elementMargin;
 	}
 
 	void DiscreteVUBar::RelativeElementMargin(Windows::UI::Xaml::Thickness const& value)
 	{
-		throw hresult_not_implemented();
+		_elementMargin = value;
 	}
 
 	Windows::UI::Color DiscreteVUBar::UnlitElement()
 	{
-		throw hresult_not_implemented();
+		return _unlitElement;
 	}
 
 	void DiscreteVUBar::UnlitElement(Windows::UI::Color const& value)
 	{
-		throw hresult_not_implemented();
+		_unlitElement = value;
 	}
 
 	void DiscreteVUBar::OnDraw(Microsoft::Graphics::Canvas::CanvasDrawingSession drawingSession, VisualizationDataFrame dataFrame, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> presentationTime)

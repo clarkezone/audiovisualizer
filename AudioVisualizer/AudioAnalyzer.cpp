@@ -52,7 +52,7 @@ namespace winrt::AudioVisualizer::implementation
 			throw hresult_invalid_argument();
 		}
 
-		if (bufferSize < inputStep * inputChannels || bufferSize < inputOverlap * inputChannels)
+		if (bufferSize < (inputStep + inputOverlap))
 		{
 			throw hresult_invalid_argument(L"Invalid buffer size");
 		}
@@ -386,8 +386,8 @@ namespace winrt::AudioVisualizer::implementation
 	{
 		if (value != _bIsSuspended) {
 			_bIsSuspended = value;
-			if (_asyncProcessing && !value) {
-				ScheduleProcessing();
+			if (!value) {
+				StartProcessing();
 			}
 		}
 	}

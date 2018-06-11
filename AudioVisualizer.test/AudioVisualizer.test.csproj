@@ -105,6 +105,7 @@
     <Compile Include="AudioAnalyzerTests.cs" />
     <Compile Include="CreateResourcesArgsTests.cs" />
     <Compile Include="FakeVisualizationSource.cs" />
+    <Compile Include="DiscreteVUBarTests.cs" />
     <Compile Include="VisualizerControlTest.cs" />
     <Compile Include="MediaAnalyzerTests.cs" />
     <Compile Include="MFInterop.cs" />

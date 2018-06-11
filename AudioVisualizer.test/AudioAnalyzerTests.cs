@@ -36,12 +36,12 @@ namespace AudioVisualizer.test
                     ((IMemoryBufferByteAccess)bufferReference).GetBuffer(out pByteData, out capacity);
                     uint bufferLength = capacity / sizeof(float) / channels;
                     float* pSamples = (float*)pByteData;
-                    int sampleOffset = 0;
-                    for (Int64 frameIndex = 0; frameIndex < frameOffset + bufferLength; frameIndex++)
+                    int sampleIndex = 0;
+                    for (Int64 frameIndex = frameOffset; frameIndex < frameOffset + bufferLength; frameIndex++)
                     {
-                        for (uint channelIndex = 0; channelIndex < channels; channelIndex++,sampleOffset++)
+                        for (uint channelIndex = 0; channelIndex < channels; channelIndex++,sampleIndex++)
                         {
-                            pSamples[sampleOffset] = generator(frameIndex, channelIndex);
+                            pSamples[sampleIndex] = generator(frameIndex, channelIndex);
                         }
 
                     }
@@ -55,16 +55,17 @@ namespace AudioVisualizer.test
     {
         AudioFrame inputFrame;
         List<VisualizationDataFrame> outputFrames = new List<VisualizationDataFrame>();
+        uint inputFrameSize = 800;
 
         [TestInitialize]
         public void TestInit()
         {
-            inputFrame = new AudioFrame(4 * 800 * 2); // 800 floats, 2 channels
+            inputFrame = new AudioFrame(4 * inputFrameSize * 2); // 800 floats, 2 channels
             // Generate sine wave of amp 1 and period of 200 (f=0.25) samples into channel 0 and triangle with period 800 and amp 0.1 inopt channel 1
             inputFrame.Generate(2, 0,
                 (Int64 frameIndex, uint channelIndex) => 
                 {
-                    return channelIndex == 0 ? (float)Math.Sin(2.0 * Math.PI * frameIndex / 200.0) : (float)(frameIndex % 800) / 7990.0f;
+                    return channelIndex == 0 ? (float)Math.Sin(2.0 * Math.PI * frameIndex / 200.0) : (float)(frameIndex % inputFrameSize) / 7990.0f;
                 }
                 );
             inputFrame.RelativeTime = TimeSpan.FromSeconds(1);
@@ -85,7 +86,7 @@ namespace AudioVisualizer.test
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_IsCloseable()
         {
-            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
             using (sut)
             {
             }
@@ -96,7 +97,7 @@ namespace AudioVisualizer.test
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_AllAnalyzerTypesByDefault()
         {
-            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
             Assert.AreEqual(AnalyzerType.All, sut.AnalyzerTypes);
         }
 
@@ -104,29 +105,27 @@ namespace AudioVisualizer.test
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_SetOutput()
         {
-            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
             sut.Output += new Windows.Foundation.TypedEventHandler<AudioAnalyzer, VisualizationDataFrame>(
                 (analyzer,frame)=> { }
                 );
         }
         [TestMethod]
         [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_Configure_With_BufferSizeLTStepThrows()
+        public void AudioAnalyzer_Configure_With_BufferSizeLTOL_plus_StepThrows()
         {
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                var sut = new AudioAnalyzer(1599, 2, 48000, 800, 400, 2048, false);
+                var sut = new AudioAnalyzer(1200, 2, 48000, 800, 401, 2048, false);
             });
         }
         [TestMethod]
         [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_Configure_With_BufferSizeLTOverlapThrows()
+        public void AudioAnalyzer_Configure_With_BufferSizeEQOL_plus_StepOk()
         {
-            Assert.ThrowsException<ArgumentException>(() =>
-            {
-                var sut = new AudioAnalyzer(1600, 2, 48000, 800, 801, 2048, false);
-            });
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
         }
+
 
         [TestMethod]
         [TestCategory("AudioAnalyzer")]
@@ -134,7 +133,7 @@ namespace AudioVisualizer.test
         {
             Assert.ThrowsException<ArgumentException>(() => 
             {
-                var sut = new AudioAnalyzer(1600, 0, 48000, 800, 400, 2048, false);
+                var sut = new AudioAnalyzer(1200, 0, 48000, 800, 400, 2048, false);
             });
         }
         [TestMethod]
@@ -143,7 +142,7 @@ namespace AudioVisualizer.test
         {
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                var sut = new AudioAnalyzer(1600, 2, 0, 800, 0, 2048, false);
+                var sut = new AudioAnalyzer(1200, 2, 0, 800, 0, 2048, false);
             });
         }
         [TestMethod]
@@ -152,7 +151,7 @@ namespace AudioVisualizer.test
         {
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                var sut = new AudioAnalyzer(1600, 2, 48000, 0, 0, 2048, false);
+                var sut = new AudioAnalyzer(1200, 2, 48000, 0, 0, 2048, false);
             });
         }
 
@@ -162,7 +161,7 @@ namespace AudioVisualizer.test
         {
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2047, false);
+                var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2047, false);
             });
         }
 
@@ -170,7 +169,7 @@ namespace AudioVisualizer.test
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_Configure_SpectrumStepSet()
         {
-            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
             Assert.AreEqual(48000.0f / 2048.0f, sut.SpectrumStep);
         }
 
@@ -178,7 +177,7 @@ namespace AudioVisualizer.test
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_Configure_SpectrumElementCountSet()
         {
-            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
             Assert.AreEqual(1024u, sut.SpectrumElementCount);
         }
 
@@ -187,7 +186,7 @@ namespace AudioVisualizer.test
         public void AudioAnalyzer_Configure_SpectrumStepSetWithDownsample()
         {
             // As 2*(1600+800) > 3200 input will be downsampled by 2
-            var sut = new AudioAnalyzer(3200, 2, 96000, 1600, 800, 2048, false);
+            var sut = new AudioAnalyzer(2400, 2, 96000, 1600, 800, 2048, false);
             Assert.AreEqual(96000.0f / 2048.0f / 2.0f, sut.SpectrumStep);
         }
 
@@ -196,16 +195,17 @@ namespace AudioVisualizer.test
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_ProcessInput_GeneratesOneOutputFrame()
         {
-            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
             RegisterOutputHandler(sut);
             sut.ProcessInput(inputFrame);
             Assert.AreEqual(1,outputFrames.Count);
         }
+
         [TestMethod]
         [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_ProcessInput_SuspendStopsProcessing()
+        public void AudioAnalyzer_ProcessInput_SetIsSuspendedStopsSyncProcessing()
         {
-            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
             RegisterOutputHandler(sut);
             sut.IsSuspended = true;
             sut.ProcessInput(inputFrame);
@@ -213,7 +213,28 @@ namespace AudioVisualizer.test
         }
         [TestMethod]
         [TestCategory("AudioAnalyzer")]
-        public async Task AudioAnalyzer_ProcessInput_ResumeContinuesProcessing()
+        public void AudioAnalyzer_ProcessInput_SetIsSuspendedStopsAsyncProcessing()
+        {
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, true);
+            RegisterOutputHandler(sut);
+            sut.IsSuspended = true;
+            sut.ProcessInput(inputFrame);
+            Assert.AreEqual(0, outputFrames.Count);
+        }
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_ProcessInput_ResetIsSuspendedContinuesSyncProcessing()
+        {
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
+            RegisterOutputHandler(sut);
+            sut.IsSuspended = true;
+            sut.ProcessInput(inputFrame);
+            sut.IsSuspended = false;
+            Assert.AreEqual(1, outputFrames.Count);
+        }
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public async Task AudioAnalyzer_ProcessInput_ResetIsSuspendedContinuesAsyncProcessing()
         {
             var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, true);
             RegisterOutputHandler(sut);
@@ -249,7 +270,7 @@ namespace AudioVisualizer.test
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_ProcessInput_IsSecondOutputFrameTimeCorrect()
         {
-            var sut = new AudioAnalyzer(4800, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
             RegisterOutputHandler(sut);
             sut.ProcessInput(inputFrame);
             sut.ProcessInput(inputFrame);
@@ -259,7 +280,7 @@ namespace AudioVisualizer.test
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_ProcessInput_IsTimeCorrectAfterFlush()
         {
-            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
             RegisterOutputHandler(sut);
             inputFrame.RelativeTime = TimeSpan.FromSeconds(2);
             sut.Flush();
@@ -271,7 +292,7 @@ namespace AudioVisualizer.test
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_ProcessInput_IsTimeCorrectAfterFlushWithFrameTimeNotSet()
         {
-            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
             RegisterOutputHandler(sut);
             inputFrame.RelativeTime = null;
             sut.Flush();
@@ -311,7 +332,7 @@ namespace AudioVisualizer.test
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_ProcessInput_IsRmsCorrectForSine()
         {
-            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(2400, 2, 48000, 800, 400, 2048, false);
             RegisterOutputHandler(sut);
             sut.AnalyzerTypes = AnalyzerType.RMS;
             sut.ProcessInput(inputFrame);
@@ -321,7 +342,7 @@ namespace AudioVisualizer.test
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_ProcessInput_IsRmsCorrectForSawTooth()
         {
-            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(2400, 2, 48000, 800, 400, 2048, false);
             RegisterOutputHandler(sut);
             sut.AnalyzerTypes = AnalyzerType.RMS;
             sut.ProcessInput(inputFrame);
@@ -331,7 +352,7 @@ namespace AudioVisualizer.test
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_ProcessInput_AnalyzerTypeCleared_IsRmsNull()
         {
-            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(2400, 2, 48000, 800, 400, 2048, false);
             RegisterOutputHandler(sut);
             sut.AnalyzerTypes = AnalyzerType.None;
             sut.ProcessInput(inputFrame);
@@ -341,7 +362,7 @@ namespace AudioVisualizer.test
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_ProcessInput_IsPeakNotNull()
         {
-            var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
+            var sut = new AudioAnalyzer(2400, 2, 48000, 800, 400, 2048, false);
             RegisterOutputHandler(sut);
             sut.ProcessInput(inputFrame);
             Assert.IsNotNull(outputFrames.First().Peak);
@@ -472,6 +493,61 @@ namespace AudioVisualizer.test
             // Calculate the sum of energy in peak
             float peakSum = values.Skip(T - (sideWidth) - 1).Take(sideWidth * 2 + 1).Sum();
             Assert.IsTrue(peakSum > 0.9f);
+        }
+
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_Buffer_WrapOverEnd()
+        {
+            var sut = new AudioAnalyzer(2400, 2, 48000, 700, 0, 2048, false);
+            RegisterOutputHandler(sut);
+            sut.ProcessInput(inputFrame);
+            sut.ProcessInput(inputFrame);
+            Assert.AreEqual(2, outputFrames.Count);
+        }
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_Buffer_OverlapAreaIsClear()
+        {
+            var sut = new AudioAnalyzer(3200, 2, 48000, 800, 800, 2048, false);
+            RegisterOutputHandler(sut);
+            AudioFrame silence = new AudioFrame(4 * 2 * 800);
+            silence.Generate(2, 0, (frameIndex, channelIndex) => { return 0.0f; } );
+            sut.ProcessInput(silence);
+
+            Assert.AreEqual(0.0f,outputFrames.First().Spectrum[0].Sum());
+            Assert.AreEqual(0.0f, outputFrames.First().Spectrum[1].Sum());
+        }
+
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_Buffer_SequenceReadIsCorrect()
+        {
+            // Generate audio signal with steps after 600 frames, packaged in frame of length 800 frames.
+            // Output frames should contain exactly steps
+            var sut = new AudioAnalyzer(2400, 2, 48000, 600, 300, 2048, false);
+            RegisterOutputHandler(sut);
+            AudioFrame[] frames = new AudioFrame[3]
+            {
+                new AudioFrame(4 * 2 * 800),new AudioFrame(4 * 2 * 800),new AudioFrame(4 * 2 * 800)
+            };
+            frames[0].Generate(2, 0, (frameIndex, channelIndex) => { return frameIndex >= 600 ? 1.0f : 0.0f; });
+            frames[1].Generate(2, 800, (frameIndex, channelIndex) => { return frameIndex >= 1200 ? 2.0f : 1.0f; });
+            frames[2].Generate(2, 1600, (frameIndex, channelIndex) => { return frameIndex >= 1800 ? 3.0f : 2.0f; });
+
+            foreach (var frame in frames)
+            {
+                sut.ProcessInput(frame);
+            }
+
+            for (int outputFrameIndex = 0; outputFrameIndex < 4; outputFrameIndex++)
+            {
+                float expectedValue = (float)outputFrameIndex;
+                Assert.AreEqual(expectedValue, outputFrames[outputFrameIndex].Peak[0],"Channel 0");
+                Assert.AreEqual(expectedValue, outputFrames[outputFrameIndex].Peak[1],"Channel 1");
+            }
+
+
         }
     }
 

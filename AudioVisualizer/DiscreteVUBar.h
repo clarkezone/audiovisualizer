@@ -8,8 +8,18 @@ namespace winrt::AudioVisualizer::implementation
     struct DiscreteVUBar : DiscreteVUBarT<DiscreteVUBar, AudioVisualizer::implementation::VisualizerControl>
     {
 		virtual void OnDraw(Microsoft::Graphics::Canvas::CanvasDrawingSession drawingSession, VisualizationDataFrame dataFrame, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> presentationTime);
+		Windows::UI::Xaml::Controls::Orientation _orientation;
+		std::vector<MeterBarLevel> _levels;
+		UINT32 _channelIndex;
+		Windows::UI::Xaml::Thickness _elementMargin;
+		Windows::UI::Color _unlitElement;
+		float _minAmp;
+		float _maxAmp;
+		bool _displayPeak;
+		Windows::Foundation::Size _controlSize;
+
 	public:
-		DiscreteVUBar() = default;
+		DiscreteVUBar();
 
 		com_array<AudioVisualizer::MeterBarLevel> Levels();
 		void Levels(array_view<AudioVisualizer::MeterBarLevel const> value);
@@ -21,8 +31,6 @@ namespace winrt::AudioVisualizer::implementation
 		void RelativeElementMargin(Windows::UI::Xaml::Thickness const& value);
 		Windows::UI::Color UnlitElement();
 		void UnlitElement(Windows::UI::Color const& value);
-
-
     };
 }
 

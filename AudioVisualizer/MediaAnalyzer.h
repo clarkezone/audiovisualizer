@@ -25,10 +25,6 @@ namespace winrt::AudioVisualizer::implementation
 		UINT32 m_FramesPerSecond;
 		UINT32 m_nChannels;
 
-		bool m_bIsSuspended;			// Is analyzer in a suspended state
-		HANDLE _threadPoolSemaphore;	// Controls threadpool execution - schedule only one instance of execution
-		bool _bFlushPending;
-
 		const size_t cMaxOutputQueueSize = 600;	// Keep 10sec worth of data for 60fps output
 
 		AudioVisualizer::AudioAnalyzer _analyzer{ nullptr };
@@ -58,16 +54,8 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::Media::AudioFrame ConvertToAudioFrame(IMFSample *pSample);
 		void OnAnalyzerOutput(AudioVisualizer::AudioAnalyzer analyzer, AudioVisualizer::VisualizationDataFrame frame);
 
-		/*/
-		HRESULT Analyzer_SetMediaType(IMFMediaType *pType);
-		//HRESULT Analyzer_Initialize();
-		HRESULT Analyzer_ScheduleProcessing();
-		void Analyzer_ProcessData();*/
-		HRESULT Analyzer_Flush();
 		HRESULT Analyzer_CompactOutputQueue();
 		HRESULT Analyzer_ClearOutputQueue();
-		void Analyzer_Resume();
-		void Analyzer_Suspend();
 		AudioVisualizer::VisualizationDataFrame Analyzer_FFwdQueueTo(REFERENCE_TIME time);
 
 		inline long time_to_samples(REFERENCE_TIME time) const { return m_nChannels * (long)((time * m_FramesPerSecond + 5000000L) / 10000000L); }

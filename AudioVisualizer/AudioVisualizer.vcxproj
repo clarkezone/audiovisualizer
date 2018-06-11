@@ -94,8 +94,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AudioAnalyzer.h" />
-    <ClInclude Include="AudioAnalyzer2.h" />
-    <ClInclude Include="AudioBuffer.h" />
     <ClInclude Include="AudioMath.h" />
     <ClInclude Include="CreateResourcesEventArgs.h" />
     <ClInclude Include="CustomVisualizer.h" />
@@ -120,8 +118,6 @@
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotSet</EnableEnhancedInstructionSet>
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
     </ClCompile>
-    <ClCompile Include="AudioAnalyzer2.cpp" />
-    <ClCompile Include="AudioBuffer.cpp" />
     <ClCompile Include="AudioMath.cpp" />
     <ClCompile Include="CreateResourcesEventArgs.cpp" />
     <ClCompile Include="CustomVisualizer.cpp" />

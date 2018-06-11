@@ -2,9 +2,9 @@
 #include "Tracing.h"
 
 BOOL WINAPI DllMain(
-	HINSTANCE hinstDLL,  // handle to DLL module
+	HINSTANCE /*hinstDLL*/,  // handle to DLL module
 	DWORD fdwReason,     // reason for calling function
-	LPVOID lpReserved)  // reserved
+	LPVOID /*lpReserved*/)  // reserved
 {
 	// Perform actions based on the reason for calling.
 	switch (fdwReason)

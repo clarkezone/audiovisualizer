@@ -70,6 +70,8 @@ namespace AudioVisualizer
 				_readPointer - overlapSamples : 
 				_data.cbegin() + (_data.size() - (overlapSamples - readIndex));
 
+		auto sourceIndex = source - _data.cbegin();
+
 		// Iterate over all the output items
 		for (size_t frameIndex = 0; frameIndex < outputBufferStride; frameIndex++)
 		{

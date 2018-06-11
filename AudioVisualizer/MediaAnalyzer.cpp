@@ -22,8 +22,6 @@ namespace winrt::AudioVisualizer::implementation
 	MediaAnalyzer::MediaAnalyzer() :
 		m_FramesPerSecond(0),
 		m_nChannels(0),
-		_bFlushPending(false),
-		_threadPoolSemaphore(NULL),
 		m_StepFrameCount(0),
 		m_StepFrameOverlap(0),
 		m_StepTotalFrames(0),
@@ -31,7 +29,6 @@ namespace winrt::AudioVisualizer::implementation
 		m_FftLengthLog2(11),
 		m_fOutputFps(60.0f),
 		_fInputOverlap(0.5f),
-		m_bIsSuspended(false),
 		_playbackState(SourcePlaybackState::Stopped),
 		_analyzerTypes(AnalyzerType::All)
 	{
@@ -40,10 +37,6 @@ namespace winrt::AudioVisualizer::implementation
 		HRESULT hr = MFCreateAttributes(m_spMftAttributes.put(), 4);
 		if (FAILED(hr))
 			throw_hresult(hr);
-
-		_threadPoolSemaphore = CreateSemaphore(nullptr, 1, 1, nullptr);
-		if (_threadPoolSemaphore == NULL)
-			throw hresult_error(E_FAIL);
 
 		MULTI_QI qiFactory[1] = { { &__uuidof(IAudioFrameNativeFactory),nullptr,S_OK } };
 		hr = CoCreateInstanceFromApp(CLSID_AudioFrameNativeFactory, nullptr, CLSCTX_INPROC_SERVER, nullptr, 1, qiFactory);
@@ -59,7 +52,6 @@ namespace winrt::AudioVisualizer::implementation
 		{
 			m_spPresentationClock->RemoveClockStateSink(this);
 		}
-		CloseHandle(_threadPoolSemaphore);
 	}
 
 
@@ -96,17 +88,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	bool MediaAnalyzer::IsSuspended()
 	{
-		return m_bIsSuspended;
+		return _analyzer ? _analyzer.IsSuspended() : false;
 	}
 
 	void MediaAnalyzer::IsSuspended(bool value)
 	{
-		if (m_bIsSuspended != value)
-		{
-			if (value)
-				Analyzer_Suspend();
-			else
-				Analyzer_Resume();
+		if (_analyzer) {
+			_analyzer.IsSuspended(value);
 		}
 	}
 
@@ -688,7 +676,8 @@ namespace winrt::AudioVisualizer::implementation
 		case MFT_MESSAGE_COMMAND_FLUSH:
 			// Flush the MFT. Flush might happen at the end of stream - keep the existing samples and
 			// Flush the MFT at STREAM_STARTING instead
-			Analyzer_Flush();
+			_analyzer.Flush();
+			m_spSample = nullptr;
 			break;
 
 		case MFT_MESSAGE_COMMAND_DRAIN:
@@ -794,8 +783,6 @@ namespace winrt::AudioVisualizer::implementation
 			return MF_E_TRANSFORM_NEED_MORE_INPUT;
 		}
 
-		_bFlushPending = false;	// Reset pending flush after first fresh frame
-
 		auto audioFrame = ConvertToAudioFrame(m_spSample.get());
 		_analyzer.ProcessInput(audioFrame);
 		m_spSample = nullptr;
@@ -834,7 +821,7 @@ namespace winrt::AudioVisualizer::implementation
 		UINT32 sampleRate = 0;
 		m_spInputType->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, &sampleRate);
 		size_t stepFrameCount = (size_t)(sampleRate / m_fOutputFps);
-		size_t overlapFrames = _fInputOverlap * stepFrameCount;
+		size_t overlapFrames = (size_t) (_fInputOverlap * stepFrameCount);
 		UINT32 channelCount = 0;
 		m_spInputType->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &channelCount);
 		if (_analyzer) {
@@ -849,20 +836,6 @@ namespace winrt::AudioVisualizer::implementation
 
 	void MediaAnalyzer::OnAnalyzerOutput(AudioVisualizer::AudioAnalyzer analyzer, AudioVisualizer::VisualizationDataFrame dataFrame)
 	{
-	}
-
-
-
-
-	HRESULT MediaAnalyzer::Analyzer_Flush()
-	{
-		// Dissallow processing and discard any output until new samples 
-		_bFlushPending = true;
-		// Release input sample and reset the analyzer and queues
-		// Clean up any state from buffer copying
-		_analyzer.Flush();
-		m_spSample = nullptr;
-		return S_OK;
 	}
 
 	HRESULT MediaAnalyzer::Analyzer_CompactOutputQueue()
@@ -884,18 +857,6 @@ namespace winrt::AudioVisualizer::implementation
 			m_AnalyzerOutput.pop();
 		}
 		return S_OK;
-	}
-
-	void MediaAnalyzer::Analyzer_Resume()
-	{
-		m_bIsSuspended = false;
-		_analyzer.IsSuspended(false);
-	}
-
-	void MediaAnalyzer::Analyzer_Suspend()
-	{
-		m_bIsSuspended = true;
-		_analyzer.IsSuspended(true);
 	}
 
 	AudioVisualizer::VisualizationDataFrame MediaAnalyzer::Analyzer_FFwdQueueTo(REFERENCE_TIME position)

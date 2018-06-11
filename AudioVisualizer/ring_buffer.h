@@ -33,7 +33,7 @@ namespace AudioVisualizer
 			_downsampleCounter(0),
 			readPositionFrameIndex(0)
 		{
-			_data.resize(buffer_size + frameSize);	// Allocate buffer + one frame		
+			_data.resize(frameSize *  (buffer_size + 1));	// Allocate buffer + one frame		
 			flush();
 		}
 
@@ -44,7 +44,9 @@ namespace AudioVisualizer
 
 		size_t samples_in_buffer() const // Returns available data length in buffer in frames
 		{
-			return _readPointer <= _writePointer ? (size_t)(_writePointer - _readPointer) : _writePointer + _data.size() - _readPointer;
+			return _readPointer <= _writePointer ? 
+				(size_t)(_writePointer - _readPointer) : 
+				_data.size() - (_readPointer - _writePointer);
 		}
 
 		void flush()	// Sets buffer length to 0
@@ -52,7 +54,7 @@ namespace AudioVisualizer
 			_readPointer = _data.cbegin();
 			_writePointer = _data.begin();
 			// To avoid long fills with big buffers only fill the overlap area preciding the read&write pointers
-			std::fill(_data.end() - (_overlapFrames * _frameSize), _data.end(),0);
+			std::fill(_data.end() - (_overlapFrames * _frameSize), _data.end(),0.0f);
 		}
 
 		size_t downsampleRate() const { return _downsampleRate; }
