@@ -8,6 +8,7 @@
 #include "SpectrumData.h"
 #include "VisualizationDataFrame.h"
 #include "util.h"
+#include "tracing.h"
 
 using namespace DirectX;
 using namespace XDSP;
@@ -134,6 +135,7 @@ namespace winrt::AudioVisualizer::implementation
 		if (!frame) {
 			throw hresult_invalid_argument();
 		}
+		Trace::AudioAnalyzer_ProcessInput(frame);
 		AddInput(frame);
 		StartProcessing();
 	}
@@ -186,6 +188,7 @@ namespace winrt::AudioVisualizer::implementation
 		DWORD dwWaitResult = WaitForSingleObject(_threadPoolSemaphore, 0);
 		if (dwWaitResult == WAIT_OBJECT_0)
 		{
+			Trace::AudioAnalyzer_RunAsync();
 			// Execute data processing on threadpool
 			Windows::System::Threading::ThreadPool::RunAsync(
 				Windows::System::Threading::WorkItemHandler(
@@ -209,6 +212,7 @@ namespace winrt::AudioVisualizer::implementation
 		// Process data until not suspended, not in a reset and output is available
 		while (!_bIsSuspended && !_bIsFlushPending)
 		{
+			auto activity = Trace::AudioAnalyzer_Calculate();
 			com_ptr<implementation::ScalarData> rms = nullptr;
 			com_ptr<implementation::ScalarData> peak = nullptr;
 			com_ptr<implementation::SpectrumData> spectrum = nullptr;
@@ -261,6 +265,7 @@ namespace winrt::AudioVisualizer::implementation
 				spectrum ? spectrum.as<AudioVisualizer::SpectrumData>() : nullptr
 				);
 
+			activity.StopActivity(activity.Name);
 			// Only push the result if reset is not pending
 			if (!_bIsFlushPending)
 			{

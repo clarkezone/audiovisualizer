@@ -188,6 +188,66 @@ void Trace::MediaAnalyzer_GetFrame(winrt::Windows::Foundation::IReference<winrt:
 	g_LogChannel.LogEvent(L"MediaAnalyzer_GetFrame", fields);
 }
 
+void Trace::MediaAnalyzer_OutputQueueAdd(VisualizationDataFrame const & frame, VisualizationDataFrame const & front, VisualizationDataFrame const & back, size_t queueSize)
+{
+	auto fields = LoggingFields();
+	if (frame) {
+		fields.AddTimeSpan(L"Frame", frame.Time());
+	}
+	else {
+		fields.AddEmpty(L"Frame");
+	}
+	if (front) {
+		fields.AddTimeSpan(L"Front", front.Time());
+	}
+	else {
+		fields.AddEmpty(L"Front");
+	}
+	if (back) {
+		fields.AddTimeSpan(L"Back", back.Time());
+	}
+	else {
+		fields.AddEmpty(L"Back");
+	}
+	fields.AddUInt32(L"QueueSize", queueSize);
+	g_LogChannel.LogEvent(L"MediaAnalyzer_OutputQueueAdd", fields);	
+}
+
+void Trace::MediaAnalyzer_OutputQueueRemove(VisualizationDataFrame const & frame, size_t queueSize)
+{
+	auto fields = LoggingFields();
+	if (frame) {
+		fields.AddTimeSpan(L"Frame", frame.Time());
+	}
+	else {
+		fields.AddEmpty(L"Frame");
+	}
+	fields.AddUInt32(L"QueueSize", queueSize);
+	g_LogChannel.LogEvent(L"MediaAnalyzer_OutputQueueRemove", fields);
+}
+
+void Trace::AudioAnalyzer_ProcessInput(winrt::Windows::Media::AudioFrame const & frame)
+{
+	auto fields = LoggingFields();
+	if (frame && frame.RelativeTime()) {
+		fields.AddTimeSpan(L"Time", frame.RelativeTime().Value());
+	}
+	if (frame && frame.Duration()) {
+		fields.AddTimeSpan(L"Duration", frame.Duration().Value());
+	}
+	g_LogChannel.LogEvent(L"AudioAnalyzer_ProcessInput", fields);
+}
+
+void Trace::AudioAnalyzer_RunAsync()
+{
+	g_LogChannel.LogEvent(L"AudioAnalyzer_RunAsync");
+}
+
+LoggingActivity Trace::AudioAnalyzer_Calculate()
+{
+	return g_LogChannel.StartActivity(L"AudioAnalyzer_Calculate");
+}
+
 void Trace::AddSampleFields(IMFSample * pSample, winrt::Windows::Foundation::Diagnostics::LoggingFields &fields)
 {
 	LONGLONG sampleTime = 0;

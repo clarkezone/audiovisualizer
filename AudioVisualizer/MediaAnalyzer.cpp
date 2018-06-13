@@ -24,7 +24,7 @@ namespace winrt::AudioVisualizer::implementation
 	void MediaAnalyzer::dataframe_queue::add(AudioVisualizer::VisualizationDataFrame const &frame)
 	{
 		std::lock_guard<std::mutex> lock(_outputQueueAccessMutex);
-		// Trace::MediaAnalyzer_AddOutputQueue( !_data.empty() ? _data.front() : nullptr, !_data.empty() ? _data.back(): nullptr, _data.size());
+		Trace::MediaAnalyzer_OutputQueueAdd(frame,!_data.empty() ? _data.front() : nullptr, !_data.empty() ? _data.back(): nullptr, _data.size());
 		_data.push(frame);
 		compact();
 	}
@@ -32,6 +32,7 @@ namespace winrt::AudioVisualizer::implementation
 	void MediaAnalyzer::dataframe_queue::compact()
 	{
 		while (_data.size() > _maxQueueSize) {
+			Trace::MediaAnalyzer_OutputQueueRemove(_data.front(),_data.size());
 			_data.pop();
 		}
 	}
@@ -69,6 +70,7 @@ namespace winrt::AudioVisualizer::implementation
 					return nullptr;
 			}
 			// Current position is after the item in the queue - remove and continue searching
+			Trace::MediaAnalyzer_OutputQueueRemove(_data.front(), _data.size());
 			_data.pop();
 		}
 		return nullptr;

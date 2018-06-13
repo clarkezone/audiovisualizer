@@ -3,6 +3,7 @@
 #include "VisualizationDataFrame.h"
 
 using namespace winrt::Windows::Foundation::Diagnostics;
+using namespace winrt::AudioVisualizer;
 
 class Trace
 {
@@ -27,8 +28,14 @@ public:
 	static void MediaAnalyzer_ProcessMessage(MFT_MESSAGE_TYPE message);
 	static void MediaAnalyzer_ProcessInput(IMFSample *pSample);
 	static void MediaAnalyzer_ProcessOutput();
-	static void MediaAnalyzer_AnalyzerOutput(winrt::AudioVisualizer::VisualizationDataFrame frame);
+	static void MediaAnalyzer_AnalyzerOutput(VisualizationDataFrame frame);
 	static void MediaAnalyzer_GetFrame(winrt::Windows::Foundation::IReference<winrt::Windows::Foundation::TimeSpan> time, winrt::AudioVisualizer::VisualizationDataFrame const &frame);
+	static void MediaAnalyzer_OutputQueueAdd(VisualizationDataFrame const &frame, VisualizationDataFrame const &front, VisualizationDataFrame const &back, size_t queueSize);
+	static void MediaAnalyzer_OutputQueueRemove(VisualizationDataFrame const &frame, size_t queueSize);
+
+	static void AudioAnalyzer_ProcessInput(winrt::Windows::Media::AudioFrame const &frame);
+	static void AudioAnalyzer_RunAsync();
+	static LoggingActivity AudioAnalyzer_Calculate();
 
 	static void VisualizeControl_RecreateDevice(winrt::hresult_error const& err);
 	static void VisualizeControl_DrawLoopException(winrt::hresult_error const &err);
