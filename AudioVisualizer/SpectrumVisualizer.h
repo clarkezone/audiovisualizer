@@ -9,13 +9,21 @@ namespace winrt::AudioVisualizer::implementation
 {
     struct SpectrumVisualizer : SpectrumVisualizerT<SpectrumVisualizer, AudioVisualizer::implementation::VisualizerControl>
     {
+		virtual void OnDraw(Microsoft::Graphics::Canvas::CanvasDrawingSession drawingSession, VisualizationDataFrame dataFrame, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> presentationTime);
 		Windows::UI::Color _unlitElement;
-		std::vector<AudioVisualizer::MeterBarLevel> _levels;
 		Windows::UI::Xaml::Controls::Orientation _orientation;
 		uint32_t _channelIndex;
 		Windows::UI::Xaml::Thickness _relativeElementMargin;
+		std::vector<MeterBarLevel> _levels;
+		float _minAmp;
+		float _maxAmp;
+		bool _displayPeak;
+		std::mutex _lock;
+		SpectrumVisualizationStyle _style;
 	public:
         SpectrumVisualizer();
+		AudioVisualizer::SpectrumVisualizationStyle SpectrumStyle();
+		void SpectrumStyle(AudioVisualizer::SpectrumVisualizationStyle const& value);
 		com_array<AudioVisualizer::MeterBarLevel> Levels();
 		void Levels(array_view<AudioVisualizer::MeterBarLevel const> value);
 		Windows::UI::Xaml::Controls::Orientation Orientation();

@@ -241,10 +241,6 @@ namespace winrt::AudioVisualizer::implementation
 		if (frequencyScale == ScaleType::Logarithmic && minFrequency <= 0)
 				throw hresult_invalid_argument();
 
-		float fStep = frequencyScale == ScaleType::Linear ?
-			(maxFrequency - minFrequency) / cElements :
-			powf(maxFrequency / minFrequency, 1.0f / cElements);
-
 		return make<SpectrumData>(cChannels, cElements, amplitudeScale, frequencyScale, minFrequency, maxFrequency, true);
     }
 

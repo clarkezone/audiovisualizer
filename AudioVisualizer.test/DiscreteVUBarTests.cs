@@ -21,14 +21,14 @@ namespace AudioVisualizer.test
 
         [UITestMethod]
         [TestCategory("DiscreteVUBar")]
-        public void VisualizerControl_DefaultSourceIsNull()
+        public void DiscreteVUBar_DefaultSourceIsNull()
         {
             Assert.IsNull(sut.Source);
         }
 
         [UITestMethod]
         [TestCategory("DiscreteVUBar")]
-        public void VisualizerControl_CanSetSource()
+        public void DiscreteVUBar_CanSetSource()
         {
             FakeVisualizationSource source = new FakeVisualizationSource();
             sut.Source = source;
@@ -37,13 +37,13 @@ namespace AudioVisualizer.test
 
         [UITestMethod]
         [TestCategory("DiscreteVUBar")]
-        public void VisualizerControl_DefaultBackgroundIsTransparent()
+        public void DiscreteVUBar_DefaultBackgroundIsTransparent()
         {
             Assert.AreEqual(Windows.UI.Colors.Transparent, sut.BackgroundColor);
         }
         [UITestMethod]
         [TestCategory("DiscreteVUBar")]
-        public void VisualizerControl_CanSetBackground()
+        public void DiscreteVUBar_CanSetBackground()
         {
             sut.BackgroundColor = Windows.UI.Colors.White;
             Assert.AreEqual(Windows.UI.Colors.White, sut.BackgroundColor);

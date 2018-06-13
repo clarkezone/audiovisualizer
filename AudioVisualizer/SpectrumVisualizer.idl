@@ -1,5 +1,6 @@
 import "VisualizerControl.idl";
 import "BarVisualizer.idl";
+import "EnumTypes.idl";
 
 namespace AudioVisualizer
 {
@@ -7,5 +8,6 @@ namespace AudioVisualizer
 	runtimeclass SpectrumVisualizer : VisualizerControl, IBarVisualizer
 	{
 		SpectrumVisualizer();
+		SpectrumVisualizationStyle SpectrumStyle;
 	}
 }

@@ -12,7 +12,7 @@ BOOL WINAPI DllMain(
 	case DLL_PROCESS_ATTACH:
 		// Initialize once for each new process.
 		// Return FALSE to fail DLL load.
-		AudioVisualizer::Diagnostics::Initialize();
+		Trace::Initialize();
 		break;
 
 	case DLL_THREAD_ATTACH:
@@ -25,7 +25,7 @@ BOOL WINAPI DllMain(
 
 	case DLL_PROCESS_DETACH:
 		// Perform any necessary cleanup.
-		AudioVisualizer::Diagnostics::ShutDown();
+		Trace::ShutDown();
 		break;
 	}
 	return TRUE;  // Successful DLL_PROCESS_ATTACH.

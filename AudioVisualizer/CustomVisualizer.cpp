@@ -22,4 +22,16 @@ namespace winrt::AudioVisualizer::implementation
     {
 		_createResourcesEvent.remove(token);
     }
+
+	void CustomVisualizer::OnDraw(Microsoft::Graphics::Canvas::CanvasDrawingSession drawingSession, VisualizationDataFrame dataFrame, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> presentationTime)
+	{
+		auto args = make<VisualizerDrawEventArgs>(dataFrame, drawingSession, _swapChainSize, presentationTime);
+		_drawEvent(*this, args);
+	}
+	void CustomVisualizer::OnCreateResources(Microsoft::Graphics::Canvas::ICanvasResourceCreator resourceCreator, CreateResourcesReason reason)
+	{
+		auto args = make<CreateResourcesEventArgs>(reason,resourceCreator);
+		_createResourcesEvent(*this, args);
+	}
+
 }

@@ -265,9 +265,7 @@ namespace winrt::AudioVisualizer::implementation
 
 		if (value) {
 			float newValue = value.GetSingle();
-			ScaleType fScale = _frequencyScale ? (ScaleType)_frequencyScale.GetInt32() : ScaleType::Linear;
 			float minFrequency = _minFrequency ? _minFrequency.GetSingle() : 0.0f;
-
 			if (newValue <= minFrequency)
 			{
 				throw hresult_invalid_argument();

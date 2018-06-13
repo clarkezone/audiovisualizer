@@ -17,23 +17,75 @@
 
 namespace winrt::AudioVisualizer::implementation
 {
+
 	const size_t RingBufferSize = 960000;	// 10 sec worth of stereo audio at 48k
+
+
+	void MediaAnalyzer::dataframe_queue::add(AudioVisualizer::VisualizationDataFrame const &frame)
+	{
+		std::lock_guard<std::mutex> lock(_outputQueueAccessMutex);
+		// Trace::MediaAnalyzer_AddOutputQueue( !_data.empty() ? _data.front() : nullptr, !_data.empty() ? _data.back(): nullptr, _data.size());
+		_data.push(frame);
+		compact();
+	}
+
+	void MediaAnalyzer::dataframe_queue::compact()
+	{
+		while (_data.size() > _maxQueueSize) {
+			_data.pop();
+		}
+	}
+
+	void MediaAnalyzer::dataframe_queue::clear()
+	{
+		std::lock_guard<std::mutex> lock(_outputQueueAccessMutex);
+		while (!_data.empty()) {
+			_data.pop();
+		}
+	}
+
+	AudioVisualizer::VisualizationDataFrame  MediaAnalyzer::dataframe_queue::get(Windows::Foundation::TimeSpan time)
+	{
+		std::lock_guard<std::mutex> lock(_outputQueueAccessMutex);
+		if (time.count() < 0)
+			return nullptr;
+
+		while (!_data.empty())
+		{
+			auto frontItem = winrt::from_abi<VisualizationDataFrame>(_data.front());
+			if (frontItem->IsBefore(time))
+			{
+				return nullptr; // Current position is before the frames in visualization queue - wait until we catch up
+			}
+
+			if (!frontItem->IsAfter(time))	// If frame is not after current position there is a match
+			{
+				return _data.front();	// Return front item
+			}
+			else
+			{
+				// Cleanup queue
+				if (time.count() == 0)	// Do not use position 0 to manage queue elements as position can be set to 0 for a long time after stream starts
+					return nullptr;
+			}
+			// Current position is after the item in the queue - remove and continue searching
+			_data.pop();
+		}
+		return nullptr;
+	}
+
 
 	MediaAnalyzer::MediaAnalyzer() :
 		m_FramesPerSecond(0),
 		m_nChannels(0),
-		m_StepFrameCount(0),
-		m_StepFrameOverlap(0),
-		m_StepTotalFrames(0),
 		_fftLength(2048),
-		m_FftLengthLog2(11),
-		m_fOutputFps(60.0f),
+		_fOutputFps(60.0f),
 		_fInputOverlap(0.5f),
 		_playbackState(SourcePlaybackState::Stopped),
-		_analyzerTypes(AnalyzerType::All)
+		_analyzerTypes(AnalyzerType::All),
+		_analyzerOutput(cMaxOutputQueueSize),
+		_lifetimeTracker(Trace::Constructor(L"MediaAnalyzer", this))
 	{
-		::AudioVisualizer::Diagnostics::Trace_ctor(L"MediaAnalyzer");
-		
 		HRESULT hr = MFCreateAttributes(m_spMftAttributes.put(), 4);
 		if (FAILED(hr))
 			throw_hresult(hr);
@@ -76,13 +128,14 @@ namespace winrt::AudioVisualizer::implementation
 
 	AudioVisualizer::VisualizationDataFrame MediaAnalyzer::GetData()
 	{
-		MFTIME currentPosition = GetPresentationTime();
-
-		if (currentPosition != -1)	// If no presentation position then return nullptr
+		auto currentPosition = PresentationTime();
+		if (currentPosition)
 		{
-			std::lock_guard lock(_outputQueueAccessMutex);
-			return Analyzer_FFwdQueueTo(currentPosition);
+			auto frame = _analyzerOutput.get(currentPosition.Value());
+			Trace::MediaAnalyzer_GetFrame(currentPosition, frame);
+			return frame;
 		}
+		Trace::MediaAnalyzer_GetFrame(currentPosition, nullptr);
 		return nullptr;
 	}
 
@@ -100,7 +153,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	float MediaAnalyzer::Fps()
 	{
-		return m_fOutputFps;
+		return _fOutputFps;
 	}
 
 	void MediaAnalyzer::Fps(float)
@@ -113,53 +166,66 @@ namespace winrt::AudioVisualizer::implementation
 		return _analyzerTypes;
 	}
 
-	void MediaAnalyzer::AnalyzerTypes(AudioVisualizer::AnalyzerType const&)
+	void MediaAnalyzer::AnalyzerTypes(AudioVisualizer::AnalyzerType const& value)
 	{
-		throw hresult_not_implemented();
+		_analyzerTypes = value;
+		if (_analyzer) {
+			_analyzer.AnalyzerTypes(_analyzerTypes);
+		}
 	}
 
 	Windows::Foundation::IReference<Windows::Foundation::TimeSpan> MediaAnalyzer::PresentationTime()
 	{
-		REFERENCE_TIME time = GetPresentationTime();
-		if (time != -1)
+		if (m_spPresentationClock != nullptr)
 		{
-			auto ts = winrt::Windows::Foundation::TimeSpan(time);
-			return ts;
+			MFTIME presentationTime = 0;
+			if (SUCCEEDED(m_spPresentationClock->GetTime(&presentationTime)))
+			{
+				return Windows::Foundation::TimeSpan(presentationTime);
+			}
 		}
-		else
-		{
-			return nullptr;
-		}
+		return nullptr;
 	}
 
 	AudioVisualizer::SourcePlaybackState MediaAnalyzer::PlaybackState()
 	{
-		throw hresult_not_implemented();
+		return _playbackState;
 	}
 
 	Windows::Foundation::IReference<uint32_t> MediaAnalyzer::ActualFrequencyCount()
 	{
-		throw hresult_not_implemented();
+		if (_analyzer) {
+			return _analyzer.SpectrumElementCount();
+		}
+		return nullptr;
 	}
 
 	Windows::Foundation::IReference<uint32_t> MediaAnalyzer::ActualChannelCount()
 	{
-		throw hresult_not_implemented();
+		if (m_spInputType) {
+			UINT32 channels = 0;
+			m_spInputType->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &channels);
+			return channels;
+		}
+		return nullptr;
 	}
 
 	Windows::Foundation::IReference<float> MediaAnalyzer::ActualMinFrequency()
 	{
-		throw hresult_not_implemented();
+		return 0.0f;
 	}
 
 	Windows::Foundation::IReference<float> MediaAnalyzer::ActualMaxFrequency()
 	{
-		throw hresult_not_implemented();
+		if (_analyzer) {
+			return _analyzer.SpectrumStep() * _analyzer.SpectrumElementCount();
+		}
+		return nullptr;
 	}
 
 	Windows::Foundation::IReference<AudioVisualizer::ScaleType> MediaAnalyzer::ActualFrequencyScale()
 	{
-		throw hresult_not_implemented();
+		return ScaleType::Linear;
 	}
 
 	event_token MediaAnalyzer::ConfigurationChanged(winrt::Windows::Foundation::TypedEventHandler<IVisualizationSource,hstring> const& handler)
@@ -444,6 +510,7 @@ namespace winrt::AudioVisualizer::implementation
 	//-------------------------------------------------------------------
 	STDMETHODIMP MediaAnalyzer::SetInputType(DWORD dwInputStreamID, IMFMediaType * pType, DWORD dwFlags)
 	{
+		Trace::MediaAnalyzer_SetInputType(pType, dwFlags != 0);
 		// Validate flags.
 		if (dwInputStreamID != 0)
 		{
@@ -495,6 +562,7 @@ namespace winrt::AudioVisualizer::implementation
 	//-------------------------------------------------------------------
 	STDMETHODIMP MediaAnalyzer::SetOutputType(DWORD dwOutputStreamID, IMFMediaType * pType, DWORD dwFlags)
 	{
+		Trace::MediaAnalyzer_SetOutputType(pType, dwFlags != 0);
 		// Validate parameters
 		if (dwOutputStreamID != 0)
 			return MF_E_INVALIDSTREAMNUMBER;
@@ -669,6 +737,7 @@ namespace winrt::AudioVisualizer::implementation
 
 		HRESULT hr = S_OK;
 
+		Trace::MediaAnalyzer_ProcessMessage(eMessage);
 		//Diagnostics::Trace::Log_MftProcessMessage(eMessage, ulParam);
 
 		switch (eMessage)
@@ -714,7 +783,7 @@ namespace winrt::AudioVisualizer::implementation
 			break;
 
 		case MFT_MESSAGE_NOTIFY_START_OF_STREAM:
-			hr = Analyzer_ClearOutputQueue();	// New streaming starts, clean output
+			_analyzerOutput.clear();	// New streaming starts, clean output
 			break;
 		}
 
@@ -723,6 +792,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	HRESULT MediaAnalyzer::ProcessInput(DWORD dwInputStreamID, IMFSample * pSample, DWORD dwFlags)
 	{
+		Trace::MediaAnalyzer_ProcessInput(pSample);
 		// Check input parameters.
 		if (pSample == NULL)
 		{
@@ -760,6 +830,7 @@ namespace winrt::AudioVisualizer::implementation
 	}
 	HRESULT MediaAnalyzer::ProcessOutput(DWORD dwFlags, DWORD cOutputBufferCount, MFT_OUTPUT_DATA_BUFFER * pOutputSamples, DWORD * pdwStatus)
 	{
+		Trace::MediaAnalyzer_ProcessOutput();
 		if (dwFlags != 0)
 		{
 			return E_INVALIDARG;
@@ -785,11 +856,13 @@ namespace winrt::AudioVisualizer::implementation
 
 		auto audioFrame = ConvertToAudioFrame(m_spSample.get());
 		_analyzer.ProcessInput(audioFrame);
-		m_spSample = nullptr;
 
 		// Set status flags.
 		pOutputSamples[0].dwStatus = 0;
+		pOutputSamples[0].pSample = m_spSample.detach();
 		*pdwStatus = 0;
+
+		m_spSample = nullptr;
 
 		return hr;
 	}
@@ -820,85 +893,23 @@ namespace winrt::AudioVisualizer::implementation
 	{
 		UINT32 sampleRate = 0;
 		m_spInputType->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, &sampleRate);
-		size_t stepFrameCount = (size_t)(sampleRate / m_fOutputFps);
+		size_t stepFrameCount = (size_t)(sampleRate / _fOutputFps);
 		size_t overlapFrames = (size_t) (_fInputOverlap * stepFrameCount);
 		UINT32 channelCount = 0;
 		m_spInputType->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &channelCount);
 		if (_analyzer) {
-			_analyzer.Output(_analyzerOutput);
+			_analyzer.Output(_analyzerOutputEvent);
 		}
 		_analyzer = make<AudioAnalyzer>(RingBufferSize, channelCount, sampleRate, stepFrameCount, overlapFrames, _fftLength, true);
 		_analyzer.AnalyzerTypes(_analyzerTypes);
-		_analyzerOutput = _analyzer.Output(
+		_analyzerOutputEvent = _analyzer.Output(
 			Windows::Foundation::TypedEventHandler<AudioVisualizer::AudioAnalyzer, AudioVisualizer::VisualizationDataFrame>(this, &MediaAnalyzer::OnAnalyzerOutput)
 		);
 	}
 
 	void MediaAnalyzer::OnAnalyzerOutput(AudioVisualizer::AudioAnalyzer analyzer, AudioVisualizer::VisualizationDataFrame dataFrame)
 	{
-	}
-
-	HRESULT MediaAnalyzer::Analyzer_CompactOutputQueue()
-	{
-		Analyzer_FFwdQueueTo(GetPresentationTime());
-		// Now manage queue size - remove items until the size is below limit
-		while (m_AnalyzerOutput.size() > cMaxOutputQueueSize)
-		{
-			m_AnalyzerOutput.pop();	// TODO: Make sure release is called here
-		}
-		return S_OK;
-	}
-
-	HRESULT MediaAnalyzer::Analyzer_ClearOutputQueue()
-	{
-		std::lock_guard lock(_outputQueueAccessMutex);
-		while (!m_AnalyzerOutput.empty())
-		{
-			m_AnalyzerOutput.pop();
-		}
-		return S_OK;
-	}
-
-	AudioVisualizer::VisualizationDataFrame MediaAnalyzer::Analyzer_FFwdQueueTo(REFERENCE_TIME position)
-	{
-		if (position < 0)
-			return nullptr;
-
-		while (!m_AnalyzerOutput.empty())
-		{
-			if (m_AnalyzerOutput.front()->IsBefore(position))
-			{
-				return nullptr; // Current position is before the frames in visualization queue - wait until we catch up
-			}
-
-			// Add 5uS (about half sample time @96k) to avoid int time math rounding errors
-			if (!m_AnalyzerOutput.front()->IsAfter(position))	// If frame is not after current position there is a match
-			{
-				auto frame = m_AnalyzerOutput.front();
-				return frame.as<AudioVisualizer::VisualizationDataFrame>();
-			}
-			else
-			{
-				// Cleanup queue
-				if (position == 0)	// Do not use position 0 to manage queue elements as position can be set to 0 for a long time after stream starts
-					return nullptr;
-			}
-			// Current position is after the item in the queue - remove and continue searching
-			m_AnalyzerOutput.pop();
-		}
-		return nullptr;
-	}
-
-
-
-	REFERENCE_TIME MediaAnalyzer::GetPresentationTime()
-	{
-		MFTIME presentationTime = -1;
-		HRESULT hr = S_OK;
-		if (m_spPresentationClock != nullptr)
-		{
-			hr = m_spPresentationClock->GetTime(&presentationTime);
-		}
-		return presentationTime;
+		Trace::MediaAnalyzer_AnalyzerOutput(dataFrame);
+		_analyzerOutput.add(dataFrame);
 	}
 }

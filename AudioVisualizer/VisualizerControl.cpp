@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "VisualizerControl.h"
+#include "Tracing.h"
 #include <winrt/Windows.UI.Xaml.Hosting.h>
 #include <winrt/Windows.UI.Composition.h>
 #include <winrt/Microsoft.Graphics.Canvas.h>
@@ -114,16 +115,17 @@ namespace winrt::AudioVisualizer::implementation
 			if (true)	// Scope for the lock below
 			{
 				std::lock_guard<std::mutex> _lock(_swapChainLock);
-				if (_swapChain != nullptr && _bDrawEventActive)
+ 				if (_swapChain != nullptr && _bDrawEventActive)
 				{
 					try {
 						auto drawingSession = _swapChain.CreateDrawingSession(_drawingSessionClearColor);
-						VisualizationDataFrame dataFrame{ nullptr };
+						AudioVisualizer::VisualizationDataFrame dataFrame{ nullptr };
 						Windows::Foundation::IReference<Windows::Foundation::TimeSpan> presentationTime;
 						if (_visualizationSource) {
 							dataFrame = _visualizationSource.GetData();
 							presentationTime = _visualizationSource.PresentationTime();
 						}
+						auto activity = Trace::VisualizeControl_StartDraw(dataFrame, presentationTime);
 						OnDraw(drawingSession, dataFrame, presentationTime);
 						drawingSession.Close();
 						_swapChain.Present();
@@ -139,11 +141,13 @@ namespace winrt::AudioVisualizer::implementation
 							err.code() == DXGI_ERROR_INVALID_CALL ||
 							err.code() == D2DERR_RECREATE_TARGET)
 						{
+							Trace::VisualizeControl_RecreateDevice(err);
 							RecreateDevice();
 							continue;
 						}
 						else
 						{
+							Trace::VisualizeControl_DrawLoopException(err);
 							throw;
 						}
 					}
@@ -180,6 +184,7 @@ namespace winrt::AudioVisualizer::implementation
 		size.Height = (float)ActualHeight();
 		CreateSwapChainWithSize(size);
 		OnCreateResources(_swapChain, CreateResourcesReason::New);
+		_bDrawEventActive = true;
 		StartDrawLoop();
 	}
 	void VisualizerControl::OnUnloaded(IInspectable sender, Windows::UI::Xaml::RoutedEventArgs args)

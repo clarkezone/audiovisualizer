@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation.Collections;
 using Windows.Media.MediaProperties;
 
 namespace AudioVisualizer.test
@@ -14,6 +15,7 @@ namespace AudioVisualizer.test
     public class MediaAnalyzerTests
     {
         private MediaFoundation.MftWrapper _mft;
+        private MediaAnalyzer _analyzer;
 
         private static AudioEncodingProperties CreateFloatEncodingProperty(uint sampleRate, uint channels)
         {
@@ -30,13 +32,13 @@ namespace AudioVisualizer.test
         [TestInitialize]
         public void Test_Init()
         {
-            var analyzer = new AudioVisualizer.MediaAnalyzer();
-            Assert.IsNotNull(analyzer);
-            _mft = new MediaFoundation.MftWrapper(analyzer);
+            _analyzer = new AudioVisualizer.MediaAnalyzer();
+            Assert.IsNotNull(_analyzer);
+            _mft = new MediaFoundation.MftWrapper(_analyzer);
         }
 
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
 
         public void MediaAnalyzer_Mft_GetStreamLimits()
         {
@@ -48,7 +50,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_GetStreamCount()
         {
             var counts = _mft.GetStreamCount();
@@ -56,7 +58,7 @@ namespace AudioVisualizer.test
             Assert.AreEqual(1u, counts.outStreamCount);
         }
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_GetStreamIDs()
         {
             Assert.ThrowsException<NotImplementedException>(
@@ -66,7 +68,7 @@ namespace AudioVisualizer.test
                 });
         }
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_GetInputStreamInfo_Stream_0()
         {
             var streamInfo = _mft.GetInputStreamInfo(0);
@@ -77,7 +79,7 @@ namespace AudioVisualizer.test
             Assert.AreEqual(0u, streamInfo.hnsMaxLatency);
         }
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_GetInputStreamInfo_Stream_1_Throws()
         {
             Assert.ThrowsException<COMException>(() =>
@@ -86,7 +88,7 @@ namespace AudioVisualizer.test
             });
         }
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_GetOutputStreamInfo_Stream_0()
         {
             var streamInfo = _mft.GetOutputStreamInfo(0);
@@ -95,7 +97,7 @@ namespace AudioVisualizer.test
             Assert.AreEqual(517u, streamInfo.dwFlags);
         }
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_GetOutputStreamInfo_Stream_1_Throws()
         {
             Assert.ThrowsException<COMException>(() =>
@@ -105,7 +107,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_GetInputStreamAttributes()
         {
             Assert.ThrowsException<NotImplementedException>(
@@ -115,7 +117,7 @@ namespace AudioVisualizer.test
                 });
         }
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_GetOutputStreamAttributes()
         {
             Assert.ThrowsException<NotImplementedException>(
@@ -126,7 +128,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_GetAttributes()
         {
             var attributes = _mft.GetAttributes();
@@ -135,7 +137,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_DeleteInputStream()
         {
             Assert.ThrowsException<NotImplementedException>(
@@ -146,7 +148,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_AddInputStreams()
         {
             Assert.ThrowsException<NotImplementedException>(
@@ -156,7 +158,7 @@ namespace AudioVisualizer.test
                 });
         }
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_GetAvailableInputTypes_Type_0()
         {
             var type0 = _mft.GetAvailableInputTypes(0, 0);
@@ -170,7 +172,7 @@ namespace AudioVisualizer.test
             );
         }
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_GetAvailableInputTypes_Type_1_Throws()
         {
             Assert.ThrowsException<COMException>(() =>
@@ -189,7 +191,7 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_SetInputType_MP3_Throws()
         {
             Assert.ThrowsException<COMException>(() =>
@@ -198,7 +200,7 @@ namespace AudioVisualizer.test
             });
         }
         [TestMethod]
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_SetInputType_PCM_Throws()
         {
             Assert.ThrowsException<COMException>(() =>
@@ -206,7 +208,7 @@ namespace AudioVisualizer.test
                 _mft.SetInputMediaType(0, AudioEncodingProperties.CreatePcm(44100, 2, 16), true);
             });
         }
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         [DataTestMethod()]
         [DataRow(22050, 1)]
         [DataRow(32000,1)]
@@ -225,7 +227,7 @@ namespace AudioVisualizer.test
         {
             _mft.SetInputMediaType(0, CreateFloatEncodingProperty((uint) sampleRate, (uint) channels), true);
         }
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         [DataTestMethod()]
         [DataRow(22050, 1)]
         [DataRow(32000, 1)]
@@ -245,7 +247,7 @@ namespace AudioVisualizer.test
             _mft.SetInputMediaType(0, CreateFloatEncodingProperty((uint)sampleRate, (uint)channels), true);
         }
 
-        [TestCategory("IMFTransform")]
+        [TestCategory("MediaAnalyzer")]
         [DataTestMethod()]
         [DataRow(22050, 1)]
         [DataRow(32000, 1)]
@@ -263,7 +265,164 @@ namespace AudioVisualizer.test
         public void MediaAnalyzer_Mft_Process(int sampleRate,int channels)
         {
             MediaFoundation.MediaPipelineFake pipeline = new MediaFoundation.MediaPipelineFake(_mft,(uint)sampleRate,(uint)channels);
-            
+           
+        }
+
+        [TestMethod]
+        [TestCategory("MediaAnalyzer")]
+        public void MediaAnalyzer_VisualizationSource_ActualChannelCount()
+        {
+            var encoding = CreateFloatEncodingProperty((uint)48000, (uint)2);
+            _mft.SetInputMediaType(0, encoding, false);
+            _mft.SetOutputMediaType(0, encoding, false);
+            _analyzer.ConfigureSpectrum(2048, 0.5f);
+            Assert.AreEqual(2u, _analyzer.ActualChannelCount);
+        }
+
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_VisualizationSource_ActualFrequencyCount()
+        {
+            var encoding = CreateFloatEncodingProperty((uint)48000, (uint)2);
+            _mft.SetInputMediaType(0, encoding, false);
+            _mft.SetOutputMediaType(0, encoding, false);
+            _analyzer.ConfigureSpectrum(2048, 0.5f);
+            Assert.AreEqual(1024u, _analyzer.ActualFrequencyCount);
+        }
+
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_VisualizationSource_ActualFrequencyScale()
+        {
+            var encoding = CreateFloatEncodingProperty((uint)48000, (uint)2);
+            _mft.SetInputMediaType(0, encoding, false);
+            _mft.SetOutputMediaType(0, encoding, false);
+            _analyzer.ConfigureSpectrum(2048, 0.5f);
+            Assert.AreEqual(ScaleType.Linear, _analyzer.ActualFrequencyScale);
+        }
+
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_VisualizationSource_ActualMinFrequency()
+        {
+            var encoding = CreateFloatEncodingProperty((uint)48000, (uint)2);
+            _mft.SetInputMediaType(0, encoding, false);
+            _mft.SetOutputMediaType(0, encoding, false);
+            _analyzer.ConfigureSpectrum(2048, 0.5f);
+            Assert.AreEqual(0.0f, _analyzer.ActualMinFrequency);
+        }
+
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_VisualizationSource_ActualMaxFrequency()
+        {
+            var encoding = CreateFloatEncodingProperty((uint)48000, (uint)2);
+            _mft.SetInputMediaType(0, encoding, false);
+            _mft.SetOutputMediaType(0, encoding, false);
+            _analyzer.ConfigureSpectrum(2048, 0.5f);
+            Assert.AreEqual(24000.0f, _analyzer.ActualMaxFrequency);
+        }
+
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_VisualizationSource_IsSuspended()
+        {
+            Assert.IsFalse(_analyzer.IsSuspended);
+        }
+
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_VisualizationSource_SetIsSuspended()
+        {
+            var encoding = CreateFloatEncodingProperty((uint)48000, (uint)2);
+            _mft.SetInputMediaType(0, encoding, false);
+            _mft.SetOutputMediaType(0, encoding, false);
+            _analyzer.ConfigureSpectrum(2048, 0.5f);
+            _analyzer.IsSuspended = true;
+            Assert.IsTrue(_analyzer.IsSuspended);
+        }
+
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_VisualizationSource_FpsIs60()
+        {
+            Assert.AreEqual(60.0f, _analyzer.Fps);
+        }
+
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_VisualizationSource_DefaultAnalyzerTypesAreAll()
+        {
+            Assert.AreEqual(AnalyzerType.All, _analyzer.AnalyzerTypes);
+        }
+
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_VisualizationSource_SetAnalyzerTypes()
+        {
+            _analyzer.AnalyzerTypes = AnalyzerType.RMS;
+            Assert.AreEqual(AnalyzerType.RMS, _analyzer.AnalyzerTypes);
+        }
+
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_VisualizationSource_DefaultPresentationTimeIsNull()
+        {
+            Assert.IsNull(_analyzer.PresentationTime);
+        }
+
+        /* COMInterop issues with this test need to implement as native
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_VisualizationSource_IsPresentationClockTimePassed()
+        {
+            MediaFoundation.FakePresentationClock clock = new MediaFoundation.FakePresentationClock() { Time = TimeSpan.FromSeconds(10) };
+            var clockConsumer = ((IMFClockConsumer)(object)_analyzer);
+            clock.AddClockStateSink(null);
+            clockConsumer.SetPresentationClock(clock);
+            Assert.AreEqual(TimeSpan.FromSeconds(10),_analyzer.PresentationTime);
+        }*/
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_VisualizationSource_DefaultPlaybackStateIsStopped()
+        {
+            Assert.AreEqual(SourcePlaybackState.Stopped,_analyzer.PlaybackState);
+        }
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_ClockState_PlaybackStatePlayingAfterStart()
+        {
+            ((IMFClockStateSink)(object)_analyzer).OnClockStart(0, 0);
+            Assert.AreEqual(SourcePlaybackState.Playing, _analyzer.PlaybackState);
+        }
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_ClockState_PlaybackStateStoppedAfterStop()
+        {
+            ((IMFClockStateSink)(object)_analyzer).OnClockStop(0);
+            Assert.AreEqual(SourcePlaybackState.Stopped, _analyzer.PlaybackState);
+        }
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_ClockState_PlaybackStatePausedAfterPause()
+        {
+            ((IMFClockStateSink)(object)_analyzer).OnClockPause(0);
+            Assert.AreEqual(SourcePlaybackState.Paused, _analyzer.PlaybackState);
+        }
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_ClockState_PlaybackStatePlayingAfterRestart()
+        {
+            ((IMFClockStateSink)(object)_analyzer).OnClockRestart(0);
+            Assert.AreEqual(SourcePlaybackState.Playing, _analyzer.PlaybackState);
+        }
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
+        public void MediaAnalyzer_IMediaExtension_SetProperties()
+        {
+            PropertySet properties = new PropertySet();
+            _analyzer.SetProperties(properties);
+            Assert.AreEqual(_analyzer,properties["Source"]);
         }
     }
 }

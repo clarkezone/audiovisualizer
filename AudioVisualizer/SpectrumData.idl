@@ -12,6 +12,7 @@ namespace AudioVisualizer
 		Single FrequencyStep{ get; };
 		UInt32 FrequencyCount{ get; };
 
+
 		SpectrumData LinearTransform(UInt32 elementCount,Single fromFrequency,Single toFrequency);
 		SpectrumData LogarithmicTransform(UInt32 elementCount,Single fromFrequency,Single toFrequency);
 		SpectrumData ApplyRiseAndFall(SpectrumData previous,Windows.Foundation.TimeSpan riseTime,Windows.Foundation.TimeSpan fallTime,Windows.Foundation.TimeSpan timeFromPrevious);

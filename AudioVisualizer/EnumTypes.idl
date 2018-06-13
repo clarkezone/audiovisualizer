@@ -34,4 +34,13 @@ namespace AudioVisualizer
 		Playing = 1,
 		Paused = 2
 	};
+
+	enum SpectrumVisualizationStyle
+	{
+		Bars,
+		TopBar,
+		Blocks,
+		TopBlock,
+		Line
+	};
 }

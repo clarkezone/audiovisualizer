@@ -22,11 +22,11 @@ namespace winrt::AudioVisualizer::implementation
         AudioVisualizer::ScalarData Peak();
         AudioVisualizer::SpectrumData Spectrum();
 
-		bool IsBefore(REFERENCE_TIME time) {
-			return _time.count() < time;
+		bool IsBefore(Windows::Foundation::TimeSpan time) {
+			return _time < time;
 		}
-		bool IsAfter(REFERENCE_TIME time) {
-			return time >= _time.count() + _duration.count() + 50;	// Add 5us to avoid any integer time math rounding errors
+		bool IsAfter(Windows::Foundation::TimeSpan time) {
+			return time.count() >= _time.count() + _duration.count() + 50;	// Add 5us to avoid any integer time math rounding errors
 		}
     };
 }

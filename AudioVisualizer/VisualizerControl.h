@@ -9,9 +9,8 @@ namespace winrt::AudioVisualizer::implementation
     struct VisualizerControl : VisualizerControlT<VisualizerControl>
     {
 	protected:
-		virtual void OnDraw(Microsoft::Graphics::Canvas::CanvasDrawingSession drawingSession, VisualizationDataFrame dataFrame, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> presentationTime) {};
-		virtual void OnCreateResources(Microsoft::Graphics::Canvas::ICanvasResourceCreator resourceCreator, CreateResourcesReason reason) {};
-	private:
+		virtual void OnDraw(Microsoft::Graphics::Canvas::CanvasDrawingSession /*drawingSession*/, VisualizationDataFrame /*dataFrame*/, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> /*presentationTime*/) {};
+		virtual void OnCreateResources(Microsoft::Graphics::Canvas::ICanvasResourceCreator /*resourceCreator*/, CreateResourcesReason /* reason */) {};
 		Windows::UI::Composition::ContainerVisual _rootVisual{ nullptr };
 		Windows::UI::Composition::SpriteVisual _swapChainVisual{ nullptr };
 		Windows::UI::Composition::Compositor _compositor{ nullptr };

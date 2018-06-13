@@ -7,11 +7,29 @@
 #include "VisualizationDataFrame.h"
 #include <windows.media.core.interop.h>
 #include "AudioAnalyzer.h"
+#include "Tracing.h"
+#include <winrt/Windows.Foundation.Diagnostics.h>
 
 namespace winrt::AudioVisualizer::implementation
 {
     struct MediaAnalyzer : MediaAnalyzerT<MediaAnalyzer,IMFTransform, IMFClockConsumer,IMFClockStateSink>
     {
+		class dataframe_queue
+		{
+		private:
+			std::mutex _outputQueueAccessMutex;
+			std::queue<AudioVisualizer::VisualizationDataFrame> _data;
+			size_t _maxQueueSize;
+			void compact();
+		public:
+			dataframe_queue(size_t maxQueueSize) : _maxQueueSize(maxQueueSize) {}
+			void add(AudioVisualizer::VisualizationDataFrame const &frame);
+			void clear();
+			AudioVisualizer::VisualizationDataFrame get(Windows::Foundation::TimeSpan time);
+		};
+
+
+		Trace::Activity _lifetimeTracker;
 #pragma region IMFTransform variables
 		com_ptr<IMFMediaType> m_spOutputType;
 		com_ptr<IMFMediaType> m_spInputType;
@@ -28,20 +46,12 @@ namespace winrt::AudioVisualizer::implementation
 		const size_t cMaxOutputQueueSize = 600;	// Keep 10sec worth of data for 60fps output
 
 		AudioVisualizer::AudioAnalyzer _analyzer{ nullptr };
-		winrt::event_token _analyzerOutput;
+		winrt::event_token _analyzerOutputEvent;
 		com_ptr<IAudioFrameNativeFactory> _audioFrameFactory;
+		dataframe_queue _analyzerOutput;
 
-		std::mutex _outputQueueAccessMutex;
-
-		std::queue<com_ptr<implementation::VisualizationDataFrame>> m_AnalyzerOutput;
-
-		size_t m_StepFrameCount;	// How many samples does calculate consume each step
-		size_t m_StepFrameOverlap;
-		size_t m_StepTotalFrames;
 		size_t _fftLength;
-		size_t m_FftLengthLog2;
-
-		float m_fOutputFps;
+		float _fOutputFps;
 		float _fInputOverlap;
 
 		AnalyzerType  _analyzerTypes;
@@ -54,17 +64,11 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::Media::AudioFrame ConvertToAudioFrame(IMFSample *pSample);
 		void OnAnalyzerOutput(AudioVisualizer::AudioAnalyzer analyzer, AudioVisualizer::VisualizationDataFrame frame);
 
-		HRESULT Analyzer_CompactOutputQueue();
-		HRESULT Analyzer_ClearOutputQueue();
-		AudioVisualizer::VisualizationDataFrame Analyzer_FFwdQueueTo(REFERENCE_TIME time);
-
 		inline long time_to_samples(REFERENCE_TIME time) const { return m_nChannels * (long)((time * m_FramesPerSecond + 5000000L) / 10000000L); }
 		inline long time_to_frames(REFERENCE_TIME time) const { return (long)((time * m_FramesPerSecond + 5000000L) / 10000000L); }
 		inline long time_to_frames(float time) const { return (long)((((REFERENCE_TIME)(1e7 * time))  * m_FramesPerSecond + 5000000L) / 10000000L); }
 		inline REFERENCE_TIME frames_to_time(long frames) { return 10000000L * (long long)frames / m_FramesPerSecond; }
 		inline REFERENCE_TIME samples_to_time(long samples) { return 10000000L * (long long)(samples / m_nChannels) / m_FramesPerSecond; }
-
-		REFERENCE_TIME GetPresentationTime();
 #pragma endregion
 
 
@@ -96,15 +100,15 @@ namespace winrt::AudioVisualizer::implementation
 
 #pragma region IMFClockConsumer implementation
 		com_ptr<IMFPresentationClock> m_spPresentationClock;
-		HRESULT STDMETHODCALLTYPE SetPresentationClock(_In_opt_ IMFPresentationClock *pPresentationClock);
-		HRESULT STDMETHODCALLTYPE GetPresentationClock(_COM_Outptr_opt_result_maybenull_ IMFPresentationClock **)
+		STDMETHODIMP SetPresentationClock(_In_opt_ IMFPresentationClock *pPresentationClock);
+		STDMETHODIMP GetPresentationClock(_COM_Outptr_opt_result_maybenull_ IMFPresentationClock **)
 		{
 			return E_NOTIMPL;
 		}
 #pragma endregion
 
 #pragma region IMFClockStateSink implementation
-		virtual HRESULT STDMETHODCALLTYPE OnClockStart(
+		virtual STDMETHODIMP OnClockStart(
 			/* [in] hnsSystemTime */ MFTIME,
 			/* [in] llClockStartOffset */ LONGLONG )
 		{
@@ -112,28 +116,28 @@ namespace winrt::AudioVisualizer::implementation
 			return S_OK;
 		}
 
-		virtual HRESULT STDMETHODCALLTYPE OnClockStop(
+		virtual STDMETHODIMP OnClockStop(
 			/* [in] hnsSystemTime */ MFTIME )
 		{
 			_playbackState = SourcePlaybackState::Stopped;
 			return S_OK;
 		}
 
-		virtual HRESULT STDMETHODCALLTYPE OnClockPause(
+		virtual STDMETHODIMP OnClockPause(
 			/* [in] hnsSystemTime */ MFTIME )
 		{
 			_playbackState = SourcePlaybackState::Paused;
 			return S_OK;
 		}
 
-		virtual HRESULT STDMETHODCALLTYPE OnClockRestart(
+		virtual STDMETHODIMP OnClockRestart(
 			/* [in] hnsSystemTime */ MFTIME )
 		{
 			_playbackState = SourcePlaybackState::Playing;
 			return S_OK;
 		}
 
-		virtual HRESULT STDMETHODCALLTYPE OnClockSetRate(
+		virtual STDMETHODIMP OnClockSetRate(
 			/* [in]  hnsSystemTime */ MFTIME ,
 			/* [in] flRate */ float )
 		{

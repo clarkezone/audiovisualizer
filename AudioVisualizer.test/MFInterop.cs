@@ -40,6 +40,16 @@ namespace AudioVisualizer.test
                 uint dwStatus;
                 IMFCollection pEvents;
             }
+            [StructLayout(LayoutKind.Sequential)]
+            internal struct MF_CLOCKPROPERTIES
+            {
+                Int64 qwCorrelationRate;
+                Guid guidClockId;
+                UInt32 dwClockFlags;
+                Int64 qwClockFrequency;
+                UInt32 dwClockTolerance;
+                UInt32 dwClockJitter;
+            }
 
             internal class MFPlat
             {
@@ -214,6 +224,137 @@ namespace AudioVisualizer.test
                     MFT_OUTPUT_DATA_BUFFER pOutputSamples,
                     out uint pdwStatus);
             }
+
+            [ComImport()]
+            [Guid("F6696E82-74F7-4f3d-A178-8A5E09C3659F")]
+            [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+            internal interface IMFClockStateSink
+            {
+                void OnClockStart(Int64 systemTime, Int64 clockStartOffset);
+                void OnClockStop(Int64 systemTime);
+                void OnClockPause(Int64 systemTime);
+                void OnClockRestart(Int64 systemTime);
+                void OnClockSetRate(Int64 systemTime, float rate);
+            }
+
+            [ComImport()]
+            [Guid("2eb1e945-18b8-4139-9b1a-d5d584818530")]
+            [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+            internal interface IMFClock
+            {
+                void GetClockCharacteristics(out UInt32 characteristics);
+                void GetCorrelatedTime(Int32 reserved, out Int64 clockTime, out Int64 systemTime);
+                void GetContinuityKey(out UInt32 continuityKey);
+                void GetClockState(out UInt32 clockState);
+                void GetClockProperties(out MF_CLOCKPROPERTIES properties);
+            }
+
+            [ComImport()]
+            [Guid("7FF12CCE-F76F-41c2-863B-1666C8E5E139")]
+            [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+            internal interface IMFPresentationTimeSource
+            {
+                // Empty not used
+            }
+
+            [ComImport()]
+            [Guid("868CE85C-8EA9-4f55-AB82-B009A910A805")]
+            [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+            internal interface IMFPresentationClock
+            {
+                void SetTimeSource([In, MarshalAs(UnmanagedType.Interface)] IMFPresentationTimeSource timeSource);
+                void GetTimeSource([Out, MarshalAs(UnmanagedType.Interface)] out IMFPresentationTimeSource timeSource);
+                void GetTime([Out] out Int64 time);
+                void AddClockStateSink([In, MarshalAs(UnmanagedType.Interface)] IMFClockStateSink sink);
+                void RemoveClockStateSink([In, MarshalAs(UnmanagedType.Interface)] IMFClockStateSink sink);
+                void Start(Int64 offset);
+                void Stop();
+                void Pause();
+            }
+
+
+            [ComImport()]
+            [Guid("6ef2a662-47c0-4666-b13d-cbb717f2fa2c")]
+            [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+            internal interface IMFClockConsumer
+            {
+                void SetPresentationClock([In, MarshalAs(UnmanagedType.Interface)] IMFPresentationClock clock);
+                void GetPresentationClock([MarshalAs(UnmanagedType.Interface)] out IMFPresentationClock clock);
+            }
+        }
+        
+        [ClassInterface(ClassInterfaceType.None)]
+        internal class FakePresentationClock : IMFClock, IMFPresentationClock
+        {
+            public TimeSpan Time = TimeSpan.Zero;
+            private List<IMFClockStateSink> _sinks = new List<IMFClockStateSink>();
+
+            public void GetClockCharacteristics(out uint characteristics)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void GetCorrelatedTime(int reserved, out long clockTime, out long systemTime)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void GetContinuityKey(out uint continuityKey)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void GetClockState(out uint clockState)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void GetClockProperties([MarshalAs(UnmanagedType.LPStruct)] out MF_CLOCKPROPERTIES properties)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SetTimeSource([In, MarshalAs(UnmanagedType.Interface)] IMFPresentationTimeSource timeSource)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void GetTimeSource([MarshalAs(UnmanagedType.Interface), Out] out IMFPresentationTimeSource timeSource)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void GetTime([Out] out long time)
+            {
+                time = Time.Ticks;
+            }
+
+            public void AddClockStateSink([In, MarshalAs(UnmanagedType.Interface)] IMFClockStateSink sink)
+            {
+                _sinks.Add(sink);
+            }
+
+            public void RemoveClockStateSink([In, MarshalAs(UnmanagedType.Interface)] IMFClockStateSink sink)
+            {
+                _sinks.Remove(sink);
+            }
+
+
+            public void Start(long offset)
+            {
+                Time = TimeSpan.FromTicks(offset);
+                _sinks.ForEach((sink) => { sink.OnClockStart(0, Time.Ticks); });
+            }
+
+            public void Stop()
+            {
+                _sinks.ForEach((sink) => { sink.OnClockStop(0); });
+            }
+
+            public void Pause()
+            {
+                _sinks.ForEach((sink) => { sink.OnClockPause(0); });
+            }
         }
 
         internal class MftWrapper
@@ -221,7 +362,7 @@ namespace AudioVisualizer.test
             private IMFTransform _mft;
             private IMediaEncodingProperties PropertiesFromMediaType(IMFMediaType type)
             {
-                Guid iidAudioEncodingProperties = new Guid("B4002AF6-ACD4-4E5A-A24B-5D7498A8B8C4");//new Guid("62BC7A16-005C-4B3B-8A0B-0A090E9687F3");
+                Guid iidAudioEncodingProperties = new Guid("B4002AF6-ACD4-4E5A-A24B-5D7498A8B8C4");
                 Object properties = null;
                 MFPlat.MFCreatePropertiesFromMediaType(type, ref iidAudioEncodingProperties, out properties);
                 return properties as IMediaEncodingProperties;

@@ -16,7 +16,7 @@ namespace winrt::AudioVisualizer::implementation
 		float _minAmp;
 		float _maxAmp;
 		bool _displayPeak;
-		Windows::Foundation::Size _controlSize;
+		std::mutex _lock;
 
 	public:
 		DiscreteVUBar();
