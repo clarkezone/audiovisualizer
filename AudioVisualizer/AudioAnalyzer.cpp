@@ -64,10 +64,13 @@ namespace winrt::AudioVisualizer::implementation
 
 		_bIsClosed = false;
 		_asyncProcessing = asyncProcessing;
-		_threadPoolSemaphore = CreateSemaphore(nullptr, 1, 1, nullptr);
-		if (_threadPoolSemaphore == INVALID_HANDLE_VALUE)
-			throw hresult_error(E_FAIL);
 
+		if (_asyncProcessing) {
+			_evtProcessingThreadWait = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
+			Windows::System::Threading::ThreadPool::RunAsync(
+				Windows::System::Threading::WorkItemHandler(this,&AudioAnalyzer::ProcessingProc),
+				Windows::System::Threading::WorkItemPriority::High);
+		}
 		_inputChannels = inputChannels;
 		_sampleRate = sampleRate;
 		_fOutSampleRate = (float)sampleRate / (float)inputStep;
@@ -137,7 +140,16 @@ namespace winrt::AudioVisualizer::implementation
 		}
 		Trace::AudioAnalyzer_ProcessInput(frame);
 		AddInput(frame);
-		StartProcessing();
+		
+		if (_bIsSuspended)
+			return;
+
+		if (_asyncProcessing) {
+			SetEvent(_evtProcessingThreadWait);
+		}
+		else {
+			AnalyzeData();
+		}
 	}
 
 	void AudioAnalyzer::AddInput(const winrt::Windows::Media::AudioFrame & frame)
@@ -169,42 +181,14 @@ namespace winrt::AudioVisualizer::implementation
 		buffer.Close();
 	}
 
-	void AudioAnalyzer::StartProcessing()
+	void AudioAnalyzer::ProcessingProc(Windows::Foundation::IAsyncAction const & /*action*/)
 	{
-		if (_bIsSuspended)
-			return;
-
-		if (_asyncProcessing) {
-			ScheduleProcessing();
-		}
-		else {
-			AnalyzeData();
-		}
-	}
-
-	void AudioAnalyzer::ScheduleProcessing()
-	{
-		// See if the access semaphore is signaled
-		DWORD dwWaitResult = WaitForSingleObject(_threadPoolSemaphore, 0);
-		if (dwWaitResult == WAIT_OBJECT_0)
-		{
-			Trace::AudioAnalyzer_RunAsync();
-			// Execute data processing on threadpool
-			Windows::System::Threading::ThreadPool::RunAsync(
-				Windows::System::Threading::WorkItemHandler(
-					[=](Windows::Foundation::IAsyncAction /*action*/) {
+		while (!_bIsClosed) {
+			WaitForSingleObject(_evtProcessingThreadWait, INFINITE);
+			if (!_bIsClosed) {
 				AnalyzeData();
-				ReleaseSemaphore(_threadPoolSemaphore, 1, nullptr);
 			}
-				), Windows::System::Threading::WorkItemPriority::High
-			);
 		}
-		else if (dwWaitResult == WAIT_TIMEOUT)
-		{
-			return;	// Analysis is already running
-		}
-		else
-			throw hresult_error(HRESULT_FROM_WIN32(GetLastError()));
 	}
 
 	void AudioAnalyzer::AnalyzeData()
@@ -228,6 +212,7 @@ namespace winrt::AudioVisualizer::implementation
 				dataFrameIndex = _inputBuffer.readPositionFrameIndex;
 				_inputBuffer.get_deinterleaved((float*)_pFftReal, _fftLength);
 			}
+			activity.LogEvent(L"AfterCopy");
 
 			if (util::enum_has_flag(_analyzerTypes, AnalyzerType::RMS)) {
 				rms = make_self<ScalarData>(_inputChannels);
@@ -250,8 +235,9 @@ namespace winrt::AudioVisualizer::implementation
 						maxFreq,
 						false);
 			}	
-
+			activity.LogEvent(L"BeforeCalculate");
 			Calculate(rms ? rms->_pData : nullptr, peak ? peak->_pData : nullptr, spectrum ? spectrum->_pData : nullptr);
+			activity.LogEvent(L"AfterCalculate");
 
 			Windows::Foundation::TimeSpan time;
 			if (dataFrameIndex) {
@@ -264,13 +250,14 @@ namespace winrt::AudioVisualizer::implementation
 				peak ? peak.as<AudioVisualizer::ScalarData>() : nullptr,
 				spectrum ? spectrum.as<AudioVisualizer::SpectrumData>() : nullptr
 				);
+			activity.LogEvent(L"BeforePushOutput");
 
-			activity.StopActivity(activity.Name);
 			// Only push the result if reset is not pending
 			if (!_bIsFlushPending)
 			{
 				_output(*this, dataFrame);
 			}
+			activity.StopActivity(activity.Name());
 		}
 	}
 
@@ -392,7 +379,12 @@ namespace winrt::AudioVisualizer::implementation
 		if (value != _bIsSuspended) {
 			_bIsSuspended = value;
 			if (!value) {
-				StartProcessing();
+				if (_asyncProcessing) {
+					SetEvent(_evtProcessingThreadWait);
+				}
+				else {
+					AnalyzeData();
+				}
 			}
 		}
 	}

@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include "ring_buffer.h"
 
+
 namespace winrt::AudioVisualizer::implementation
 {
     struct AudioAnalyzer : AudioAnalyzerT<AudioAnalyzer>
@@ -13,6 +14,7 @@ namespace winrt::AudioVisualizer::implementation
 		bool _asyncProcessing;
 		bool _bIsSuspended;
 		bool _bIsFlushPending;
+
 		AnalyzerType _analyzerTypes;
 		uint32_t _inputChannels;
 		uint32_t _sampleRate;
@@ -33,8 +35,8 @@ namespace winrt::AudioVisualizer::implementation
 		float _fFftScale;	// 2/N scale factor for fft output
 		::AudioVisualizer::ring_buffer _inputBuffer;
 		std::mutex _inputBufferAccess;
-		HANDLE _threadPoolSemaphore;	// Controls threadpool execution - schedule only one instance of execution
-
+		HANDLE _evtProcessingThreadWait;
+		
 		void InitWindow();
 		void FreeBuffers();
 
@@ -49,16 +51,16 @@ namespace winrt::AudioVisualizer::implementation
 			return Windows::Foundation::TimeSpan(10000000L * frames / _sampleRate); 
 		}
 		void AddInput(const winrt::Windows::Media::AudioFrame & frame);
-		void StartProcessing();
-		void ScheduleProcessing();
+		void ProcessingProc(Windows::Foundation::IAsyncAction const &action);
 		void AnalyzeData();
 		void Calculate(DirectX::XMVECTOR *pRms, DirectX::XMVECTOR *pPeak, DirectX::XMVECTOR *pSpectrum);
 	public:
 		AudioAnalyzer() = delete;
 		AudioAnalyzer(std::nullptr_t = nullptr) noexcept {}
 		~AudioAnalyzer() {
+			SetEvent(_evtProcessingThreadWait);
 			FreeBuffers();
-			CloseHandle(_threadPoolSemaphore);
+			CloseHandle(_evtProcessingThreadWait);
 			_bIsClosed = true;
 		}
 		AudioAnalyzer(uint32_t bufferSize, uint32_t inputChannels, uint32_t sampleRate, uint32_t inputStep, uint32_t inputOverlap, uint32_t fftLength,bool asyncProcessing);
