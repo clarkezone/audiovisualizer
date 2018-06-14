@@ -6,10 +6,11 @@ namespace AudioVisualizer
 	/* Add specified number of samples to the ring buffer. Downsample if neccessary */
 	void ring_buffer::add_samples(const float * pSamples, size_t sampleCount)
 	{
-		if (_data.empty())
+		if (_data == nullptr)
 			throw winrt::hresult_error(E_NOT_VALID_STATE);
+
 		// The buffer needs to be as large to fit all samples + one frame
-		if (sampleCount > _downsampleRate * (_data.size() - _frameSize))
+		if (sampleCount > _downsampleRate * (_size - _frameSize))
 			throw winrt::hresult_invalid_argument(L"Audio frame larger than the buffer");	
 
 		size_t samplesInBufferBeforeAdd = samples_in_buffer();	// Record current samples in buffer
@@ -18,15 +19,16 @@ namespace AudioVisualizer
 		// Copy sampleCount number of samples to the buffer, validate _writeIndex against _size 
 		// To avoid copying when size is zero (uninitialized buffer)
 
-		for (size_t sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++)
+		const float *source = pSamples;
+		for (size_t sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++,source++)
 		{
 			// Copy input samples if no downsampling or copying the samples from first frame
 			if (_downsampleRate == 1 || _downsampleCounter < _frameSize)
 			{
-				*_writePointer = pSamples[sampleIndex];
-				_writePointer++;
-				if (_writePointer == _data.end()) {	// Wrap pointer over end
-					_writePointer = _data.begin();
+				*_writer = *source;
+				_writer++;
+				if (_writer == _data + _size) {	// Wrap pointer over end
+					_writer = _data;
 				}
 			}
 			// If downsampling increate the downsample counter
@@ -38,20 +40,20 @@ namespace AudioVisualizer
 			}
 		}
 		// If overflow happened, advance read pointer so _size - _frameSize samples are available
-		if (samplesInBufferBeforeAdd + samplesCopied >= _data.size())
+		if (samplesInBufferBeforeAdd + samplesCopied >= _size)
 		{
-			if (_writePointer + _frameSize != _data.end()) {
-				_readPointer = _writePointer + _frameSize;
+			if (_writer + _frameSize != _data + _size) {
+				_reader = _writer + _frameSize;
 			}
 			else {
-				_readPointer = _data.cbegin();
+				_reader = _data;
 			}
-			readPositionFrameIndex += (samplesInBufferBeforeAdd + samplesCopied - _data.size()) / _frameSize;
+			readPositionFrameIndex += (samplesInBufferBeforeAdd + samplesCopied - _size) / _frameSize;
 		}
 	}
 	void ring_buffer::get_deinterleaved(float * pOutput, size_t outputBufferStride)
 	{
-		if (_data.empty())
+		if (_data == nullptr)
 			throw winrt::hresult_error(E_NOT_VALID_STATE);
 
 		if (outputBufferStride < _stepFrames)
@@ -62,13 +64,13 @@ namespace AudioVisualizer
 
 		int overlapSamples = (int)(_overlapFrames * _frameSize);
 
-		auto readIndex = _readPointer - _data.cbegin();
+		auto readIndex = _reader - _data;
 
 		// Create source iterator counting back overlap samples from current read position
-		std::vector<float>::const_iterator source = 
+		const float *source = 
 			readIndex >= overlapSamples ? 
-				_readPointer - overlapSamples : 
-				_data.cbegin() + (_data.size() - (overlapSamples - readIndex));
+				_reader - overlapSamples : 
+				_data + (_size - (overlapSamples - readIndex));
 
 		// Iterate over all the output items
 		for (size_t frameIndex = 0; frameIndex < outputBufferStride; frameIndex++)
@@ -79,8 +81,8 @@ namespace AudioVisualizer
 				if (frameIndex < _overlapFrames + _stepFrames)
 				{
 					pOutput[outIndex] = *source++;
-					if (source == _data.cend())
-						source = _data.cbegin();
+					if (source == _data + _size)
+						source = _data;
 				}
 				else
 				{
@@ -88,7 +90,7 @@ namespace AudioVisualizer
 				}
 			}
 		}
-		_readPointer = source;
+		_reader = source;
 		readPositionFrameIndex += (int64_t)(_stepFrames);
 	}
 }
