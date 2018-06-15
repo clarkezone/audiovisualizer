@@ -6,6 +6,9 @@
 #pragma once
 
 #define NOMINMAX
+#ifdef _DEBUG
+	#define _TRACE_
+#endif
 
 #include "winrt/Windows.Foundation.h"
 #include <mfapi.h>

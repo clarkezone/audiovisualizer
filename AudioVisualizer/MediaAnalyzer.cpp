@@ -24,7 +24,9 @@ namespace winrt::AudioVisualizer::implementation
 	void MediaAnalyzer::dataframe_queue::add(AudioVisualizer::VisualizationDataFrame const &frame)
 	{
 		std::lock_guard<std::mutex> lock(_outputQueueAccessMutex);
+#ifdef _TRACE_
 		Trace::MediaAnalyzer_OutputQueueAdd(frame,!_data.empty() ? _data.front() : nullptr, !_data.empty() ? _data.back(): nullptr, _data.size());
+#endif
 		_data.push(frame);
 		compact();
 	}
@@ -32,7 +34,9 @@ namespace winrt::AudioVisualizer::implementation
 	void MediaAnalyzer::dataframe_queue::compact()
 	{
 		while (_data.size() > _maxQueueSize) {
+#ifdef _TRACE_
 			Trace::MediaAnalyzer_OutputQueueRemove(_data.front(),_data.size());
+#endif
 			_data.pop();
 		}
 	}
@@ -43,6 +47,7 @@ namespace winrt::AudioVisualizer::implementation
 		while (!_data.empty()) {
 			_data.pop();
 		}
+		Trace::MediaAnalyzer_OutputQueueClear();
 	}
 
 	AudioVisualizer::VisualizationDataFrame  MediaAnalyzer::dataframe_queue::get(Windows::Foundation::TimeSpan time)
@@ -50,17 +55,29 @@ namespace winrt::AudioVisualizer::implementation
 		std::lock_guard<std::mutex> lock(_outputQueueAccessMutex);
 		if (time.count() < 0)
 			return nullptr;
-
+#ifdef _TRACE_
+		Trace::MediaAnalyzer_OutputQueueGet(time, !_data.empty() ? _data.front() : nullptr, !_data.empty() ? _data.back() : nullptr, _data.size());
+#endif
 		while (!_data.empty())
 		{
 			auto frontItem = winrt::from_abi<VisualizationDataFrame>(_data.front());
-			if (frontItem->IsBefore(time))
+#ifdef _TRACE_
+			Trace::MediaAnalyzer_OutputQueueTest(frontItem->Time(), time, time < frontItem->Time(), time >= frontItem->Time() + frontItem->Duration());
+#endif
+			if (time < _data.front().Time()) // Current position is before the visualization queue head - wait until we catch up
 			{
-				return nullptr; // Current position is before the frames in visualization queue - wait until we catch up
+#ifdef _TRACE_
+				Trace::MediaAnalyzer_OutputQueueBehind(frontItem->Time());
+#endif
+				return nullptr; 
 			}
 
-			if (!frontItem->IsAfter(time))	// If frame is not after current position there is a match
+			// Test if front item is matching. Add 5uS to avoid int time representation rounding errors
+			if (time < _data.front().Time() + _data.front().Duration() + Windows::Foundation::TimeSpan(50))
 			{
+#ifdef _TRACE_
+				Trace::MediaAnalyzer_OutputQueueItemFound(_data.front().Time());
+#endif
 				return _data.front();	// Return front item
 			}
 			else
@@ -70,7 +87,9 @@ namespace winrt::AudioVisualizer::implementation
 					return nullptr;
 			}
 			// Current position is after the item in the queue - remove and continue searching
+#ifdef _TRACE_
 			Trace::MediaAnalyzer_OutputQueueRemove(_data.front(), _data.size());
+#endif
 			_data.pop();
 		}
 		return nullptr;
@@ -85,8 +104,7 @@ namespace winrt::AudioVisualizer::implementation
 		_fInputOverlap(0.5f),
 		_playbackState(SourcePlaybackState::Stopped),
 		_analyzerTypes(AnalyzerType::All),
-		_analyzerOutput(cMaxOutputQueueSize),
-		_lifetimeTracker(Trace::Constructor(L"MediaAnalyzer", this))
+		_analyzerOutput(cMaxOutputQueueSize)
 	{
 		HRESULT hr = MFCreateAttributes(m_spMftAttributes.put(), 4);
 		if (FAILED(hr))
@@ -134,10 +152,14 @@ namespace winrt::AudioVisualizer::implementation
 		if (currentPosition)
 		{
 			auto frame = _analyzerOutput.get(currentPosition.Value());
+#ifdef _TRACE_
 			Trace::MediaAnalyzer_GetFrame(currentPosition, frame);
+#endif
 			return frame;
 		}
+#ifdef _TRACE_
 		Trace::MediaAnalyzer_GetFrame(currentPosition, nullptr);
+#endif
 		return nullptr;
 	}
 
@@ -512,7 +534,9 @@ namespace winrt::AudioVisualizer::implementation
 	//-------------------------------------------------------------------
 	STDMETHODIMP MediaAnalyzer::SetInputType(DWORD dwInputStreamID, IMFMediaType * pType, DWORD dwFlags)
 	{
+#ifdef _TRACE_
 		Trace::MediaAnalyzer_SetInputType(pType, dwFlags != 0);
+#endif
 		// Validate flags.
 		if (dwInputStreamID != 0)
 		{
@@ -564,7 +588,9 @@ namespace winrt::AudioVisualizer::implementation
 	//-------------------------------------------------------------------
 	STDMETHODIMP MediaAnalyzer::SetOutputType(DWORD dwOutputStreamID, IMFMediaType * pType, DWORD dwFlags)
 	{
+#ifdef _TRACE_
 		Trace::MediaAnalyzer_SetOutputType(pType, dwFlags != 0);
+#endif
 		// Validate parameters
 		if (dwOutputStreamID != 0)
 			return MF_E_INVALIDSTREAMNUMBER;
@@ -738,9 +764,9 @@ namespace winrt::AudioVisualizer::implementation
 		std::lock_guard lock(_mtxMftAccess);
 
 		HRESULT hr = S_OK;
-
+#ifdef _TRACE_
 		Trace::MediaAnalyzer_ProcessMessage(eMessage);
-		//Diagnostics::Trace::Log_MftProcessMessage(eMessage, ulParam);
+#endif
 
 		switch (eMessage)
 		{
@@ -794,7 +820,9 @@ namespace winrt::AudioVisualizer::implementation
 
 	HRESULT MediaAnalyzer::ProcessInput(DWORD dwInputStreamID, IMFSample * pSample, DWORD dwFlags)
 	{
+#ifdef _TRACE_
 		Trace::MediaAnalyzer_ProcessInput(pSample);
+#endif
 		// Check input parameters.
 		if (pSample == NULL)
 		{
@@ -832,7 +860,9 @@ namespace winrt::AudioVisualizer::implementation
 	}
 	HRESULT MediaAnalyzer::ProcessOutput(DWORD dwFlags, DWORD cOutputBufferCount, MFT_OUTPUT_DATA_BUFFER * pOutputSamples, DWORD * pdwStatus)
 	{
+#ifdef _TRACE_
 		Trace::MediaAnalyzer_ProcessOutput();
+#endif
 		if (dwFlags != 0)
 		{
 			return E_INVALIDARG;
@@ -884,7 +914,6 @@ namespace winrt::AudioVisualizer::implementation
 			m_spPresentationClock->RemoveClockStateSink(this);
 		}
 		m_spPresentationClock.copy_from(pPresentationClock);
-		//Diagnostics::Trace::Log_SetPresentationClock(pPresentationClock);
 		if (m_spPresentationClock != nullptr)
 			m_spPresentationClock->AddClockStateSink(this);
 
@@ -911,7 +940,9 @@ namespace winrt::AudioVisualizer::implementation
 
 	void MediaAnalyzer::OnAnalyzerOutput(AudioVisualizer::AudioAnalyzer analyzer, AudioVisualizer::VisualizationDataFrame dataFrame)
 	{
+#ifdef _TRACE_
 		Trace::MediaAnalyzer_AnalyzerOutput(dataFrame);
+#endif
 		_analyzerOutput.add(dataFrame);
 	}
 }

@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation.Collections;
+using Windows.Media;
 using Windows.Media.MediaProperties;
 
 namespace AudioVisualizer.test
@@ -35,10 +36,10 @@ namespace AudioVisualizer.test
             [StructLayout(LayoutKind.Sequential)]
             internal struct MFT_OUTPUT_DATA_BUFFER
             {
-                uint dwStreamID;
-                IMFSample pSample;
-                uint dwStatus;
-                IMFCollection pEvents;
+                public uint dwStreamID;
+                public IMFSample pSample;
+                public uint dwStatus;
+                public IMFCollection pEvents;
             }
             [StructLayout(LayoutKind.Sequential)]
             internal struct MF_CLOCKPROPERTIES
@@ -58,6 +59,8 @@ namespace AudioVisualizer.test
 
                 [DllImport("MFPlat.dll")]
                 internal extern static void MFCreateMediaTypeFromProperties([MarshalAs(UnmanagedType.Interface)] Object properties, [MarshalAs(UnmanagedType.Interface)] out IMFMediaType mediaType);
+                [DllImport("MFPlat.dll")]
+                internal extern static void MFCreateSample([MarshalAs(UnmanagedType.Interface)] out IMFSample sample);
             }
             [ComImport()]
             [Guid("2cd2d921-c447-44a7-a13c-4adabfc247e3")]
@@ -478,6 +481,18 @@ namespace AudioVisualizer.test
                 _mft.SetOutputType(streamIndex, mediaType, bTestOnly ? 1u : 0u);
             }
 
+            internal void ProcessInput(IMFSample sample)
+            {
+                _mft.ProcessInput(0, sample, 0);
+            }
+
+            internal IMFSample ProcessOutput()
+            {
+                MFT_OUTPUT_DATA_BUFFER buffer = new MFT_OUTPUT_DATA_BUFFER() { dwStreamID = 0, pSample = null, dwStatus = 0, pEvents = null };
+                uint status = 0;
+                _mft.ProcessOutput(0, 1, buffer, out status);
+                return buffer.pSample;
+            }
         }
     }
 

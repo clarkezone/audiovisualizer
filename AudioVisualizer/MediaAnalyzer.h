@@ -28,8 +28,6 @@ namespace winrt::AudioVisualizer::implementation
 			AudioVisualizer::VisualizationDataFrame get(Windows::Foundation::TimeSpan time);
 		};
 
-
-		Trace::Activity _lifetimeTracker;
 #pragma region IMFTransform variables
 		com_ptr<IMFMediaType> m_spOutputType;
 		com_ptr<IMFMediaType> m_spInputType;

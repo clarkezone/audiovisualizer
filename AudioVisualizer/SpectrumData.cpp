@@ -269,10 +269,6 @@ namespace winrt::AudioVisualizer::implementation
 			}
 		}
 
-		float fStep = frequencyScale == ScaleType::Linear ?
-			(maxFrequency - minFrequency) / cElements :
-			powf(maxFrequency / minFrequency, 1.0f / cElements);
-
 		auto result = make_self<SpectrumData>(cChannels, cElements, amplitudeScale, frequencyScale, minFrequency, maxFrequency, false);
 		DirectX::XMVECTOR *pData = result->_pData;
 
@@ -332,11 +328,11 @@ namespace winrt::AudioVisualizer::implementation
 			throw hresult_out_of_bounds();
 		return _pData[index];
 	}
-	bool SpectrumChannelValues::IndexOf(float const & value, uint32_t & index)
+	bool SpectrumChannelValues::IndexOf(float const & /*value*/, uint32_t & /*index*/)
 	{
 		throw hresult_not_implemented();
 	}
-	uint32_t SpectrumChannelValues::GetMany(uint32_t startIndex, array_view<float> items)
+	uint32_t SpectrumChannelValues::GetMany(uint32_t /*startIndex*/, array_view<float> /*items*/)
 	{
 		throw hresult_not_implemented();
 	}

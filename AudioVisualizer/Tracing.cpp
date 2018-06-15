@@ -5,6 +5,7 @@
 #include <windows.media.core.h>
 #include <winrt/Windows.Media.MediaProperties.h>
 
+#ifdef _TRACE_
 
 using namespace winrt::Windows::Foundation::Diagnostics;
 using namespace winrt;
@@ -226,6 +227,55 @@ void Trace::MediaAnalyzer_OutputQueueRemove(VisualizationDataFrame const & frame
 	g_LogChannel.LogEvent(L"MediaAnalyzer_OutputQueueRemove", fields);
 }
 
+void Trace::MediaAnalyzer_OutputQueueGet(winrt::Windows::Foundation::TimeSpan time, VisualizationDataFrame const & front, VisualizationDataFrame const & back, size_t queueSize)
+{
+	auto fields = LoggingFields();
+	fields.AddTimeSpan(L"Time", time);
+	if (front) {
+		fields.AddTimeSpan(L"Front", front.Time());
+	}
+	else {
+		fields.AddEmpty(L"Front");
+	}
+	if (back) {
+		fields.AddTimeSpan(L"Back", back.Time());
+	}
+	else {
+		fields.AddEmpty(L"Back");
+	}
+	fields.AddUInt32(L"QueueSize", queueSize);
+	g_LogChannel.LogEvent(L"MediaAnalyzer_OutputQueueGet", fields);
+}
+
+void Trace::MediaAnalyzer_OutputQueueBehind(winrt::Windows::Foundation::TimeSpan time)
+{
+	auto fields = LoggingFields();
+	fields.AddTimeSpan(L"FrontOfQueue", time);
+	g_LogChannel.LogEvent(L"MediaAnalyzer_OutputQueueBehind",fields);
+}
+
+void Trace::MediaAnalyzer_OutputQueueItemFound(winrt::Windows::Foundation::TimeSpan time)
+{
+	auto fields = LoggingFields();
+	fields.AddTimeSpan(L"Time", time);
+	g_LogChannel.LogEvent(L"MediaAnalyzer_OutputQueueItemFound", fields);
+}
+
+void Trace::MediaAnalyzer_OutputQueueTest(winrt::Windows::Foundation::TimeSpan queueItem, winrt::Windows::Foundation::TimeSpan time, bool isQueueItemBefore, bool isQueueItemAfter)
+{
+	auto fields = LoggingFields();
+	fields.AddTimeSpan(L"QueueItem", queueItem);
+	fields.AddTimeSpan(L"Position", time);
+	fields.AddBoolean(L"IsQueueItemBefore", isQueueItemBefore);
+	fields.AddBoolean(L"IsQueueItemAfter", isQueueItemAfter);
+	g_LogChannel.LogEvent(L"MediaAnalyzer_OutputQueueTest", fields);
+}
+
+void Trace::MediaAnalyzer_OutputQueueClear()
+{
+	g_LogChannel.LogEvent(L"MediaAnalyzer_OutputQueueClear");
+}
+
 void Trace::AudioAnalyzer_ProcessInput(winrt::Windows::Media::AudioFrame const & frame)
 {
 	auto fields = LoggingFields();
@@ -246,6 +296,23 @@ void Trace::AudioAnalyzer_RunAsync()
 LoggingActivity Trace::AudioAnalyzer_Calculate()
 {
 	return g_LogChannel.StartActivity(L"AudioAnalyzer_Calculate");
+}
+
+void Trace::AudioAnalyzer_SeedFromPosition(int64_t position)
+{
+	auto fields = LoggingFields();
+	fields.AddInt64(L"Position", position);
+	g_LogChannel.LogEvent(L"AudioAnalyzer_SeedFromPosition", fields);
+}
+
+void Trace::AudioAnalyzer_SeedFromStream(winrt::Windows::Foundation::IReference<winrt::Windows::Foundation::TimeSpan> const & time, int64_t position)
+{
+	auto fields = LoggingFields();
+	if (time) {
+		fields.AddTimeSpan(L"Time", time.Value());
+	}
+	fields.AddInt64(L"Position", position);
+	g_LogChannel.LogEvent(L"AudioAnalyzer_SeedFromStream", fields);
 }
 
 void Trace::AddSampleFields(IMFSample * pSample, winrt::Windows::Foundation::Diagnostics::LoggingFields &fields)
@@ -272,3 +339,4 @@ void Trace::AddMediaTypeFields(IMFMediaType * pType, winrt::Windows::Foundation:
 	fields.AddUInt32(L"BitsPerSample", encoding.BitsPerSample());
 }
 
+#endif

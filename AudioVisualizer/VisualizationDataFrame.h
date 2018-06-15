@@ -21,13 +21,6 @@ namespace winrt::AudioVisualizer::implementation
         AudioVisualizer::ScalarData RMS();
         AudioVisualizer::ScalarData Peak();
         AudioVisualizer::SpectrumData Spectrum();
-
-		bool IsBefore(Windows::Foundation::TimeSpan time) {
-			return _time < time;
-		}
-		bool IsAfter(Windows::Foundation::TimeSpan time) {
-			return time.count() >= _time.count() + _duration.count() + 50;	// Add 5us to avoid any integer time math rounding errors
-		}
     };
 }
 

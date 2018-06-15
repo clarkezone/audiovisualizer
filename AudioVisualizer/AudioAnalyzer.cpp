@@ -46,7 +46,7 @@ namespace winrt::AudioVisualizer::implementation
 		_pFftBuffers(nullptr),
 		_analyzerTypes(AnalyzerType::All),
 		_bIsSuspended(false),
-		_bIsFlushPending(false)
+		_bIsFlushPending(true)	// Pick up position from first frame added
 	{
 		if (inputChannels == 0 || sampleRate == 0 || inputStep == 0 || fftLength == 0)
 		{
@@ -67,7 +67,7 @@ namespace winrt::AudioVisualizer::implementation
 
 		if (_asyncProcessing) {
 			_evtProcessingThreadWait = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
-			Windows::System::Threading::ThreadPool::RunAsync(
+			_workThread = Windows::System::Threading::ThreadPool::RunAsync(
 				Windows::System::Threading::WorkItemHandler(this,&AudioAnalyzer::ProcessingProc),
 				Windows::System::Threading::WorkItemPriority::High);
 		}
@@ -138,7 +138,9 @@ namespace winrt::AudioVisualizer::implementation
 		if (!frame) {
 			throw hresult_invalid_argument();
 		}
+#ifdef _TRACE_
 		Trace::AudioAnalyzer_ProcessInput(frame);
+#endif
 		AddInput(frame);
 		
 		if (_bIsSuspended)
@@ -156,17 +158,21 @@ namespace winrt::AudioVisualizer::implementation
 	{
 		std::lock_guard<std::mutex> _lock(_inputBufferAccess);
 
-		if (_bSeedPosition) {
+		if (_bIsFlushPending) {
 			if (_seedPosition) {
+#ifdef _TRACE_
+				Trace::AudioAnalyzer_SeedFromPosition(_seedPosition.Value());
+#endif
 				_inputBuffer.readPositionFrameIndex = _seedPosition.Value();
-				_bSeedPosition = false;
 			} 
 			else  {
 				_inputBuffer.readPositionFrameIndex = frame.RelativeTime() ? time_to_frames(frame.RelativeTime().Value()) : 0;
-				_bSeedPosition = false;
+#ifdef _TRACE_
+				Trace::AudioAnalyzer_SeedFromStream(frame.RelativeTime(), _inputBuffer.readPositionFrameIndex);
+#endif
 			} 
+			_bIsFlushPending = false;
 		}
-		_bIsFlushPending = false;
 		auto buffer = frame.LockBuffer(Windows::Media::AudioBufferAccessMode::Read);
 		auto bufferReference = buffer.CreateReference();
 		auto memoryBuffer = bufferReference.as<::Windows::Foundation::IMemoryBufferByteAccess>();
@@ -194,25 +200,28 @@ namespace winrt::AudioVisualizer::implementation
 	void AudioAnalyzer::AnalyzeData()
 	{
 		// Process data until not suspended, not in a reset and output is available
-		while (!_bIsSuspended && !_bIsFlushPending)
+		while (!_bIsSuspended && !_bIsFlushPending && !_bIsClosed)
 		{
-			auto activity = Trace::AudioAnalyzer_Calculate();
 			com_ptr<implementation::ScalarData> rms = nullptr;
 			com_ptr<implementation::ScalarData> peak = nullptr;
 			com_ptr<implementation::SpectrumData> spectrum = nullptr;
 			Windows::Foundation::IReference<int64_t> dataFrameIndex;
 
-			if (true) {	// Dummy if statement just for lock scope for coping from input buffer
-				std::scoped_lock<std::mutex> _lock(_inputBufferAccess);
-
-				if (_inputBuffer.empty())	// Nothing more to process, return
-					return;
-
-				// Copy next data frame to the real part of fft
+			if (_asyncProcessing) {
+				_inputBufferAccess.lock();
+			}
+			bool bInputQueueEmpty = _inputBuffer.empty();
+			if (!bInputQueueEmpty) {
 				dataFrameIndex = _inputBuffer.readPositionFrameIndex;
 				_inputBuffer.get_deinterleaved((float*)_pFftReal, _fftLength);
 			}
-			activity.LogEvent(L"AfterCopy");
+			if (_asyncProcessing) {
+				_inputBufferAccess.unlock();
+			}
+			
+			if (bInputQueueEmpty) {
+				return;
+			}
 
 			if (util::enum_has_flag(_analyzerTypes, AnalyzerType::RMS)) {
 				rms = make_self<ScalarData>(_inputChannels);
@@ -235,9 +244,13 @@ namespace winrt::AudioVisualizer::implementation
 						maxFreq,
 						false);
 			}	
-			activity.LogEvent(L"BeforeCalculate");
+#ifdef _TRACE_
+			auto activity = Trace::AudioAnalyzer_Calculate();
+#endif
 			Calculate(rms ? rms->_pData : nullptr, peak ? peak->_pData : nullptr, spectrum ? spectrum->_pData : nullptr);
-			activity.LogEvent(L"AfterCalculate");
+#ifdef _TRACE_
+			activity.StopActivity(activity.Name());
+#endif
 
 			Windows::Foundation::TimeSpan time;
 			if (dataFrameIndex) {
@@ -250,14 +263,12 @@ namespace winrt::AudioVisualizer::implementation
 				peak ? peak.as<AudioVisualizer::ScalarData>() : nullptr,
 				spectrum ? spectrum.as<AudioVisualizer::SpectrumData>() : nullptr
 				);
-			activity.LogEvent(L"BeforePushOutput");
 
 			// Only push the result if reset is not pending
 			if (!_bIsFlushPending)
 			{
 				_output(*this, dataFrame);
 			}
-			activity.StopActivity(activity.Name());
 		}
 	}
 
@@ -402,8 +413,14 @@ namespace winrt::AudioVisualizer::implementation
 	void AudioAnalyzer::Close()
 	{
 		if (!_bIsClosed) {
-			FreeBuffers();
 			_bIsClosed = true;
+			SetEvent(_evtProcessingThreadWait);
+			FreeBuffers();
+			if (_asyncProcessing) {
+				_workThread.Cancel();
+				_workThread.Close();
+				CloseHandle(_evtProcessingThreadWait);
+			}
 		}
 	}
 }

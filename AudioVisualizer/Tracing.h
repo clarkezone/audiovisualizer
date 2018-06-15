@@ -5,6 +5,8 @@
 using namespace winrt::Windows::Foundation::Diagnostics;
 using namespace winrt::AudioVisualizer;
 
+#ifdef _TRACE_
+
 class Trace
 {
 private:
@@ -32,13 +34,21 @@ public:
 	static void MediaAnalyzer_GetFrame(winrt::Windows::Foundation::IReference<winrt::Windows::Foundation::TimeSpan> time, winrt::AudioVisualizer::VisualizationDataFrame const &frame);
 	static void MediaAnalyzer_OutputQueueAdd(VisualizationDataFrame const &frame, VisualizationDataFrame const &front, VisualizationDataFrame const &back, size_t queueSize);
 	static void MediaAnalyzer_OutputQueueRemove(VisualizationDataFrame const &frame, size_t queueSize);
+	static void MediaAnalyzer_OutputQueueGet(winrt::Windows::Foundation::TimeSpan time, VisualizationDataFrame const &front, VisualizationDataFrame const &back, size_t queueSize);
+	static void MediaAnalyzer_OutputQueueBehind(winrt::Windows::Foundation::TimeSpan time);
+	static void MediaAnalyzer_OutputQueueItemFound(winrt::Windows::Foundation::TimeSpan time);
+	static void MediaAnalyzer_OutputQueueTest(winrt::Windows::Foundation::TimeSpan queueItem, winrt::Windows::Foundation::TimeSpan time, bool isQueueItemBefore, bool isQueueItemAfter);
+	static void MediaAnalyzer_OutputQueueClear();
 
 	static void AudioAnalyzer_ProcessInput(winrt::Windows::Media::AudioFrame const &frame);
 	static void AudioAnalyzer_RunAsync();
 	static LoggingActivity AudioAnalyzer_Calculate();
+	static void AudioAnalyzer_SeedFromPosition(int64_t position);
+	static void AudioAnalyzer_SeedFromStream(winrt::Windows::Foundation::IReference<winrt::Windows::Foundation::TimeSpan> const &time,int64_t position);
 
 	static void VisualizeControl_RecreateDevice(winrt::hresult_error const& err);
 	static void VisualizeControl_DrawLoopException(winrt::hresult_error const &err);
 	static LoggingActivity VisualizeControl_StartDraw(winrt::AudioVisualizer::VisualizationDataFrame const &frame,winrt::Windows::Foundation::IReference<winrt::Windows::Foundation::TimeSpan> const &time);
 };
 
+#endif

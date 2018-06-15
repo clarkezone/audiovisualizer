@@ -25,7 +25,6 @@ namespace winrt::AudioVisualizer::implementation
 		uint32_t _overlapFrames;
 		float _fOutSampleRate;
 		
-		bool _bSeedPosition;
 		Windows::Foundation::IReference<int64_t> _seedPosition;
 
 		DirectX::XMVECTOR *_pWindow;
@@ -36,6 +35,7 @@ namespace winrt::AudioVisualizer::implementation
 		::AudioVisualizer::ring_buffer _inputBuffer;
 		std::mutex _inputBufferAccess;
 		HANDLE _evtProcessingThreadWait;
+		Windows::Foundation::IAsyncAction _workThread{ nullptr };
 		
 		void InitWindow();
 		void FreeBuffers();
@@ -58,10 +58,7 @@ namespace winrt::AudioVisualizer::implementation
 		AudioAnalyzer() = delete;
 		AudioAnalyzer(std::nullptr_t = nullptr) noexcept {}
 		~AudioAnalyzer() {
-			SetEvent(_evtProcessingThreadWait);
-			FreeBuffers();
-			CloseHandle(_evtProcessingThreadWait);
-			_bIsClosed = true;
+			Close();
 		}
 		AudioAnalyzer(uint32_t bufferSize, uint32_t inputChannels, uint32_t sampleRate, uint32_t inputStep, uint32_t inputOverlap, uint32_t fftLength,bool asyncProcessing);
 

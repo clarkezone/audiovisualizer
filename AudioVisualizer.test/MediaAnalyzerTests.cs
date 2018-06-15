@@ -264,8 +264,19 @@ namespace AudioVisualizer.test
         [DataRow(48000, 5)]
         public void MediaAnalyzer_Mft_Process(int sampleRate,int channels)
         {
-            MediaFoundation.MediaPipelineFake pipeline = new MediaFoundation.MediaPipelineFake(_mft,(uint)sampleRate,(uint)channels);
-           
+           MediaFoundation.MediaPipelineFake pipeline = new MediaFoundation.MediaPipelineFake(_mft,(uint)sampleRate,(uint)channels);
+        }
+
+        public void MediaAnalyzer_Mft_IsInputSamplePassedToOutput()
+        {
+            var encoding = CreateFloatEncodingProperty((uint)48000, (uint)2);
+            _mft.SetInputMediaType(0, encoding, false);
+            _mft.SetOutputMediaType(0, encoding, false);
+            IMFSample sample;
+            MediaFoundation.Interop.MFPlat.MFCreateSample(out sample);
+            _mft.ProcessInput(sample);
+            var outSample = _mft.ProcessOutput();
+            Assert.AreSame(sample, outSample);
         }
 
         [TestMethod]

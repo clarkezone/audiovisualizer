@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -84,11 +85,51 @@ namespace AudioVisualizer.test
 
         [TestMethod]
         [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_Sync_Performance()
+        {
+            var sut = new AudioAnalyzer(48000, 2, 48000, 800, 400, 2048, false);
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+
+            List<TimeSpan> outTimes = new List<TimeSpan>();
+            sut.Output += new Windows.Foundation.TypedEventHandler<AudioAnalyzer, VisualizationDataFrame>(
+            (a, data) =>
+            {
+                outTimes.Add(sw.Elapsed);
+            }
+            );
+            AudioFrame frame = new AudioFrame(24000 * 4 * 2);   // 0.5 sec worth of audio data
+            sw.Start();
+            sut.ProcessInput(frame);
+
+            List<TimeSpan> durations = new List<TimeSpan>();
+            for (int i = 0; i < outTimes.Count(); i++)
+            {
+                durations.Add(outTimes[i].Subtract(i != 0 ? outTimes[i - 1] : TimeSpan.Zero));
+            }
+
+            double avg = durations.Average((time) => { return time.TotalMilliseconds; });
+            Logger.LogMessage($"Analyzer performance {avg}ms per run");
+            Assert.IsTrue(avg < 2.5);
+
+        }
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_IsCloseable()
         {
             var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
             using (sut)
             {
+            }
+            sut.Dispose();  // Second close should also succeed
+        }
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_IsCloseableAsync()
+        {
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, true);
+            using (sut)
+            {
+                Task.Delay(50).Wait();
             }
             sut.Dispose();  // Second close should also succeed
         }
@@ -264,7 +305,7 @@ namespace AudioVisualizer.test
             var sut = new AudioAnalyzer(1600, 2, 48000, 800, 400, 2048, false);
             RegisterOutputHandler(sut);
             sut.ProcessInput(inputFrame);
-            Assert.AreEqual(outputFrames.First().Time, TimeSpan.FromSeconds(1));
+            Assert.AreEqual(TimeSpan.FromSeconds(1),outputFrames.First().Time);
         }
         [TestMethod]
         [TestCategory("AudioAnalyzer")]
