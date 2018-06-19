@@ -105,6 +105,7 @@
     <Compile Include="AudioAnalyzerTests.cs" />
     <Compile Include="CreateResourcesArgsTests.cs" />
     <Compile Include="CustomVisualizerTests.cs" />
+    <Compile Include="SpectrumVisualizerTests.cs" />
     <Compile Include="FakeVisualizationSource.cs" />
     <Compile Include="DiscreteVUBarTests.cs" />
     <Compile Include="VisualizerControlTest.cs" />
@@ -153,10 +154,10 @@
       <Version>6.1.5</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
-      <Version>1.3.1</Version>
+      <Version>1.3.2</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
-      <Version>1.3.1</Version>
+      <Version>1.3.2</Version>
     </PackageReference>
     <PackageReference Include="System.ValueTuple">
       <Version>4.5.0</Version>

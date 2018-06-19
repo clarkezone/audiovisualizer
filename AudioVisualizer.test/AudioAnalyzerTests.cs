@@ -109,7 +109,7 @@ namespace AudioVisualizer.test
 
             double avg = durations.Average((time) => { return time.TotalMilliseconds; });
             Logger.LogMessage($"Analyzer performance {avg}ms per run");
-            Assert.IsTrue(avg < 2.5);
+            Assert.IsTrue(avg < 5);
 
         }
         [TestMethod]

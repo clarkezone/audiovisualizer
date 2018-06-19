@@ -8,6 +8,5 @@ namespace AudioVisualizer
 	runtimeclass SpectrumVisualizer : VisualizerControl, IBarVisualizer
 	{
 		SpectrumVisualizer();
-		SpectrumVisualizationStyle SpectrumStyle;
 	}
 }

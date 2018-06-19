@@ -13,26 +13,26 @@ using Windows.UI.Xaml.Controls;
 namespace AudioVisualizer.test
 {
     [TestClass]
-    public class DiscreteVUBarTests
+    public class SpectrumVisualizerTests
     {
-        DiscreteVUBar sut;
+        SpectrumVisualizer sut;
 
         [TestInitialize]
         public void TestInit()
         {
-            sut = new AudioVisualizer.DiscreteVUBar();
+            sut = new AudioVisualizer.SpectrumVisualizer();
         }
 
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_DefaultSourceIsNull()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_DefaultSourceIsNull()
         {
             Assert.IsNull(sut.Source);
         }
 
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_CanSetSource()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_CanSetSource()
         {
             FakeVisualizationSource source = new FakeVisualizationSource();
             sut.Source = source;
@@ -40,36 +40,36 @@ namespace AudioVisualizer.test
         }
 
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_DefaultBackgroundIsTransparent()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_DefaultBackgroundIsTransparent()
         {
             Assert.AreEqual(Windows.UI.Colors.Transparent, sut.BackgroundColor);
         }
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_CanSetBackground()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_CanSetBackground()
         {
             sut.BackgroundColor = Windows.UI.Colors.White;
             Assert.AreEqual(Windows.UI.Colors.White, sut.BackgroundColor);
         }
 
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_IsDefaultChannelSetToZero()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_IsDefaultChannelSetToZero()
         {
             Assert.AreEqual(0u, sut.ChannelIndex);
         }
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_CanSetChannelIndex()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_CanSetChannelIndex()
         {
             sut.ChannelIndex = 1;
             Assert.AreEqual(1u, sut.ChannelIndex);
         }
 
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_IsDefaultLevelsSet()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_IsDefaultLevelsSet()
         {
             CollectionAssert.AreEqual(g_DefaultLevels, sut.Levels);
         }
@@ -108,32 +108,32 @@ namespace AudioVisualizer.test
         };
 
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_CanSetLevels()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_CanSetLevels()
         {
             sut.Levels = g_LevelsToSet;
             CollectionAssert.AreEqual(g_LevelsToSet, sut.Levels);
         }
 
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_SettingLevelsToNullThrows()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_SettingLevelsToNullThrows()
         {
             Assert.ThrowsException<ArgumentException>(() => {
                 sut.Levels = null;
             });
         }
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_SettingLevelsToEmptyThrows()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_SettingLevelsToEmptyThrows()
         {
             Assert.ThrowsException<ArgumentException>(() => {
                 sut.Levels = new MeterBarLevel[] { };
             });
         }
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_SettingLevelsToNonAscendingOrderThrows()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_SettingLevelsToNonAscendingOrderThrows()
         {
             Assert.ThrowsException<ArgumentException>(() => {
                 sut.Levels = new MeterBarLevel[] {
@@ -145,29 +145,29 @@ namespace AudioVisualizer.test
         }
 
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_IsDefaultOrientationVertical()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_IsDefaultOrientationVertical()
         {
             Assert.AreEqual(Orientation.Vertical, sut.Orientation);
         }
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_CanSetOrientation()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_CanSetOrientation()
         {
             sut.Orientation = Orientation.Horizontal;
             Assert.AreEqual(Orientation.Horizontal, sut.Orientation);
         }
 
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_IsDefaultRelativeElementMarginZero()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_IsDefaultRelativeElementMarginZero()
         {
             Assert.AreEqual(new Thickness(0), sut.RelativeElementMargin);
         }
 
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_CanSetRelativeElementMargin()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_CanSetRelativeElementMargin()
         {
             var margin = new Thickness(0.1);
             sut.RelativeElementMargin = margin;
@@ -175,15 +175,15 @@ namespace AudioVisualizer.test
         }
 
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_IsDefaultUnlitElementGray()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_IsDefaultUnlitElementGray()
         {
             Assert.AreEqual(Colors.DarkGray, sut.UnlitElement);
         }
 
         [UITestMethod]
-        [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_CanSetUnlitElement()
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_CanSetUnlitElement()
         {
             sut.UnlitElement = Colors.Gray;
             Assert.AreEqual(Colors.Gray, sut.UnlitElement);

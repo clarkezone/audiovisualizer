@@ -47,7 +47,9 @@ namespace winrt::AudioVisualizer::implementation
 		while (!_data.empty()) {
 			_data.pop();
 		}
+#ifdef _TRACE_
 		Trace::MediaAnalyzer_OutputQueueClear();
+#endif
 	}
 
 	AudioVisualizer::VisualizationDataFrame  MediaAnalyzer::dataframe_queue::get(Windows::Foundation::TimeSpan time)
@@ -60,8 +62,8 @@ namespace winrt::AudioVisualizer::implementation
 #endif
 		while (!_data.empty())
 		{
-			auto frontItem = winrt::from_abi<VisualizationDataFrame>(_data.front());
 #ifdef _TRACE_
+			auto frontItem = winrt::from_abi<VisualizationDataFrame>(_data.front());
 			Trace::MediaAnalyzer_OutputQueueTest(frontItem->Time(), time, time < frontItem->Time(), time >= frontItem->Time() + frontItem->Duration());
 #endif
 			if (time < _data.front().Time()) // Current position is before the visualization queue head - wait until we catch up

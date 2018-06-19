@@ -36,6 +36,8 @@ namespace VisualizationPlayer
             _converterSource.MaxFrequency = 20000.0f;
             _converterSource.SpectrumRiseTime = TimeSpan.FromMilliseconds(50);
             _converterSource.SpectrumFallTime = TimeSpan.FromMilliseconds(100);
+            _converterSource.PeakRiseTime = TimeSpan.FromMilliseconds(50);
+            _converterSource.PeakFallTime = TimeSpan.FromMilliseconds(1000);
             _converterSource.RmsRiseTime = TimeSpan.FromMilliseconds(100);
             _converterSource.RmsFallTime = TimeSpan.FromMilliseconds(100);
         }

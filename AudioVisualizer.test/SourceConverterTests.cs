@@ -309,32 +309,18 @@ namespace AudioVisualizer.test
                 var v = sut.IsSuspended;
             });
         }
+
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_GetPlaybackStateThrowsNotImplemented()
+        public void SourceConverter_PlaybackStateIsStopped()
         {
-            Assert.ThrowsException<COMException>(() =>
-            {
-                var v = sut.PlaybackState;
-            });
+            Assert.AreEqual(SourcePlaybackState.Stopped,sut.PlaybackState);
         }
         [TestCategory("SourceConverter")]
         [TestMethod()]
-        public void SourceConverter_GetPlaybackStateThrows()
+        public void SourceConverter_PresentationTimeIsNull()
         {
-            Assert.ThrowsException<COMException>(() =>
-            {
-                var v = sut.PlaybackState;
-            });
-        }
-        [TestCategory("SourceConverter")]
-        [TestMethod()]
-        public void SourceConverter_GetPresentationTimeThrows()
-        {
-            Assert.ThrowsException<COMException>(() =>
-            {
-                var v = sut.PresentationTime;
-            });
+                Assert.IsNull(sut.PresentationTime);
         }
 
         [TestCategory("SourceConverter")]

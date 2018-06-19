@@ -418,7 +418,7 @@ namespace winrt::AudioVisualizer::implementation
 		return _source.IsSuspended();
 	}
 
-	void SourceConverter::IsSuspended(bool value)
+	void SourceConverter::IsSuspended(bool /*value*/)
 	{
 		throw hresult_not_implemented();
 	}
@@ -433,7 +433,7 @@ namespace winrt::AudioVisualizer::implementation
 		return _source.Fps();
 	}
 
-	void SourceConverter::Fps(float value)
+	void SourceConverter::Fps(float /*value*/)
 	{
 		throw hresult_not_implemented();
 	}
@@ -460,7 +460,7 @@ namespace winrt::AudioVisualizer::implementation
 		std::lock_guard lock(_lock);
 		if (!_source)
 		{
-			throw hresult_error(E_NOT_VALID_STATE, L"Source not set");
+			return nullptr;
 		}
 		return _source.PresentationTime();
 	}
@@ -470,7 +470,7 @@ namespace winrt::AudioVisualizer::implementation
 		std::lock_guard lock(_lock);
 		if (!_source)
 		{
-			throw hresult_error(E_NOT_VALID_STATE, L"Source not set");
+			return SourcePlaybackState::Stopped;
 		}
 		return _source.PlaybackState();
 	}

@@ -29,12 +29,12 @@
             </DataTemplate>
         </NavigationView.HeaderTemplate>
         <NavigationView.MenuItems>
-            <NavigationViewItem Content="Player" Tag="VisualizationPlayer.PlayerPage">
+            <NavigationViewItem Content="CustomVisualizer" Tag="VisualizationPlayer.PlayerPage">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Play" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Spectrum" Tag="VisualizationPlayer.SpectrumPage">
+            <NavigationViewItem Content="Controls" Tag="VisualizationPlayer.SpectrumPage">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Audio" />
                 </NavigationViewItem.Icon>

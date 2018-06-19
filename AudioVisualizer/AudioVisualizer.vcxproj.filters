@@ -31,6 +31,7 @@
     <ClCompile Include="Tracing.cpp" />
     <ClCompile Include="AudioAnalyzer.cpp" />
     <ClCompile Include="ring_buffer.cpp" />
+    <ClCompile Include="BarBaseVisualizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -52,6 +53,7 @@
     <ClInclude Include="Tracing.h" />
     <ClInclude Include="AudioAnalyzer.h" />
     <ClInclude Include="ring_buffer.h" />
+    <ClInclude Include="BarBaseVisualizer.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ScalarData.idl" />

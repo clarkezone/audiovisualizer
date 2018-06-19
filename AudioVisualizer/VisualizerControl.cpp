@@ -125,8 +125,13 @@ namespace winrt::AudioVisualizer::implementation
 							dataFrame = _visualizationSource.GetData();
 							presentationTime = _visualizationSource.PresentationTime();
 						}
+#ifdef _TRACE_
 						auto activity = Trace::VisualizeControl_StartDraw(dataFrame, presentationTime);
+#endif
 						OnDraw(drawingSession, dataFrame, presentationTime);
+#ifdef _TRACE_
+						activity.StopActivity(activity.Name());
+#endif
 						drawingSession.Close();
 						_swapChain.Present();
 						waitableSwapChain = _swapChain;
@@ -141,13 +146,17 @@ namespace winrt::AudioVisualizer::implementation
 							err.code() == DXGI_ERROR_INVALID_CALL ||
 							err.code() == D2DERR_RECREATE_TARGET)
 						{
+#ifdef _TRACE_
 							Trace::VisualizeControl_RecreateDevice(err);
+#endif
 							RecreateDevice();
 							continue;
 						}
 						else
 						{
+#ifdef _TRACE_
 							Trace::VisualizeControl_DrawLoopException(err);
+#endif
 							throw;
 						}
 					}

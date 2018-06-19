@@ -95,6 +95,7 @@
   <ItemGroup>
     <ClInclude Include="AudioAnalyzer.h" />
     <ClInclude Include="AudioMath.h" />
+    <ClInclude Include="BarBaseVisualizer.h" />
     <ClInclude Include="CreateResourcesEventArgs.h" />
     <ClInclude Include="CustomVisualizer.h" />
     <ClInclude Include="DiscreteVUBar.h" />
@@ -119,6 +120,7 @@
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
     </ClCompile>
     <ClCompile Include="AudioMath.cpp" />
+    <ClCompile Include="BarBaseVisualizer.cpp" />
     <ClCompile Include="CreateResourcesEventArgs.cpp" />
     <ClCompile Include="CustomVisualizer.cpp" />
     <ClCompile Include="DiscreteVUBar.cpp" />

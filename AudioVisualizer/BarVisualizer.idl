@@ -6,6 +6,7 @@ namespace AudioVisualizer
 		Single Level;
 		Windows.UI.Color Color;
 	};
+
 	interface IBarVisualizer : IInspectable
 	{
 		MeterBarLevel[] Levels;
