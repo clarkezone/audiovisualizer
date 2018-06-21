@@ -44,6 +44,7 @@
       <InProcessServer>
         <Path>AudioVisualizer.dll</Path>
         <ActivatableClass ActivatableClassId="AudioVisualizer.MediaAnalyzer" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="AudioVisualizer.VisualizerAudioEffect" ThreadingModel="both" />
       </InProcessServer>
     </Extension>
   </Extensions>

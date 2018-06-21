@@ -1,0 +1,10 @@
+import "VisualizationSource.idl";
+import "SpectralAnalyzer.idl";
+
+namespace AudioVisualizer
+{
+	runtimeclass VisualizerAudioEffect : Windows.Media.Effects.IBasicAudioEffect, Windows.Media.IMediaExtension, IVisualizationSource, ISpectralAnalyzer
+	{
+		VisualizerAudioEffect();
+	}
+}

@@ -102,6 +102,7 @@
     <ClInclude Include="ring_buffer.h" />
     <ClInclude Include="SpectrumVisualizer.h" />
     <ClInclude Include="Tracing.h" />
+    <ClInclude Include="VisualizerAudioEffect.h" />
     <ClInclude Include="VisualizerControl.h" />
     <ClInclude Include="MediaAnalyzer.h" />
     <ClInclude Include="pch.h" />
@@ -112,6 +113,7 @@
     <ClInclude Include="util.h" />
     <ClInclude Include="VisualizationDataFrame.h" />
     <ClInclude Include="VisualizerDrawEventArgs.h" />
+    <ClInclude Include="VisualizerEffectDefinition.h" />
     <ClInclude Include="XDSP.h" />
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +130,7 @@
     <ClCompile Include="ring_buffer.cpp" />
     <ClCompile Include="SpectrumVisualizer.cpp" />
     <ClCompile Include="Tracing.cpp" />
+    <ClCompile Include="VisualizerAudioEffect.cpp" />
     <ClCompile Include="VisualizerControl.cpp" />
     <ClCompile Include="MediaAnalyzer.cpp" />
     <ClCompile Include="pch.cpp">
@@ -140,6 +143,7 @@
     <ClCompile Include="SpectrumData.cpp" />
     <ClCompile Include="VisualizationDataFrame.cpp" />
     <ClCompile Include="VisualizerDrawEventArgs.cpp" />
+    <ClCompile Include="VisualizerEffectDefinition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="AudioAnalyzer.idl" />
@@ -151,14 +155,16 @@
     <Midl Include="PlaybackSource.idl" />
     <Midl Include="ScalarData.idl" />
     <Midl Include="SourceConverter.idl" />
-    <Midl Include="SpectralAnalyzerSettings.idl" />
+    <Midl Include="SpectralAnalyzer.idl" />
     <Midl Include="SpectrumData.idl" />
     <Midl Include="EnumTypes.idl" />
     <Midl Include="SpectrumVisualizer.idl" />
     <Midl Include="VisualizationDataFrame.idl" />
     <Midl Include="VisualizationSource.idl" />
+    <Midl Include="VisualizerAudioEffect.idl" />
     <Midl Include="VisualizerControl.idl" />
     <Midl Include="VisualizerDrawEventArgs.idl" />
+    <Midl Include="VisualizerEffectDefinition.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

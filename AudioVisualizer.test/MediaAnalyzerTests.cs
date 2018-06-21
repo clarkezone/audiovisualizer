@@ -435,5 +435,45 @@ namespace AudioVisualizer.test
             _analyzer.SetProperties(properties);
             Assert.AreEqual(_analyzer,properties["Source"]);
         }
+
+        [TestMethod]
+        [TestCategory("MediaAnalyzer")]
+        public void MediaAnalyzer_SetNotPo2FftLengthThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() => {
+                ISpectralAnalyzer analyzer = (ISpectralAnalyzer)_analyzer;
+                analyzer.ConfigureSpectrum(2047, 0.0f);
+            });
+        }
+
+        [TestMethod]
+        [TestCategory("MediaAnalyzer")]
+        public void MediaAnalyzer_SetFftLengthLT256Throws()
+        {
+            Assert.ThrowsException<ArgumentException>(() => {
+                ISpectralAnalyzer analyzer = (ISpectralAnalyzer)_analyzer;
+                analyzer.ConfigureSpectrum(128, 0.0f);
+            });
+        }
+
+
+        [TestMethod]
+        [TestCategory("MediaAnalyzer")]
+        public void MediaAnalyzer_SetOverlapToNegativeThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() => {
+                ISpectralAnalyzer analyzer = (ISpectralAnalyzer)_analyzer;
+                analyzer.ConfigureSpectrum(2048, -1.0f);
+            });
+        }
+        [TestMethod]
+        [TestCategory("MediaAnalyzer")]
+        public void MediaAnalyzer_SetOverlapOverOneThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() => {
+                ISpectralAnalyzer analyzer = (ISpectralAnalyzer)_analyzer;
+                analyzer.ConfigureSpectrum(2048, 1.1f);
+            });
+        }
     }
 }

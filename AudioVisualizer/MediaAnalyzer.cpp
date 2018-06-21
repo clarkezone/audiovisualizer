@@ -131,7 +131,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	void MediaAnalyzer::ConfigureSpectrum(uint32_t fftLength, float overlap)
 	{
-		if ((fftLength & fftLength - 1) != 0)	// FFT length needs to be power of 2
+		if ((fftLength & fftLength - 1) != 0 || fftLength < 256)	// FFT length needs to be power of 2
 			throw hresult_invalid_argument();
 
 		if (overlap < 0.0f || overlap > 1.0f)	// Set some sensible overlap limits
@@ -266,7 +266,8 @@ namespace winrt::AudioVisualizer::implementation
 
 	void MediaAnalyzer::SetProperties(Windows::Foundation::Collections::IPropertySet const& configuration)
 	{
-		configuration.Insert(hstring(L"Source"), *this);
+		configuration.Insert(L"Source", *this);
+		configuration.Insert(L"Type",winrt::box_value(GetRuntimeClassName()));
 	}
 
 	//-------------------------------------------------------------------

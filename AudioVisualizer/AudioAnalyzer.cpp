@@ -61,6 +61,9 @@ namespace winrt::AudioVisualizer::implementation
 		{
 			throw hresult_invalid_argument(L"FFT length has to be a power of 2");
 		}
+		if (fftLength < 256) {
+			throw hresult_invalid_argument(L"FFT length has to be greater than 256");
+		}
 
 		_bIsClosed = false;
 		_asyncProcessing = asyncProcessing;

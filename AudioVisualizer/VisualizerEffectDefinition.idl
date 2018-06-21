@@ -1,0 +1,9 @@
+import "AudioAnalyzer.idl";
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass VisualizerEffectDefinition : Windows.Media.Effects.IAudioEffectDefinition
+	{
+	}
+}

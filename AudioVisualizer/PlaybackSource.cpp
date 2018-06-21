@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "PlaybackSource.h"
 
+
 namespace winrt::AudioVisualizer::implementation
 {
     AudioVisualizer::IVisualizationSource PlaybackSource::Source()
@@ -18,18 +19,45 @@ namespace winrt::AudioVisualizer::implementation
 		_sourceChangedEvent.remove(token);
 	}
 
-	PlaybackSource::PlaybackSource(Windows::Media::Playback::MediaPlayer const& mediaPlayer)
+	PlaybackSource::PlaybackSource()
 	{
-		if (mediaPlayer == nullptr)
-			throw hresult_invalid_argument();
-
 		_propSet = Windows::Foundation::Collections::PropertySet();
 		_propSet.MapChanged([this](IInspectable const &, Windows::Foundation::Collections::IMapChangedEventArgs<hstring> const &args)
 		{
-			auto source = _propSet.Lookup(args.Key()).as<AudioVisualizer::IVisualizationSource>();
-			this->_source = source;
-			_sourceChangedEvent(*this, source);
+			if (args.Key() == L"Source") {
+				auto source = _propSet.Lookup(args.Key()).as<AudioVisualizer::IVisualizationSource>();
+				this->_source = source;
+				_sourceChangedEvent(*this, source);
+			}
 		});
+	}
+
+	PlaybackSource::PlaybackSource(Windows::Media::Playback::MediaPlayer const& mediaPlayer) : PlaybackSource()
+	{
+		if (!mediaPlayer)
+			throw hresult_invalid_argument();
+
 		mediaPlayer.AddAudioEffect(L"AudioVisualizer.MediaAnalyzer", false, _propSet);
+	}
+
+	PlaybackSource::PlaybackSource(Windows::Media::Audio::IAudioNode const & node) : PlaybackSource()
+	{
+		if (!node)
+			throw hresult_invalid_argument();
+		auto effect = make<VisualizerEffectDefinition>(_propSet);
+		
+		if (!node.EffectDefinitions())
+			throw hresult_error(E_FAIL);
+
+		node.EffectDefinitions().Append(effect);
+	}
+
+	AudioVisualizer::PlaybackSource PlaybackSource::CreateFromMediaPlayer(Windows::Media::Playback::MediaPlayer const& mediaPlayer)
+	{
+		return make<PlaybackSource>(mediaPlayer);
+	}
+	AudioVisualizer::PlaybackSource PlaybackSource::CreateFromAudioNode(Windows::Media::Audio::IAudioNode const & audioNode)
+	{
+		return make<PlaybackSource>(audioNode);
 	}
 }

@@ -11,9 +11,16 @@ using System.Threading;
 using Windows.Foundation;
 using AudioVisualizer;
 using System.Collections.Generic;
+using Windows.Media.Audio;
+using Windows.Media.Effects;
+using Windows.Media.MediaProperties;
+using System.Collections.ObjectModel;
+using Windows.Media;
 
 namespace AudioVisualizer.test
 {
+
+
     [TestClass]
     public class PlayerSourceTests
     {
@@ -24,7 +31,7 @@ namespace AudioVisualizer.test
             var testFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///TestContent/test_signal.mp3"));
             var player = new MediaPlayer();
 
-            var playerSource = new AudioVisualizer.PlaybackSource(player);
+            var playerSource = PlaybackSource.CreateFromMediaPlayer(player);
             List<IVisualizationSource> sources = new List<IVisualizationSource>();
             ManualResetEventSlim ev = new ManualResetEventSlim();
 
@@ -49,5 +56,18 @@ namespace AudioVisualizer.test
                 Assert.Fail("Timeout when waiting for the source creation");
         }
 
-    }
+        /*
+        [TestMethod]
+        [TestCategory("PlayerSource")]
+        public async Task PlayerSource_AudioNodeWithTrueGraph()
+        {
+            var graphResult = await AudioGraph.CreateAsync(new AudioGraphSettings(Windows.Media.Render.AudioRenderCategory.Media));
+            Assert.AreEqual(graphResult.Status, AudioGraphCreationStatus.Success);
+            var node = graphResult.Graph.CreateFrameInputNode();
+            var source = PlaybackSource.CreateFromAudioNode(node);
+            graphResult.Graph.Start();
+            Assert.IsNotNull(source.Source);
+        }*/
+   }
+ 
 }

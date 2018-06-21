@@ -99,15 +99,17 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <SDKReference Include="TestPlatform.Universal, Version=$(UnitTestPlatformVersion)" />
+    <SDKReference Include="TestPlatform.Universal, Version=15.5" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioAnalyzerTests.cs" />
+    <Compile Include="FakeAudioNode.cs" />
     <Compile Include="CreateResourcesArgsTests.cs" />
     <Compile Include="CustomVisualizerTests.cs" />
     <Compile Include="SpectrumVisualizerTests.cs" />
     <Compile Include="FakeVisualizationSource.cs" />
     <Compile Include="DiscreteVUBarTests.cs" />
+    <Compile Include="VisualizerAudioEffectTests.cs" />
     <Compile Include="VisualizerControlTest.cs" />
     <Compile Include="MediaAnalyzerTests.cs" />
     <Compile Include="MFInterop.cs" />
@@ -123,6 +125,7 @@
     <Compile Include="EnumTypesTests.cs" />
     <Compile Include="VisualizationDataFrameTests.cs" />
     <Compile Include="VisualizationDrawArgsTest.cs" />
+    <Compile Include="VisualizerEffectDefinitionTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="UnitTestApp.xaml">

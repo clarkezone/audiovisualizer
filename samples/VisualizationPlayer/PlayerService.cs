@@ -25,7 +25,7 @@ namespace VisualizationPlayer
         public PlayerService()
         {
             _player = new MediaPlayer();
-            _source = new PlaybackSource(_player);
+            _source = PlaybackSource.CreateFromMediaPlayer(_player);
             _source.SourceChanged += _source_SourceChanged;
             _player.MediaOpened += Player_MediaOpened;
             _player.PlaybackSession.PositionChanged += PlaybackSession_PositionChanged;
