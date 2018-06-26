@@ -1,0 +1,12 @@
+import "VisualizationSource.idl";
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass AnalogVUMeter : Windows.UI.Xaml.Controls.Control
+	{
+		AnalogVUMeter();
+		IVisualizationSource Source;
+		UInt32 ChannelIndex;
+	}
+}

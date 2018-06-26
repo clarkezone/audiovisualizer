@@ -15,6 +15,54 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <a:CustomVisualizer Grid.Column="0" x:Name="spectrum" CreateResources="spectrum_CreateResources" Draw="spectrum_Draw"></a:CustomVisualizer>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="nowPlaying" Margin="20,0,0,0"></TextBlock>
+        <Pivot Grid.Row="1">
+            <PivotItem Header="Analog">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <a:AnalogVUMeter Grid.Column="0" MinWidth="200" MinHeight="100" Margin="50,50,50,250" x:Name="analog0"></a:AnalogVUMeter>
+                    <a:AnalogVUMeter Grid.Column="1" MinWidth="200" MinHeight="100" Margin="50,50,50,250" x:Name="analog1"></a:AnalogVUMeter>
+                </Grid>
+            </PivotItem>
+            <PivotItem Header="Spectrum">
+
+            </PivotItem>
+            <PivotItem Header="Custom draw">
+                <a:CustomVisualizer Grid.Column="0" x:Name="spectrum" CreateResources="spectrum_CreateResources" Draw="spectrum_Draw"></a:CustomVisualizer>
+            </PivotItem>
+        </Pivot>
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Slider
+                        x:Name="seekSlider"
+                        Grid.Row="0"
+                        Margin="40,5"
+                        Orientation="Horizontal"
+                        ValueChanged="seekSlider_ValueChanged" />
+            <StackPanel
+                        Grid.Row="1"
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal">
+                <a:CustomVisualizer
+                            x:Name="PositionDisplay"
+                            Width="75"
+                            Height="40"
+                            Draw="PositionDisplay_Draw" />
+                <AppBarButton Click="PlayButton_Click" Icon="Play"/>
+                <AppBarButton Click="StopButton_Click" Icon="Pause" />
+                <AppBarButton Click="OpenFile_Click" Icon="OpenFile" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

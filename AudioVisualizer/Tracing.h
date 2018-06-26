@@ -49,6 +49,11 @@ public:
 	static void VisualizeControl_RecreateDevice(winrt::hresult_error const& err);
 	static void VisualizeControl_DrawLoopException(winrt::hresult_error const &err);
 	static LoggingActivity VisualizeControl_StartDraw(winrt::AudioVisualizer::VisualizationDataFrame const &frame,winrt::Windows::Foundation::IReference<winrt::Windows::Foundation::TimeSpan> const &time);
+
+	static void VisualizerAudioEffect_ProcessFrame(winrt::Windows::Media::AudioFrame const &frame);
+	static void VisualizerAudioEffect_OnAnalyzerOutput(VisualizationDataFrame  const&frame);
+	static void VisualizerAudioEffect_GetData(VisualizationDataFrame  const&frame);
+	static void VisualizerAudioEffect_DiscardQueuedFrames();
 };
 
 #endif

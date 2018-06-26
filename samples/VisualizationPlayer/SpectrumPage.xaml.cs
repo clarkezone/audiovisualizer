@@ -22,8 +22,6 @@ namespace VisualizationPlayer
     /// </summary>
     public sealed partial class SpectrumPage : Page
     {
-        public PlayerService Player { get { return App.Player; } }
-
         private AudioVisualizer.SourceConverter _converterSource;
 
         public SpectrumPage()
@@ -50,13 +48,14 @@ namespace VisualizationPlayer
             rightVU.Source = _converterSource;
             leftVU.ChannelIndex = 0;
             rightVU.ChannelIndex = 1;
+            /*
             if (App.Player.VisualizationSource != null)
             {
                 App.Player.VisualizationSource.IsSuspended = false;
                 _converterSource.Source = App.Player.VisualizationSource;
             }
             App.Player.VisualizationSourceChanged += Player_VisualizationSourceChanged;
-
+            */
         }
 
         private void Player_VisualizationSourceChanged(object sender, AudioVisualizer.IVisualizationSource source)
@@ -67,10 +66,11 @@ namespace VisualizationPlayer
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
         {
             base.OnNavigatingFrom(e);
+            /*
             if (App.Player.VisualizationSource != null)
             {
                 App.Player.VisualizationSource.IsSuspended = true;
-            }
+            }*/
         }
 
     }

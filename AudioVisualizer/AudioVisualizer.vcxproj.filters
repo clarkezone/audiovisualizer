@@ -34,6 +34,7 @@
     <ClCompile Include="BarBaseVisualizer.cpp" />
     <ClCompile Include="VisualizerEffectDefinition.cpp" />
     <ClCompile Include="VisualizerAudioEffect.cpp" />
+    <ClCompile Include="AnalogVUMeter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -58,6 +59,7 @@
     <ClInclude Include="BarBaseVisualizer.h" />
     <ClInclude Include="VisualizerEffectDefinition.h" />
     <ClInclude Include="VisualizerAudioEffect.h" />
+    <ClInclude Include="AnalogVUMeter.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ScalarData.idl" />
@@ -79,6 +81,7 @@
     <Midl Include="VisualizerEffectDefinition.idl" />
     <Midl Include="VisualizerAudioEffect.idl" />
     <Midl Include="SpectralAnalyzer.idl" />
+    <Midl Include="AnalogVUMeter.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

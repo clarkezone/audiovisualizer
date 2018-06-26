@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "VisualizerAudioEffect.h"
 #include <winrt/Windows.Media.Audio.h>
+#include "Tracing.h"
 
 namespace winrt::AudioVisualizer::implementation
 {
@@ -53,32 +54,47 @@ namespace winrt::AudioVisualizer::implementation
 
 	void VisualizerAudioEffect::ProcessFrame(Windows::Media::Effects::ProcessAudioFrameContext const& context)
 	{
-		throw hresult_not_implemented();
+#ifdef _TRACE_
+		Trace::VisualizerAudioEffect_ProcessFrame(context.InputFrame());
+#endif
+		_analyzer.ProcessInput(context.InputFrame());
 	}
 
 	void VisualizerAudioEffect::Close(Windows::Media::Effects::MediaEffectClosedReason const& reason)
 	{
-		throw hresult_not_implemented();
+		if (reason == Windows::Media::Effects::MediaEffectClosedReason::Done && _analyzer) {
+			_analyzer.Close();
+		}
 	}
 
 	void VisualizerAudioEffect::DiscardQueuedFrames()
 	{
-		throw hresult_not_implemented();
+		std::lock_guard<std::mutex> lock(_outputFrameLock);
+#ifdef _TRACE_
+		Trace::VisualizerAudioEffect_DiscardQueuedFrames();
+#endif
+		_analyzer.Flush();
+		_outputFrame = nullptr;
 	}
 
 	AudioVisualizer::VisualizationDataFrame VisualizerAudioEffect::GetData()
 	{
-		throw hresult_not_implemented();
+		std::lock_guard<std::mutex> lock(_outputFrameLock);
+#ifdef _TRACE_
+		Trace::VisualizerAudioEffect_GetData(_outputFrame);
+#endif
+		return _outputFrame;
 	}
 
 	bool VisualizerAudioEffect::IsSuspended()
 	{
-		throw hresult_not_implemented();
+		return _analyzer ? _analyzer.IsSuspended() : true;
 	}
 
 	void VisualizerAudioEffect::IsSuspended(bool value)
 	{
-		throw hresult_not_implemented();
+		if (_analyzer) 
+			_analyzer.IsSuspended(value);
 	}
 
 	float VisualizerAudioEffect::Fps()
@@ -106,7 +122,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<Windows::Foundation::TimeSpan> VisualizerAudioEffect::PresentationTime()
 	{
-		throw hresult_not_implemented();
+		return nullptr;
 	}
 
 	AudioVisualizer::SourcePlaybackState VisualizerAudioEffect::PlaybackState()
@@ -186,7 +202,23 @@ namespace winrt::AudioVisualizer::implementation
 	{
 		uint32_t analyzerStep = (uint32_t)(_encoding.SampleRate() / _fOutputFps);
 		uint32_t overlapSamples = (uint32_t)(analyzerStep * _fOverlap);
-		_analyzer = AudioVisualizer::AudioAnalyzer(analyzerStep + overlapSamples, _encoding.ChannelCount(), _encoding.SampleRate(), analyzerStep, overlapSamples, _fftLength, true);
+		if (_analyzer) {
+			_analyzer.Output(_analyzerOutputEvent);
+		}
+		_analyzer = AudioVisualizer::AudioAnalyzer(2 * (analyzerStep + overlapSamples), _encoding.ChannelCount(), _encoding.SampleRate(), analyzerStep, overlapSamples, _fftLength, true);
+		_analyzer.AnalyzerTypes(_analyzerTypes);
+		_analyzerOutputEvent = _analyzer.Output(
+			Windows::Foundation::TypedEventHandler<AudioVisualizer::AudioAnalyzer, AudioVisualizer::VisualizationDataFrame>(this, &VisualizerAudioEffect::OnAnalyzerOutput)
+		);
+	}
+
+	void VisualizerAudioEffect::OnAnalyzerOutput(AudioVisualizer::AudioAnalyzer const& analyzer, AudioVisualizer::VisualizationDataFrame const& frame)
+	{
+		std::lock_guard<std::mutex> lock(_outputFrameLock);
+#ifdef _TRACE_
+		Trace::VisualizerAudioEffect_OnAnalyzerOutput(frame);
+#endif
+		_outputFrame = frame;
 	}
 	
 }

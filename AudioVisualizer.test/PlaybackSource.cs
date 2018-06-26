@@ -25,8 +25,8 @@ namespace AudioVisualizer.test
     public class PlayerSourceTests
     {
         [TestMethod]
-        [TestCategory("PlayerSource")]
-        public async Task PlayerSource_MediaPlayer()
+        [TestCategory("PlaybackSource")]
+        public async Task PlaybackSource_MediaPlayer()
         {
             var testFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///TestContent/test_signal.mp3"));
             var player = new MediaPlayer();
@@ -56,10 +56,10 @@ namespace AudioVisualizer.test
                 Assert.Fail("Timeout when waiting for the source creation");
         }
 
-        /*
+        
         [TestMethod]
-        [TestCategory("PlayerSource")]
-        public async Task PlayerSource_AudioNodeWithTrueGraph()
+        [TestCategory("PlaybackSource")]
+        public async Task PlaybackSource_CreateFromAudioNode()
         {
             var graphResult = await AudioGraph.CreateAsync(new AudioGraphSettings(Windows.Media.Render.AudioRenderCategory.Media));
             Assert.AreEqual(graphResult.Status, AudioGraphCreationStatus.Success);
@@ -67,7 +67,7 @@ namespace AudioVisualizer.test
             var source = PlaybackSource.CreateFromAudioNode(node);
             graphResult.Graph.Start();
             Assert.IsNotNull(source.Source);
-        }*/
+        }
    }
  
 }

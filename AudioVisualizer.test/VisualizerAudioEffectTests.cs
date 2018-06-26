@@ -1,11 +1,15 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Media;
+using Windows.Media.Audio;
 using Windows.Media.Effects;
 using Windows.Media.MediaProperties;
 
@@ -269,6 +273,54 @@ namespace AudioVisualizer.test
                 source.Fps = 0.1f;
             });
         }
+        [TestMethod]
+        [TestCategory("VisualizerAudioEffect")]
+        public void VisualizerAudioEffect_SettingSuspended()
+        {
+            IVisualizationSource source = (IVisualizationSource)sut;
+            source.IsSuspended = true;
+        }
+        [TestMethod]
+        [TestCategory("VisualizerAudioEffect")]
+        public void VisualizerAudioEffect_NotConfiguredIsSuspended()
+        {
+            IVisualizationSource source = (IVisualizationSource)sut;
+            Assert.IsTrue(source.IsSuspended);
+        }
+        [TestMethod]
+        [TestCategory("VisualizerAudioEffect")]
+        public void VisualizerAudioEffect_DefaultNotIsSuspended()
+        {
+            var encoding = AudioEncodingProperties.CreatePcm(48000, 2, 32);
+            encoding.Subtype = "Float";
+            sut.SetEncodingProperties(encoding);
+            IVisualizationSource source = (IVisualizationSource)sut;
+            Assert.IsFalse(source.IsSuspended);
+        }
 
+        [TestMethod]
+        [TestCategory("VisualizerAudioEffect")]
+        public void VisualizerAudioEffect_GettingPlaybackStateThrows()
+        {
+            IVisualizationSource source = (IVisualizationSource)sut;
+            Assert.ThrowsException<NotImplementedException>(() => {
+                var state = source.PlaybackState;
+            });
+        }
+
+        [TestMethod]
+        [TestCategory("VisualizerAudioEffect")]
+        public void VisualizerAudioEffect_PresentationTimeReturnsNull()
+        {
+            IVisualizationSource source = (IVisualizationSource)sut;
+            Assert.IsNull(source.PresentationTime);
+        }
+        [TestMethod]
+        [TestCategory("VisualizerAudioEffect")]
+        public void VisualizerAudioEffect_GetDataReturnsNull()
+        {
+            IVisualizationSource source = (IVisualizationSource)sut;
+            Assert.IsNull(source.GetData());
+        }
     }
 }

@@ -9,13 +9,17 @@ namespace winrt::AudioVisualizer::implementation
     {
 		AudioVisualizer::AudioAnalyzer _analyzer{ nullptr };
 		Windows::Media::MediaProperties::AudioEncodingProperties _encoding{ nullptr };
+		AudioVisualizer::VisualizationDataFrame _outputFrame{ nullptr };
+		std::mutex _outputFrameLock;
 		float _fOutputFps;
 		float _fOverlap;
 		uint32_t _fftLength;
 		winrt::event<Windows::Foundation::TypedEventHandler<IVisualizationSource, hstring>> _configurationChangedEvent;
+		winrt::event_token _analyzerOutputEvent;
 
 		AnalyzerType _analyzerTypes;
 		void CreateAnalyzer();
+		void OnAnalyzerOutput(AudioVisualizer::AudioAnalyzer const&analyzer, AudioVisualizer::VisualizationDataFrame const&frame);
 
         VisualizerAudioEffect();
 		bool UseInputFrameForOutput();

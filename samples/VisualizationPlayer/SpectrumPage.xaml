@@ -21,5 +21,6 @@
         <vis:SpectrumVisualizer Grid.Row="0" Grid.ColumnSpan="3" x:Name="spectrum" UnlitElement="LightGray"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2" Padding="2" BorderBrush="Blue" BorderThickness="1" RelativeElementMargin="0.01,0.1,0.1,0.01"></vis:SpectrumVisualizer>
         <vis:DiscreteVUBar Grid.Row="1" DisplayPeak="True" Grid.Column="0"  x:Name="leftVU" Width="20" Height="100" RelativeElementMargin="0.1,0.1,0.1,0.1" HorizontalAlignment="Center"></vis:DiscreteVUBar>
         <vis:DiscreteVUBar Grid.Row="1" Grid.Column="1" DisplayPeak="True" x:Name="rightVU" Width="20" Height="100" RelativeElementMargin="0.1,0.1,0.1,0.1" HorizontalAlignment="Center"></vis:DiscreteVUBar>
+        <vis:AnalogVUMeter Grid.Row="1" Grid.Column="2" Width="600" Height="300"/>
     </Grid>
 </Page>

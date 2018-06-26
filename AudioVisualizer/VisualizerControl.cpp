@@ -97,7 +97,7 @@ namespace winrt::AudioVisualizer::implementation
 	}
 	void VisualizerControl::CreateSwapChainWithSize(Windows::Foundation::Size size)
 	{
-		float logicalDpi = Windows::Graphics::Display::DisplayInformation::GetForCurrentView().LogicalDpi();
+		float logicalDpi = Windows::ApplicationModel::DesignMode::DesignModeEnabled() ? 96.0f : Windows::Graphics::Display::DisplayInformation::GetForCurrentView().LogicalDpi();
 		CreateSwapChainWithSizeAndDpi(size, logicalDpi);
 	}
 
@@ -191,10 +191,14 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::Foundation::Size size;
 		size.Width = (float)ActualWidth();
 		size.Height = (float)ActualHeight();
-		CreateSwapChainWithSize(size);
-		OnCreateResources(_swapChain, CreateResourcesReason::New);
-		_bDrawEventActive = true;
-		StartDrawLoop();
+		// Do not create draw loop in design mode
+		if (!Windows::ApplicationModel::DesignMode::DesignModeEnabled())
+		{
+			CreateSwapChainWithSize(size);
+			OnCreateResources(_swapChain, CreateResourcesReason::New);
+			_bDrawEventActive = true;
+			StartDrawLoop();
+		}
 	}
 	void VisualizerControl::OnUnloaded(IInspectable sender, Windows::UI::Xaml::RoutedEventArgs args)
 	{

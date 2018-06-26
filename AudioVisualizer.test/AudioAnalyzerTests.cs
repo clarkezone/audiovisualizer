@@ -319,6 +319,21 @@ namespace AudioVisualizer.test
         }
         [TestMethod]
         [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_ProcessInput_AreShortFramesHandledCorrectly()
+        {
+            // Simulate operation in AudioGraph - 10ms frames, output should be generated only on 6th input frame
+            var sut = new AudioAnalyzer(2400, 2, 48000, 800, 400, 2048, false);
+            RegisterOutputHandler(sut);
+            var frame = new AudioFrame(480 * 2 * sizeof(float));
+            int[] expectedOutFrames = { 0, 1, 1, 2, 3, 3 };
+            for (int i = 0; i < 6; i++)
+            {
+                sut.ProcessInput(frame);
+                Assert.AreEqual(expectedOutFrames[i], outputFrames.Count(),$"Pass {i}");
+            }
+        }
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_ProcessInput_IsTimeCorrectAfterFlush()
         {
             var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);

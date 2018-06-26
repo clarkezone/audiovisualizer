@@ -7,8 +7,14 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Media.Core;
+using Windows.Media.Playback;
+using Windows.Storage;
+using Windows.Storage.FileProperties;
+using Windows.Storage.Pickers;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -27,37 +33,114 @@ namespace VisualizationPlayer
     /// </summary>
     public sealed partial class PlayerPage : Page
     {
-        public PlayerService Player { get { return App.Player; } }
+        MediaPlayer _player;
+        PlaybackSource _playbackSource;
+        SourceConverter _source;
 
         public PlayerPage()
         {
             this.InitializeComponent();
+            _player = new MediaPlayer();
+            _player.MediaOpened += Player_MediaOpened;
+            _player.PlaybackSession.PositionChanged += Player_PositionChanged;
+            _playbackSource = PlaybackSource.CreateFromMediaPlayer(_player);
+            _playbackSource.SourceChanged += PlaybackSource_Changed;
+            _source = new SourceConverter();
+            _source.RmsRiseTime = TimeSpan.FromMilliseconds(200);
+            _source.RmsFallTime = TimeSpan.FromMilliseconds(200);
+            analog0.Source = _source;
+            analog0.ChannelIndex = 0;
+            analog1.Source = _source;
+            analog1.ChannelIndex = 1;
+        }
+
+        private void PlaybackSource_Changed(object sender, IVisualizationSource args)
+        {
+            PositionDisplay.Source = _playbackSource.Source;
+            spectrum.Source = _playbackSource.Source;
+            _source.Source = _playbackSource.Source;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            if (App.Player.VisualizationSource != null)
-            {
-                App.Player.VisualizationSource.IsSuspended = false;
-                spectrum.Source = App.Player.VisualizationSource;
-            }
-            App.Player.VisualizationSourceChanged += Player_VisualizationSourceChanged;
+            PositionDisplay.Source = _playbackSource.Source;
+            spectrum.Source = _playbackSource.Source;
         }
 
-        private void Player_VisualizationSourceChanged(object sender, AudioVisualizer.IVisualizationSource source)
+        private async void OpenFile_Click(object sender, RoutedEventArgs e)
         {
-            spectrum.Source = source;
+            var picker = new FileOpenPicker();
+            picker.FileTypeFilter.Add(".wav");
+            picker.FileTypeFilter.Add(".mp3");
+            picker.FileTypeFilter.Add(".wmv");
+            picker.FileTypeFilter.Add(".mp4");
+            picker.FileTypeFilter.Add(".flac");
+            var file = await picker.PickSingleFileAsync();
+            if (file != null)
+            {
+                await OpenMediaFile(file);
+                _player.Play();
+            }
         }
 
-        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        private async Task OpenMediaFile(StorageFile file)
         {
-            base.OnNavigatingFrom(e);
-            if (App.Player.VisualizationSource != null)
+            _player.Source = MediaSource.CreateFromStorageFile(file);
+            MusicProperties musicProps = await file.Properties.GetMusicPropertiesAsync();
+            nowPlaying.Text = $"Now playing {musicProps.Title} by {musicProps.Artist}";
+        }
+
+        bool _insidePositionUpdate = false;
+
+        private async void Player_PositionChanged(MediaPlaybackSession session, object args)
+        {
+          
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                () =>
+                {
+                    _insidePositionUpdate = true;
+                    seekSlider.Value = session.Position.TotalSeconds;
+                    _insidePositionUpdate = false;
+                });
+        }
+
+        private async void Player_MediaOpened(object sender, object e)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                () =>
+                {
+                    seekSlider.Maximum = _player.PlaybackSession.NaturalDuration.TotalSeconds;
+                });
+        }
+
+
+        private void PositionDisplay_Draw(VisualizerControl sender, VisualizerDrawEventArgs args)
+        {
+            if (args.PresentationTime != null)
             {
-                App.Player.VisualizationSource.IsSuspended = true;
+                string timeString = args.PresentationTime.Value.ToString("mm\\:ss\\.ff");
+                var ds = (CanvasDrawingSession)args.DrawingSession;
+                ds.DrawText(timeString, 0, 0, Colors.Gray);
             }
-            App.Player.VisualizationSourceChanged -= Player_VisualizationSourceChanged;
+        }
+
+        private void PlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            _player.Play();
+        }
+
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            _player.Pause();
+        }
+
+        private void seekSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (!_insidePositionUpdate)
+            {
+                _player.PlaybackSession.Position =  TimeSpan.FromSeconds(e.NewValue);
+            }
         }
 
         private void spectrum_CreateResources(object sender, AudioVisualizer.CreateResourcesEventArgs args)

@@ -93,6 +93,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AnalogVUMeter.h" />
     <ClInclude Include="AudioAnalyzer.h" />
     <ClInclude Include="AudioMath.h" />
     <ClInclude Include="BarBaseVisualizer.h" />
@@ -117,6 +118,7 @@
     <ClInclude Include="XDSP.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnalogVUMeter.cpp" />
     <ClCompile Include="AudioAnalyzer.cpp">
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotSet</EnableEnhancedInstructionSet>
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
@@ -146,6 +148,7 @@
     <ClCompile Include="VisualizerEffectDefinition.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="AnalogVUMeter.idl" />
     <Midl Include="AudioAnalyzer.idl" />
     <Midl Include="BarVisualizer.idl" />
     <Midl Include="CreateResourcesEventArgs.idl" />

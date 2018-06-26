@@ -1,6 +1,4 @@
-import "VisualizationDataFrame.idl";
 import "VisualizationSource.idl";
-
 
 namespace AudioVisualizer
 {
