@@ -288,12 +288,19 @@ namespace winrt::AudioVisualizer::implementation
 	void SourceConverter::FrequencyScale(Windows::Foundation::IReference<AudioVisualizer::ScaleType> const& value)
 	{
 		std::lock_guard lock(_lock);
+
 		if (value)
 		{
-			if (value.Value() == ScaleType::Logarithmic && _minFrequency)
+			if (value.Value() == ScaleType::Logarithmic)
 			{
-				if (_minFrequency.Value() == 0)
-					throw hresult_invalid_argument();
+				if (_minFrequency) {
+					if (_minFrequency.Value() == 0) {
+						throw hresult_invalid_argument(L"Cannot set to logarithmic scale with minimum frequency set to zero");
+					}
+				}
+				else {
+					throw hresult_invalid_argument(L"Cannot set to logarithmic scale with minimum frequency not set");
+				}
 			}
 		}
 		if (value == _frequencyScale)

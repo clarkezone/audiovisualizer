@@ -233,9 +233,32 @@ namespace AudioVisualizer.test
         [TestCategory("SourceConverter")]
         public void SourceConverter_SettingMinFrequencyToZeroWithLogScaleThrows()
         {
+            sut.MinFrequency = 20;
             sut.FrequencyScale = ScaleType.Logarithmic;
             Assert.ThrowsException<ArgumentException>(() => { sut.MinFrequency = 0.0f; });
         }
+
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_SettingScaleToLogWithNullMinFrequencyThrows()
+        {
+            Assert.IsNull(sut.MinFrequency);
+            Assert.ThrowsException<ArgumentException>(() => 
+            {
+                sut.FrequencyScale = ScaleType.Logarithmic;
+            });
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_SettingScaleToLogWithZeroMinFrequencyThrows()
+        {
+            sut.MinFrequency = 0.0f;
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                sut.FrequencyScale = ScaleType.Logarithmic;
+            });
+        }
+
         [TestCategory("SourceConverter")]
         public void SourceConverter_SettingMinFrequencyLTZeroThrows()
         {

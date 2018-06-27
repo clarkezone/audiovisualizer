@@ -99,12 +99,15 @@ namespace winrt::AudioVisualizer::implementation
 	{
 		_orientation = value;
 	}
-	uint32_t BarBaseVisualizer::ChannelIndex()
+	int32_t BarBaseVisualizer::ChannelIndex()
 	{
 		return _channelIndex;
 	}
-	void BarBaseVisualizer::ChannelIndex(uint32_t value)
+	void BarBaseVisualizer::ChannelIndex(int32_t value)
 	{
+		if (value < 0) {
+			throw hresult_invalid_argument(L"Channel index cannot be negative");
+		}
 		_channelIndex = value;
 	}
 	Windows::UI::Xaml::Thickness BarBaseVisualizer::RelativeElementMargin()

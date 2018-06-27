@@ -7,6 +7,6 @@ namespace AudioVisualizer
 	{
 		AnalogVUMeter();
 		IVisualizationSource Source;
-		UInt32 ChannelIndex;
+		Int32 ChannelIndex;
 	}
 }

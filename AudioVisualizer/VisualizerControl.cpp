@@ -23,16 +23,6 @@ namespace winrt::AudioVisualizer::implementation
 		_visualizationSource = value;
 	}
 
-	Windows::UI::Color VisualizerControl::BackgroundColor()
-	{
-		return _drawingSessionClearColor;
-	}
-
-	void VisualizerControl::BackgroundColor(Windows::UI::Color const& value)
-	{
-		_drawingSessionClearColor = value;
-	}
-
 	void VisualizerControl::CreateDevice()
 	{
 		using namespace Microsoft::Graphics::Canvas;
@@ -118,7 +108,7 @@ namespace winrt::AudioVisualizer::implementation
  				if (_swapChain != nullptr && _bDrawEventActive)
 				{
 					try {
-						auto drawingSession = _swapChain.CreateDrawingSession(_drawingSessionClearColor);
+						auto drawingSession = _swapChain.CreateDrawingSession(Windows::UI::Colors::Transparent());
 						AudioVisualizer::VisualizationDataFrame dataFrame{ nullptr };
 						Windows::Foundation::IReference<Windows::Foundation::TimeSpan> presentationTime;
 						if (_visualizationSource) {

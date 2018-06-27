@@ -11,7 +11,7 @@ namespace AudioVisualizer
 	{
 		MeterBarLevel[] Levels;
 		Windows.UI.Xaml.Controls.Orientation Orientation;
-		UInt32 ChannelIndex;
+		Int32 ChannelIndex;
 		Windows.UI.Xaml.Thickness RelativeElementMargin;
 		Windows.UI.Color UnlitElement;
 	}

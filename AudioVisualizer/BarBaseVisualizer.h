@@ -22,8 +22,8 @@ namespace winrt::AudioVisualizer::implementation
 		void Levels(array_view<AudioVisualizer::MeterBarLevel const> value);
 		Windows::UI::Xaml::Controls::Orientation Orientation();
 		void Orientation(Windows::UI::Xaml::Controls::Orientation const& value);
-		uint32_t ChannelIndex();
-		void ChannelIndex(uint32_t value);
+		int32_t ChannelIndex();
+		void ChannelIndex(int32_t value);
 		Windows::UI::Xaml::Thickness RelativeElementMargin();
 		void RelativeElementMargin(Windows::UI::Xaml::Thickness const& value);
 		Windows::UI::Color UnlitElement();

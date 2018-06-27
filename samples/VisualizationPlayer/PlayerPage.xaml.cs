@@ -36,6 +36,8 @@ namespace VisualizationPlayer
         MediaPlayer _player;
         PlaybackSource _playbackSource;
         SourceConverter _source;
+        SourceConverter _analogSource;
+        SourceConverter _spectrumSource;
 
         public PlayerPage()
         {
@@ -45,27 +47,56 @@ namespace VisualizationPlayer
             _player.PlaybackSession.PositionChanged += Player_PositionChanged;
             _playbackSource = PlaybackSource.CreateFromMediaPlayer(_player);
             _playbackSource.SourceChanged += PlaybackSource_Changed;
-            _source = new SourceConverter();
-            _source.RmsRiseTime = TimeSpan.FromMilliseconds(200);
-            _source.RmsFallTime = TimeSpan.FromMilliseconds(200);
-            analog0.Source = _source;
-            analog0.ChannelIndex = 0;
-            analog1.Source = _source;
-            analog1.ChannelIndex = 1;
+            _source = (SourceConverter) Resources["source"];
+            _analogSource = (SourceConverter)Resources["analogSource"];
+            _spectrumSource = (SourceConverter)Resources["spectrumSource"];
+            _source.RmsRiseTime = TimeSpan.FromMilliseconds(50);
+            _source.RmsFallTime = TimeSpan.FromMilliseconds(50);
+            _analogSource.RmsRiseTime = TimeSpan.FromMilliseconds(500);
+            _analogSource.RmsFallTime = TimeSpan.FromMilliseconds(500);
+            _analogSource.AnalyzerTypes = AnalyzerType.RMS;
+            _spectrumSource.SpectrumRiseTime = TimeSpan.FromMilliseconds(100);
+            _spectrumSource.SpectrumFallTime = TimeSpan.FromMilliseconds(200);
+            _spectrumSource.FrequencyCount = 50;
+            _spectrumSource.MinFrequency = 20.0f;
+            _spectrumSource.MaxFrequency = 20000.0f;
+            _spectrumSource.FrequencyScale = ScaleType.Logarithmic;
+            _spectrumSource.AnalyzerTypes = AnalyzerType.Spectrum;
+
+            // Create bar steps with 1db steps from -86db to +6
+            const int fromDb = -86;
+            const int toDb = 6;
+            MeterBarLevel[] levels = new MeterBarLevel[toDb-fromDb];
+            Color fromColor = Colors.Yellow;
+            Color toColor = Colors.Red;
+            float redStep = (float)toColor.R - (float)fromColor.R;
+            float greenStep = (float)toColor.G - (float)fromColor.G;
+            float blueStep = (float)toColor.B - (float)fromColor.B;
+
+            for (int i = 0; i < levels.Count(); i++)
+            {
+                float ratio = (float)i / (float) levels.Count();
+                levels[i].Color = Color.FromArgb(255,(byte)((redStep * ratio) + fromColor.R), (byte)((greenStep * ratio) + fromColor.G), (byte)((blueStep * ratio) + fromColor.B));
+                levels[i].Level = i + fromDb;
+            }
+            bar0.Levels = levels;
+            bar1.Levels = levels;
+
         }
 
         private void PlaybackSource_Changed(object sender, IVisualizationSource args)
         {
-            PositionDisplay.Source = _playbackSource.Source;
-            spectrum.Source = _playbackSource.Source;
             _source.Source = _playbackSource.Source;
+            _analogSource.Source = _playbackSource.Source;
+            _spectrumSource.Source = _playbackSource.Source;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            PositionDisplay.Source = _playbackSource.Source;
-            spectrum.Source = _playbackSource.Source;
+            _source.Source = _playbackSource.Source;
+            _analogSource.Source = _playbackSource.Source;
+            _spectrumSource.Source = _playbackSource.Source;
         }
 
         private async void OpenFile_Click(object sender, RoutedEventArgs e)

@@ -9,6 +9,9 @@
     mc:Ignorable="d">
     <Page.Resources>
         <local:BooleanToVisibilityConverter x:Key="visibilityConverter"></local:BooleanToVisibilityConverter>
+        <a:SourceConverter x:Key="source"></a:SourceConverter>
+        <a:SourceConverter x:Key="analogSource"></a:SourceConverter>
+        <a:SourceConverter x:Key="spectrumSource"></a:SourceConverter>
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -25,18 +28,36 @@
             <PivotItem Header="Analog">
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"></ColumnDefinition>
                         <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition Width="100"></ColumnDefinition>
                         <ColumnDefinition></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <a:AnalogVUMeter Grid.Column="0" MinWidth="200" MinHeight="100" Margin="50,50,50,250" x:Name="analog0"></a:AnalogVUMeter>
-                    <a:AnalogVUMeter Grid.Column="1" MinWidth="200" MinHeight="100" Margin="50,50,50,250" x:Name="analog1"></a:AnalogVUMeter>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center">Left Channel</TextBlock>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Center">Right Channel</TextBlock>
+                    <a:DiscreteVUBar Grid.Row="0" Grid.Column="0" ChannelIndex="0" Source="{StaticResource source}" RelativeElementMargin="0.1,0.1,0.1,0.1" Margin="10,50,10,50"></a:DiscreteVUBar>
+                    <a:DiscreteVUBar Grid.Row="0" Grid.Column="2" ChannelIndex="1" Source="{StaticResource source}"  RelativeElementMargin="0.1,0.1,0.1,0.1" Margin="10,50,10,50"></a:DiscreteVUBar>
+                    <a:AnalogVUMeter Grid.Row="0" Grid.Column="1" MinWidth="200" MinHeight="100" Margin="50,50,50,50" Source="{StaticResource analogSource}"  ChannelIndex="0"></a:AnalogVUMeter>
+                    <a:AnalogVUMeter Grid.Row="0" Grid.Column="3" MinWidth="200" MinHeight="100" Margin="50,50,50,50" Source="{StaticResource analogSource}" ChannelIndex="1"></a:AnalogVUMeter>
+                    <Grid Grid.Row="1" Grid.ColumnSpan="4" Margin="100">
+                        <Grid.RowDefinitions>
+                            <RowDefinition></RowDefinition>
+                            <RowDefinition></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <a:DiscreteVUBar Grid.Row="0" Source="{StaticResource analogSource}" Orientation="Horizontal" x:Name="bar0" UnlitElement="Transparent" RelativeElementMargin="0.2,0.01,0.2,0.01"></a:DiscreteVUBar>
+                        <a:DiscreteVUBar Grid.Row="1" Source="{StaticResource analogSource}" Orientation="Horizontal" x:Name="bar1" UnlitElement="Transparent" RelativeElementMargin="0.2,0.01,0.2,0.01"></a:DiscreteVUBar>
+                    </Grid>
                 </Grid>
             </PivotItem>
             <PivotItem Header="Spectrum">
-
+                <a:SpectrumVisualizer Source="{StaticResource spectrumSource}"></a:SpectrumVisualizer>
             </PivotItem>
             <PivotItem Header="Custom draw">
-                <a:CustomVisualizer Grid.Column="0" x:Name="spectrum" CreateResources="spectrum_CreateResources" Draw="spectrum_Draw"></a:CustomVisualizer>
+                <a:CustomVisualizer Grid.Column="0" x:Name="spectrum" Source="{StaticResource source}" CreateResources="spectrum_CreateResources" Draw="spectrum_Draw"></a:CustomVisualizer>
             </PivotItem>
         </Pivot>
         <Grid Grid.Row="2">
@@ -55,7 +76,7 @@
                         HorizontalAlignment="Center"
                         Orientation="Horizontal">
                 <a:CustomVisualizer
-                            x:Name="PositionDisplay"
+                            Source="{StaticResource source}"
                             Width="75"
                             Height="40"
                             Draw="PositionDisplay_Draw" />

@@ -44,8 +44,6 @@ namespace winrt::AudioVisualizer::implementation
 		VisualizerControl();
 		AudioVisualizer::IVisualizationSource Source();
 		void Source(AudioVisualizer::IVisualizationSource const& value);
-		Windows::UI::Color BackgroundColor();
-		void BackgroundColor(Windows::UI::Color const& value);
     };
 }
 

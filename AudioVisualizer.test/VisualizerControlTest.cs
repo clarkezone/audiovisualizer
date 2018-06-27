@@ -34,22 +34,5 @@ namespace AudioVisualizer.test
             sut.Source = source;
             Assert.AreEqual(source, sut.Source);
         }
-
-        [UITestMethod]
-        [TestCategory("VisualizerControl")]
-        public void VisualizerControl_DefaultBackgroundIsTransparent()
-        {
-            Assert.AreEqual(Windows.UI.Colors.Transparent, sut.BackgroundColor);
-        }
-        [UITestMethod]
-        [TestCategory("VisualizerControl")]
-        public void VisualizerControl_CanSetBackground()
-        {
-            sut.BackgroundColor = Windows.UI.Colors.White;
-            Assert.AreEqual(Windows.UI.Colors.White, sut.BackgroundColor);
-        }
-
-
-
     }
 }

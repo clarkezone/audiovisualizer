@@ -98,6 +98,7 @@ namespace winrt::AudioVisualizer::implementation
 		_meterLight.OuterConeColor = Colors.BlueViolet; */
 
 		SizeChanged(SizeChangedEventHandler(this, &AnalogVUMeter::OnSizeChanged));
+		RegisterPropertyChangedCallback(Windows::UI::Xaml::Controls::Control::BackgroundProperty(), Windows::UI::Xaml::DependencyPropertyChangedCallback(this, &AnalogVUMeter::OnBackgroundChanged));
 		Loaded(Windows::UI::Xaml::RoutedEventHandler(this, &AnalogVUMeter::OnLoaded));
 	}
 
@@ -111,13 +112,17 @@ namespace winrt::AudioVisualizer::implementation
 		_source = value;
 	}
 
-	uint32_t AnalogVUMeter::ChannelIndex()
+	int32_t AnalogVUMeter::ChannelIndex()
 	{
 		return _channelIndex;
 	}
 
-	void AnalogVUMeter::ChannelIndex(uint32_t value)
+	void AnalogVUMeter::ChannelIndex(int32_t value)
 	{
+		if (value < 0) {
+			throw hresult_invalid_argument(L"Channel index cannot be negative");
+		}
+
 		_channelIndex = value;
 	}
 
@@ -211,6 +216,9 @@ namespace winrt::AudioVisualizer::implementation
 	void AnalogVUMeter::OnLoaded(IInspectable sender, Windows::UI::Xaml::RoutedEventArgs const &)
 	{
 		Windows::System::Threading::ThreadPoolTimer::CreatePeriodicTimer(Windows::System::Threading::TimerElapsedHandler(this, &AnalogVUMeter::UpdateMeter), Windows::Foundation::TimeSpan(166667));	// Fire 60 times per second
+	}
+	void AnalogVUMeter::OnBackgroundChanged(Windows::UI::Xaml::DependencyObject const & sender, Windows::UI::Xaml::DependencyProperty const & dp)
+	{
 	}
 	void AnalogVUMeter::UpdateMeter(Windows::System::Threading::ThreadPoolTimer const &)
 	{

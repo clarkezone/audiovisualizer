@@ -7,7 +7,6 @@ namespace AudioVisualizer
 	{
 		VisualizerControl();
 		IVisualizationSource Source;
-		Windows.UI.Color BackgroundColor;
 	};
 }
 

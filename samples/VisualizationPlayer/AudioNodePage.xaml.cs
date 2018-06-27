@@ -38,7 +38,6 @@ namespace VisualizationPlayer
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             base.OnNavigatedFrom(e);
-            _analyzerTimer.Cancel();
             _graph?.Stop();
             _graph.Dispose();
             _graph = null;
@@ -48,7 +47,6 @@ namespace VisualizationPlayer
         AudioDeviceInputNode _inputNode;
         PlaybackSource _source;
         SourceConverter _converter;
-        ThreadPoolTimer _analyzerTimer;
 
         async void CreateAudioGraphAsync()
         {

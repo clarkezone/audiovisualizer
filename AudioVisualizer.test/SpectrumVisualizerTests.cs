@@ -41,31 +41,24 @@ namespace AudioVisualizer.test
 
         [UITestMethod]
         [TestCategory("SpectrumVisualizer")]
-        public void SpectrumVisualizer_DefaultBackgroundIsTransparent()
-        {
-            Assert.AreEqual(Windows.UI.Colors.Transparent, sut.BackgroundColor);
-        }
-        [UITestMethod]
-        [TestCategory("SpectrumVisualizer")]
-        public void SpectrumVisualizer_CanSetBackground()
-        {
-            sut.BackgroundColor = Windows.UI.Colors.White;
-            Assert.AreEqual(Windows.UI.Colors.White, sut.BackgroundColor);
-        }
-
-        [UITestMethod]
-        [TestCategory("SpectrumVisualizer")]
         public void SpectrumVisualizer_IsDefaultChannelSetToZero()
         {
-            Assert.AreEqual(0u, sut.ChannelIndex);
+            Assert.AreEqual(0, sut.ChannelIndex);
         }
         [UITestMethod]
         [TestCategory("SpectrumVisualizer")]
         public void SpectrumVisualizer_CanSetChannelIndex()
         {
             sut.ChannelIndex = 1;
-            Assert.AreEqual(1u, sut.ChannelIndex);
+            Assert.AreEqual(1, sut.ChannelIndex);
         }
+        [UITestMethod]
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_SettingChannelIndexToNegativeThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() => { sut.ChannelIndex = -1; });
+        }
+
 
         [UITestMethod]
         [TestCategory("SpectrumVisualizer")]

@@ -13,7 +13,6 @@ namespace AudioVisualizer.test
     public class VisualizerEffectDefinitionTests
     {
         FakeAudioNode _audioNode;
-        PlaybackSource sut;
 
         [TestInitialize]
         public void TestInit()

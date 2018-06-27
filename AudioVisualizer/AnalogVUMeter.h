@@ -37,7 +37,7 @@ namespace winrt::AudioVisualizer::implementation
 		float _meterValue = 0.0f;
 
 		IVisualizationSource _source;
-		uint32_t _channelIndex;
+		uint32_t _channelIndex = 0;
 
 		void UpdateDialPosition();
 		void PaintScale(const float2 &size);
@@ -45,13 +45,14 @@ namespace winrt::AudioVisualizer::implementation
 
 		void OnSizeChanged(IInspectable sender, Windows::UI::Xaml::SizeChangedEventArgs const &args);
 		void OnLoaded(IInspectable sender, Windows::UI::Xaml::RoutedEventArgs const &args);
+		void OnBackgroundChanged(Windows::UI::Xaml::DependencyObject const &sender, Windows::UI::Xaml::DependencyProperty const &dp);
 		void UpdateMeter(Windows::System::Threading::ThreadPoolTimer const &timer);
 	public:
         AnalogVUMeter();
 		AudioVisualizer::IVisualizationSource Source();
 		void Source(AudioVisualizer::IVisualizationSource const& value);
-		uint32_t ChannelIndex();
-		void ChannelIndex(uint32_t value);
+		int32_t ChannelIndex();
+		void ChannelIndex(int32_t value);
     };
 }
 
