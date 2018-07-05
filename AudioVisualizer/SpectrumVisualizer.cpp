@@ -15,6 +15,44 @@ namespace winrt::AudioVisualizer::implementation
 	{
 	}
 
+	void SpectrumVisualizer::OnSourceChanged(hstring const &propertyName)
+	{
+		if (propertyName == L"FrequencyCount" || propertyName == L"Source" || propertyName == L"")
+		{
+			auto barCount = 0;
+			if (_source && _source.ActualFrequencyCount()) {
+				barCount = _source.ActualFrequencyCount().Value();
+			}
+			// Create new layout on ui thread
+			Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, Windows::UI::Core::DispatchedHandler(
+				[=] {
+					_barCount = barCount;
+					CreateElementVisuals();
+					LayoutVisuals();
+				}
+			));
+		}
+	}
+
+	void SpectrumVisualizer::OnUpdateMeter(AudioVisualizer::VisualizationDataFrame const & frame)
+	{
+		Windows::Foundation::Collections::IVectorView<float> spectrumValues{ nullptr };
+		if (frame && frame.Spectrum() && frame.Spectrum().Size() > _channelIndex) {
+			spectrumValues = frame.Spectrum().GetAt(_channelIndex);
+		}
+
+		for (size_t barIndex = 0; barIndex < _barCount; barIndex++)
+		{
+			float value = -100.0f;
+			if (spectrumValues) {
+				value = frame.Spectrum().AmplitudeScale() == ScaleType::Linear ? 20.0f * log10f(spectrumValues.GetAt(barIndex)) : spectrumValues.GetAt(barIndex);
+			}
+			UpdateBarValue(barIndex, value, -100.0f);
+		}
+	}
+
+
+	/*
 	void SpectrumVisualizer::OnDraw(Microsoft::Graphics::Canvas::CanvasDrawingSession drawingSession, VisualizationDataFrame dataFrame, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> presentationTime)
 	{
 		std::lock_guard<std::mutex> lock(_lock);
@@ -49,5 +87,5 @@ namespace winrt::AudioVisualizer::implementation
 				barRect.Y += barSize.Height;
 			}
 		}
-	}
+	}*/
 }

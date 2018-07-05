@@ -97,7 +97,9 @@ namespace winrt::AudioVisualizer::implementation
 #pragma endregion
 
 #pragma region IMFClockConsumer implementation
-		com_ptr<IMFPresentationClock> m_spPresentationClock;
+		com_ptr<IMFPresentationClock> _presentationClock;
+		std::mutex _presentationClockMutex;
+
 		STDMETHODIMP SetPresentationClock(_In_opt_ IMFPresentationClock *pPresentationClock);
 		STDMETHODIMP GetPresentationClock(_COM_Outptr_opt_result_maybenull_ IMFPresentationClock **)
 		{

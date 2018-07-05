@@ -285,6 +285,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	SpectrumData::SpectrumData(uint32_t cChannels, uint32_t cElements, AudioVisualizer::ScaleType const & amplitudeScale, AudioVisualizer::ScaleType const & frequencyScale, float minFrequency, float maxFrequency, bool bInitWithZeros)
 	{
+		_pData = nullptr;
 		_amplitudeScale = amplitudeScale;
 		_frequencyScale = frequencyScale;
 		_minimumFrequency = minFrequency;
@@ -296,7 +297,10 @@ namespace winrt::AudioVisualizer::implementation
 		_vElementsCount = (cElements + 3) >> 2;	// Make sure channel data is aligned
 		_size = cElements;
 		_channels = cChannels;
-		_pData = reinterpret_cast<DirectX::XMVECTOR *>(_aligned_malloc(_vElementsCount * cChannels * sizeof(DirectX::XMVECTOR), 16));
+		_pData = reinterpret_cast<DirectX::XMVECTOR *>(_aligned_malloc_dbg(_vElementsCount * cChannels * sizeof(DirectX::XMVECTOR), 16,__FILE__,__LINE__));
+		if (!_pData) {
+			throw std::bad_alloc();
+		}
 		if (bInitWithZeros)
 		{
 			memset(_pData, 0, _vElementsCount * cChannels * sizeof(DirectX::XMVECTOR));
@@ -313,7 +317,7 @@ namespace winrt::AudioVisualizer::implementation
 	SpectrumData::~SpectrumData()
 	{
 		if (_pData != nullptr)
-			_aligned_free(_pData);
+			_aligned_free_dbg(_pData);
 		_pData = nullptr;
 	}
 

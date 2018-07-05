@@ -122,9 +122,10 @@ namespace winrt::AudioVisualizer::implementation
 
 	MediaAnalyzer::~MediaAnalyzer()
 	{
-		if (m_spPresentationClock != nullptr)
+		std::lock_guard<std::mutex> lock(_presentationClockMutex);
+		if (_presentationClock)
 		{
-			m_spPresentationClock->RemoveClockStateSink(this);
+			_presentationClock->RemoveClockStateSink(this);
 		}
 	}
 
@@ -144,14 +145,12 @@ namespace winrt::AudioVisualizer::implementation
 		if (m_spInputType != nullptr) {
 			CreateAnalyzer();
 		}
-
-		_configurationChangedEvent(*this, hstring(L""));
 	}
 
 	AudioVisualizer::VisualizationDataFrame MediaAnalyzer::GetData()
 	{
 		auto currentPosition = PresentationTime();
-		if (currentPosition)
+		if (currentPosition && _playbackState == SourcePlaybackState::Playing)
 		{
 			auto frame = _analyzerOutput.get(currentPosition.Value());
 #ifdef _TRACE_
@@ -202,10 +201,11 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Foundation::IReference<Windows::Foundation::TimeSpan> MediaAnalyzer::PresentationTime()
 	{
-		if (m_spPresentationClock != nullptr)
+		std::lock_guard<std::mutex> lock(_presentationClockMutex);
+		if (_presentationClock)
 		{
 			MFTIME presentationTime = 0;
-			if (SUCCEEDED(m_spPresentationClock->GetTime(&presentationTime)))
+			if (SUCCEEDED(_presentationClock->GetTime(&presentationTime)))
 			{
 				return Windows::Foundation::TimeSpan(presentationTime);
 			}
@@ -615,7 +615,6 @@ namespace winrt::AudioVisualizer::implementation
 		{
 			m_spOutputType.copy_from(pType);
 			CreateAnalyzer();
-			_configurationChangedEvent(*this, hstring(L""));
 			return S_OK;
 		}
 		return S_OK;
@@ -912,13 +911,18 @@ namespace winrt::AudioVisualizer::implementation
 
 	HRESULT MediaAnalyzer::SetPresentationClock(IMFPresentationClock * pPresentationClock)
 	{
-		if (m_spPresentationClock != nullptr)
+		std::lock_guard<std::mutex> lock(_presentationClockMutex);
+		if (_presentationClock)
 		{
-			m_spPresentationClock->RemoveClockStateSink(this);
+			_presentationClock->RemoveClockStateSink(this);
 		}
-		m_spPresentationClock.copy_from(pPresentationClock);
-		if (m_spPresentationClock != nullptr)
-			m_spPresentationClock->AddClockStateSink(this);
+		_presentationClock = nullptr;
+		
+		_presentationClock.copy_from(pPresentationClock);
+		
+		if (_presentationClock) {
+			_presentationClock->AddClockStateSink(this);
+		}
 
 		return S_OK;
 	}
@@ -939,6 +943,7 @@ namespace winrt::AudioVisualizer::implementation
 		_analyzerOutputEvent = _analyzer.Output(
 			Windows::Foundation::TypedEventHandler<AudioVisualizer::AudioAnalyzer, AudioVisualizer::VisualizationDataFrame>(this, &MediaAnalyzer::OnAnalyzerOutput)
 		);
+		_configurationChangedEvent(*this, hstring(L""));
 	}
 
 	void MediaAnalyzer::OnAnalyzerOutput(AudioVisualizer::AudioAnalyzer analyzer, AudioVisualizer::VisualizationDataFrame dataFrame)

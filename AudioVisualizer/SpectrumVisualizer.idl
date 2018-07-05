@@ -1,12 +1,12 @@
 import "VisualizerControl.idl";
 import "BarVisualizer.idl";
-import "EnumTypes.idl";
 
 namespace AudioVisualizer
 {
 	[default_interface]
-	runtimeclass SpectrumVisualizer : VisualizerControl, IBarVisualizer
+	runtimeclass SpectrumVisualizer : Windows.UI.Xaml.Controls.Control, IBarVisualizer
 	{
 		SpectrumVisualizer();
+		IVisualizationSource Source;
 	}
 }

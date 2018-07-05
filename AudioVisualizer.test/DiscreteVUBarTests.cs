@@ -167,9 +167,29 @@ namespace AudioVisualizer.test
 
         [UITestMethod]
         [TestCategory("DiscreteVUBar")]
-        public void DiscreteVUBar_IsDefaultUnlitElementGray()
+        public void DiscreteVUBar_SettingTooWideHorizontalMargin()
         {
-            Assert.AreEqual(Colors.DarkGray, sut.UnlitElement);
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                sut.RelativeElementMargin = new Thickness(0.5, 0, 0.5, 0);
+            });
+        }
+
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_SettingTooWideVerticalMargin()
+        {
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                sut.RelativeElementMargin = new Thickness(0, 0.5, 0, 0.5);
+            });
+        }
+
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_IsDefaultUnlitElementTransparent()
+        {
+            Assert.AreEqual(Colors.Transparent, sut.UnlitElement);
         }
 
         [UITestMethod]

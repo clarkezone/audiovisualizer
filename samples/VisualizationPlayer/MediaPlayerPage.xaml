@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="VisualizationPlayer.PlayerPage"
+    x:Class="VisualizationPlayer.MediaPlayerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:VisualizationPlayer"
@@ -39,8 +39,8 @@
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center">Left Channel</TextBlock>
                     <TextBlock Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Center">Right Channel</TextBlock>
-                    <a:DiscreteVUBar Grid.Row="0" Grid.Column="0" ChannelIndex="0" Source="{StaticResource source}" RelativeElementMargin="0.1,0.1,0.1,0.1" Margin="10,50,10,50"></a:DiscreteVUBar>
-                    <a:DiscreteVUBar Grid.Row="0" Grid.Column="2" ChannelIndex="1" Source="{StaticResource source}"  RelativeElementMargin="0.1,0.1,0.1,0.1" Margin="10,50,10,50"></a:DiscreteVUBar>
+                    <a:DiscreteVUBar Grid.Row="0" Grid.Column="0" ChannelIndex="0" UnlitElement="LightGray" Source="{StaticResource source}" RelativeElementMargin="0.1,0.1,0.1,0.1" Margin="10,50,10,50"></a:DiscreteVUBar>
+                    <a:DiscreteVUBar Grid.Row="0" Grid.Column="2" ChannelIndex="1" UnlitElement="LightGray" Source="{StaticResource source}"  RelativeElementMargin="0.1,0.1,0.1,0.1" Margin="10,50,10,50"></a:DiscreteVUBar>
                     <a:AnalogVUMeter Grid.Row="0" Grid.Column="1" MinWidth="200" MinHeight="100" Margin="50,50,50,50" Source="{StaticResource analogSource}"  ChannelIndex="0"></a:AnalogVUMeter>
                     <a:AnalogVUMeter Grid.Row="0" Grid.Column="3" MinWidth="200" MinHeight="100" Margin="50,50,50,50" Source="{StaticResource analogSource}" ChannelIndex="1"></a:AnalogVUMeter>
                     <Grid Grid.Row="1" Grid.ColumnSpan="4" Margin="100">
@@ -48,8 +48,8 @@
                             <RowDefinition></RowDefinition>
                             <RowDefinition></RowDefinition>
                         </Grid.RowDefinitions>
-                        <a:DiscreteVUBar Grid.Row="0" Source="{StaticResource analogSource}" Orientation="Horizontal" x:Name="bar0" UnlitElement="Transparent" RelativeElementMargin="0.2,0.01,0.2,0.01"></a:DiscreteVUBar>
-                        <a:DiscreteVUBar Grid.Row="1" Source="{StaticResource analogSource}" Orientation="Horizontal" x:Name="bar1" UnlitElement="Transparent" RelativeElementMargin="0.2,0.01,0.2,0.01"></a:DiscreteVUBar>
+                        <a:DiscreteVUBar Grid.Row="0" Source="{StaticResource analogSource}" Orientation="Horizontal" x:Name="bar0" RelativeElementMargin="0.25,0.05,0.25,0.05"></a:DiscreteVUBar>
+                        <a:DiscreteVUBar Grid.Row="1" Source="{StaticResource analogSource}" Orientation="Horizontal" x:Name="bar1" RelativeElementMargin="0.25,0.05,0.25,0.05"></a:DiscreteVUBar>
                     </Grid>
                 </Grid>
             </PivotItem>

@@ -1,4 +1,5 @@
 ﻿#include "pch.h"
+#include <limits>
 #include "DiscreteVUBar.h"
 #include <winrt/Microsoft.Graphics.Canvas.h>
 #include <winrt/Microsoft.Graphics.Canvas.Text.h>
@@ -13,44 +14,18 @@ namespace winrt::AudioVisualizer::implementation
 	{
 	}
 
-
-	void DiscreteVUBar::OnDraw(Microsoft::Graphics::Canvas::CanvasDrawingSession drawingSession, VisualizationDataFrame dataFrame, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> presentationTime)
+	void DiscreteVUBar::OnUpdateMeter(VisualizationDataFrame const &frame)
 	{
-		using namespace Windows::Foundation;
-		using namespace Windows::UI::Xaml;
-
-		std::lock_guard<std::mutex> lock(_lock);
-
-		ScalarData rms{ nullptr };
-		if (dataFrame && dataFrame.RMS() && dataFrame.RMS().AmplitudeScale() == ScaleType::Linear)
+		float rmsValue = -100.0f;
+		float peakValue = -100.0f;
+		if (frame && frame.RMS() && frame.RMS().Size() > _channelIndex)
 		{
-			rms = dataFrame.RMS().ConvertToDecibels(_levels.front().Level,_levels.back().Level);
+			rmsValue = frame.RMS().AmplitudeScale() == ScaleType::Linear ? 20.0f * log10f(frame.RMS().GetAt(_channelIndex)) : frame.RMS().GetAt(_channelIndex);
 		}
-		else if (dataFrame) {
-			rms = dataFrame.RMS();
-		}
-		ScalarData peak{ nullptr };
-		if (_displayPeak && dataFrame && dataFrame.Peak() && dataFrame.Peak().AmplitudeScale() == ScaleType::Linear)
+		if (_displayPeak && frame && frame.Peak() && frame.Peak().Size() > _channelIndex)
 		{
-			peak = dataFrame.Peak().ConvertToDecibels(_levels.front().Level, _levels.back().Level);
+			peakValue = frame.Peak().AmplitudeScale() == ScaleType::Linear ? 20.0f * log10f(frame.Peak().GetAt(_channelIndex)) : frame.Peak().GetAt(_channelIndex);
 		}
-		else if (dataFrame) {
-			peak = dataFrame.Peak();
-		}
-
-		float rmsLevel = _levels.front().Level - 1;
-		float peakLevel = _levels.front().Level - 1;
-
-		if (rms && _channelIndex < rms.Size())
-		{
-			rmsLevel = rms.GetAt(_channelIndex);
-		}
-		if (peak && _channelIndex < peak.Size())
-		{
-			peakLevel = peak.GetAt(_channelIndex);
-		}
-
-		Rect rect(Point(0, 0),_swapChainSize);
-		DrawBar(drawingSession, rmsLevel,peakLevel, rect);
+		UpdateBarValue(0, rmsValue, peakValue);
 	}
 }

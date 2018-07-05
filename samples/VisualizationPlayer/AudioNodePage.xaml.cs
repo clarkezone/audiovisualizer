@@ -39,7 +39,7 @@ namespace VisualizationPlayer
         {
             base.OnNavigatedFrom(e);
             _graph?.Stop();
-            _graph.Dispose();
+            _graph?.Dispose();
             _graph = null;
         }
 

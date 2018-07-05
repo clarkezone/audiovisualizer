@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "PlaybackSource.h"
+#include "Tracing.h"
 
 
 namespace winrt::AudioVisualizer::implementation
@@ -27,6 +28,9 @@ namespace winrt::AudioVisualizer::implementation
 			if (args.Key() == L"Source") {
 				auto source = _propSet.Lookup(args.Key()).as<AudioVisualizer::IVisualizationSource>();
 				this->_source = source;
+#ifdef _TRACE_
+				Trace::PlaybackSource_SourcePropertyChanged(source);
+#endif
 				_sourceChangedEvent(*this, source);
 			}
 		});
@@ -37,6 +41,9 @@ namespace winrt::AudioVisualizer::implementation
 		if (!mediaPlayer)
 			throw hresult_invalid_argument();
 
+#ifdef _TRACE_
+		Trace::PlaybackSource_CreateFromMediaPlayer();
+#endif
 		mediaPlayer.AddAudioEffect(L"AudioVisualizer.MediaAnalyzer", false, _propSet);
 	}
 

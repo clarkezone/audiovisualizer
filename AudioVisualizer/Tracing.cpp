@@ -216,6 +216,7 @@ void Trace::VisualizerAudioEffect_DiscardQueuedFrames()
 {
 	g_LogChannel.LogEvent(L"VisualizerAudioEffect_DiscardQueuedFrames");
 }
+
 void Trace::MediaAnalyzer_AnalyzerOutput(winrt::AudioVisualizer::VisualizationDataFrame frame)
 {
 	auto fields = LoggingFields();
@@ -395,6 +396,49 @@ void Trace::AddMediaTypeFields(IMFMediaType * pType, winrt::Windows::Foundation:
 	fields.AddUInt32(L"SampleRate", encoding.SampleRate());
 	fields.AddUInt32(L"ChannelCount", encoding.ChannelCount());
 	fields.AddUInt32(L"BitsPerSample", encoding.BitsPerSample());
+}
+
+void Trace::SourceConverter_SourceConfigurationChanged(winrt::Windows::Foundation::IInspectable const & sender, winrt::hstring const &propertyName, winrt::Windows::Foundation::IInspectable const &self)
+{
+	auto fields = LoggingFields();
+	if (sender) {
+		fields.AddString(L"SenderType", get_class_name(sender));
+		fields.AddUInt32(L"Sender", (uint32_t)(void*)get_abi(sender), LoggingFieldFormat::Hexadecimal);
+	}
+	else {
+		fields.AddEmpty(L"SenderType");
+		fields.AddUInt32(L"Sender", 0, LoggingFieldFormat::Hexadecimal);
+	}
+	fields.AddString(L"Property", propertyName);
+	if (sender) {
+		fields.AddString(L"Type", get_class_name(self));
+		fields.AddUInt32(L"This", (uint32_t)(void*)get_abi(self), LoggingFieldFormat::Hexadecimal);
+	}
+	else {
+		fields.AddEmpty(L"Type");
+		fields.AddUInt32(L"This", 0, LoggingFieldFormat::Hexadecimal);
+	}
+
+	g_LogChannel.LogEvent(L"SourceConverter_SourceConfigurationChanged", fields);
+}
+
+void Trace::PlaybackSource_CreateFromMediaPlayer()
+{
+	g_LogChannel.LogEvent(L"PlaybackSource_CreateFromMediaPlayer");
+}
+
+void Trace::PlaybackSource_SourcePropertyChanged(winrt::Windows::Foundation::IInspectable const & sourceObject)
+{
+	auto fields = LoggingFields();
+	if (sourceObject) {
+		fields.AddString(L"Type", get_class_name(sourceObject));
+		fields.AddUInt32(L"Object", (uint32_t)(void*) get_abi(sourceObject),LoggingFieldFormat::Hexadecimal);
+	}
+	else {
+		fields.AddString(L"Type", L"nullptr");
+		fields.AddUInt32(L"Object", 0, LoggingFieldFormat::Hexadecimal);
+	}
+	g_LogChannel.LogEvent(L"PlaybackSource_SourcePropertyChanged", fields);
 }
 
 #endif

@@ -31,7 +31,6 @@
     <ClCompile Include="Tracing.cpp" />
     <ClCompile Include="AudioAnalyzer.cpp" />
     <ClCompile Include="ring_buffer.cpp" />
-    <ClCompile Include="BarBaseVisualizer.cpp" />
     <ClCompile Include="VisualizerEffectDefinition.cpp" />
     <ClCompile Include="VisualizerAudioEffect.cpp" />
     <ClCompile Include="AnalogVUMeter.cpp" />
@@ -56,10 +55,10 @@
     <ClInclude Include="Tracing.h" />
     <ClInclude Include="AudioAnalyzer.h" />
     <ClInclude Include="ring_buffer.h" />
-    <ClInclude Include="BarBaseVisualizer.h" />
     <ClInclude Include="VisualizerEffectDefinition.h" />
     <ClInclude Include="VisualizerAudioEffect.h" />
     <ClInclude Include="AnalogVUMeter.h" />
+    <ClInclude Include="BarVisualizerBase.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ScalarData.idl" />
@@ -76,12 +75,12 @@
     <Midl Include="DiscreteVUBar.idl" />
     <Midl Include="CustomVisualizer.idl" />
     <Midl Include="SpectrumVisualizer.idl" />
-    <Midl Include="BarVisualizer.idl" />
     <Midl Include="AudioAnalyzer.idl" />
     <Midl Include="VisualizerEffectDefinition.idl" />
     <Midl Include="VisualizerAudioEffect.idl" />
     <Midl Include="SpectralAnalyzer.idl" />
     <Midl Include="AnalogVUMeter.idl" />
+    <Midl Include="BarVisualizer.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

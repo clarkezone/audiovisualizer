@@ -54,6 +54,11 @@ public:
 	static void VisualizerAudioEffect_OnAnalyzerOutput(VisualizationDataFrame  const&frame);
 	static void VisualizerAudioEffect_GetData(VisualizationDataFrame  const&frame);
 	static void VisualizerAudioEffect_DiscardQueuedFrames();
+
+	static void SourceConverter_SourceConfigurationChanged(winrt::Windows::Foundation::IInspectable const & sender,winrt::hstring const &propertyName, winrt::Windows::Foundation::IInspectable const &self);
+
+	static void PlaybackSource_CreateFromMediaPlayer();
+	static void PlaybackSource_SourcePropertyChanged(winrt::Windows::Foundation::IInspectable const &sourceObject);
 };
 
 #endif

@@ -69,7 +69,7 @@ namespace winrt::AudioVisualizer::implementation
 			return previous;	// No time has passed so no changes
 		}
 
-		if (previous != nullptr)
+		if (previous)
 		{
 			if (previous.AmplitudeScale() == ScaleType::Logarithmic)
 				throw hresult_invalid_argument(hstring(L"Amplitude scale needs to be linear"));
@@ -82,7 +82,7 @@ namespace winrt::AudioVisualizer::implementation
 		size_t vSize = (_size + 3) >> 2;
 		DirectX::XMVECTOR *pLastData = nullptr;
 
-		if (previous != nullptr) {
+		if (previous) {
 			// Get the raw buffer
 			pLastData = winrt::from_abi<ScalarData>(previous)->_pData;
 		}
@@ -147,9 +147,13 @@ namespace winrt::AudioVisualizer::implementation
 
 	ScalarData::ScalarData(size_t cElements, ScaleType scaleType,bool bInitToZero)
 	{
+		_pData = nullptr;
 		_amplitudeScale = scaleType;
 		size_t vectorLength = (cElements + 3) >> 2;
-		_pData = static_cast<DirectX::XMVECTOR*>(_aligned_malloc(sizeof(DirectX::XMVECTOR)*vectorLength,16));
+		_pData = static_cast<DirectX::XMVECTOR*>(_aligned_malloc_dbg(sizeof(DirectX::XMVECTOR)*vectorLength,16,__FILE__,__LINE__));
+		if (!_pData) {
+			throw std::bad_alloc();
+		}
 		_pData[vectorLength - 1] = DirectX::g_XMZero;	// Always pad with zero
 
 		if (bInitToZero) {
@@ -165,7 +169,7 @@ namespace winrt::AudioVisualizer::implementation
 	ScalarData::~ScalarData()
 	{
 		if (_pData != nullptr)
-			_aligned_free(_pData);
+			_aligned_free_dbg(_pData);
 		_pData = nullptr;
 	}
 }

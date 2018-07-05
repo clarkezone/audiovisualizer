@@ -31,7 +31,7 @@ namespace VisualizationPlayer
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class PlayerPage : Page
+    public sealed partial class MediaPlayerPage : Page
     {
         MediaPlayer _player;
         PlaybackSource _playbackSource;
@@ -39,7 +39,7 @@ namespace VisualizationPlayer
         SourceConverter _analogSource;
         SourceConverter _spectrumSource;
 
-        public PlayerPage()
+        public MediaPlayerPage()
         {
             this.InitializeComponent();
             _player = new MediaPlayer();
@@ -52,6 +52,8 @@ namespace VisualizationPlayer
             _spectrumSource = (SourceConverter)Resources["spectrumSource"];
             _source.RmsRiseTime = TimeSpan.FromMilliseconds(50);
             _source.RmsFallTime = TimeSpan.FromMilliseconds(50);
+            _source.PeakRiseTime = TimeSpan.FromMilliseconds(50);
+            _source.PeakFallTime = TimeSpan.FromMilliseconds(1000);
             _analogSource.RmsRiseTime = TimeSpan.FromMilliseconds(500);
             _analogSource.RmsFallTime = TimeSpan.FromMilliseconds(500);
             _analogSource.AnalyzerTypes = AnalyzerType.RMS;
@@ -97,6 +99,12 @@ namespace VisualizationPlayer
             _source.Source = _playbackSource.Source;
             _analogSource.Source = _playbackSource.Source;
             _spectrumSource.Source = _playbackSource.Source;
+        }
+
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        {
+            base.OnNavigatingFrom(e);
+            _player.Pause(); 
         }
 
         private async void OpenFile_Click(object sender, RoutedEventArgs e)
@@ -194,7 +202,7 @@ namespace VisualizationPlayer
         TimeSpan _frameDuration = TimeSpan.FromMilliseconds(16.7);
         CanvasTextFormat _spectrumTextFormat;
 
-        private void spectrum_Draw(AudioVisualizer.VisualizerControl sender, AudioVisualizer.VisualizerDrawEventArgs args)
+        private void spectrum_Draw(object sender, AudioVisualizer.VisualizerDrawEventArgs args)
         {
             var drawingSession = (CanvasDrawingSession)args.DrawingSession;
 
@@ -283,6 +291,11 @@ namespace VisualizationPlayer
                 drawingSession.DrawText($"{i}dB", (float)boundingRectTop.Left - (float)margin.Left / 2, bottomY, textColor, _spectrumTextFormat);
 
             }
+        }
+
+        private void PositionDisplay_Draw(object sender, VisualizerDrawEventArgs args)
+        {
+
         }
     }
 }

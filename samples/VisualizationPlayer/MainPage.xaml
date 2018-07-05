@@ -12,14 +12,9 @@
         IsPaneOpen="True"
         SelectionChanged="navView_SelectionChanged">
         <NavigationView.MenuItems>
-            <NavigationViewItem Content="CustomVisualizer" Tag="VisualizationPlayer.PlayerPage">
+            <NavigationViewItem Content="MediaPlayer" Tag="VisualizationPlayer.MediaPlayerPage">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Play" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-            <NavigationViewItem Content="Controls" Tag="VisualizationPlayer.SpectrumPage">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Audio" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
             <NavigationViewItem Content="AudioNode" Tag="VisualizationPlayer.AudioNodePage">
@@ -27,9 +22,9 @@
                     <SymbolIcon Symbol="Microphone" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Information" Tag="VisualizationPlayer.InformationPage">
+            <NavigationViewItem Content="Experiment" Tag="VisualizationPlayer.ExperimentWithControlsPage">
                 <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="MusicInfo" />
+                    <SymbolIcon Symbol="PreviewLink" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
             

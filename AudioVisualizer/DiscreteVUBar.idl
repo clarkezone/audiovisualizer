@@ -4,10 +4,11 @@ import "BarVisualizer.idl";
 namespace AudioVisualizer
 {
 	[default_interface]
-	runtimeclass DiscreteVUBar : VisualizerControl, IBarVisualizer
+	runtimeclass DiscreteVUBar : Windows.UI.Xaml.Controls.Control, IBarVisualizer
 	{
 		DiscreteVUBar();
 		Boolean DisplayPeak;
+		IVisualizationSource Source;
 	}
 }
 

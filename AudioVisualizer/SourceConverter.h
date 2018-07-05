@@ -6,7 +6,6 @@ namespace winrt::AudioVisualizer::implementation
 {
     struct SourceConverter : SourceConverterT<SourceConverter>
     {
-
 		IVisualizationSource _source;
 		AnalyzerType _analyzerTypes;
 		Windows::Foundation::IReference<UINT32> _frequencyCount;
@@ -21,7 +20,9 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::Foundation::IReference<float> _maxFrequency;
 		Windows::Foundation::IReference<ScaleType> _frequencyScale;
 		AudioVisualizer::VisualizationDataFrame _cachedSourceFrame{ nullptr };
+		Windows::Foundation::TimeSpan _cachedSourceFrameTime;
 		AudioVisualizer::VisualizationDataFrame _cachedOutputFrame{ nullptr };
+		AudioVisualizer::VisualizationDataFrame _emptySourceFrame{ nullptr };
 		bool _bCacheData;
 
 		std::vector<float> _channelMap;			// External value
@@ -31,7 +32,7 @@ namespace winrt::AudioVisualizer::implementation
 		AudioVisualizer::ScalarData _previousRMS{ nullptr };
 		AudioVisualizer::ScalarData _previousPeak{ nullptr };
 
-		std::mutex _lock;
+		std::shared_mutex _lock;
 		Windows::Foundation::TimeSpan _timeFromPrevious;
 		 
 		winrt::event<Windows::Foundation::TypedEventHandler<IVisualizationSource, hstring>> _configurationChangedEvent;
@@ -40,6 +41,7 @@ namespace winrt::AudioVisualizer::implementation
 		void ConfigureChannelMap();
 		void CreateDefautChannelMap(const uint32_t inputChannels, const uint32_t outputChannels);
 		AudioVisualizer::VisualizationDataFrame CloneFrame(AudioVisualizer::VisualizationDataFrame const &source);
+		void CreateEmptyFrameFromSource();
 		AudioVisualizer::VisualizationDataFrame ProcessFrame(AudioVisualizer::VisualizationDataFrame const& source);
 
 		AudioVisualizer::SpectrumData ApplyFrequencyTransforms(AudioVisualizer::SpectrumData source);
@@ -49,12 +51,11 @@ namespace winrt::AudioVisualizer::implementation
 		AudioVisualizer::ScalarData ApplyRiseAndFall(AudioVisualizer::ScalarData data, AudioVisualizer::ScalarData previous, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> riseTime, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> fallTime);
 
 		// Non-locking implementation functions
-		Windows::Foundation::IReference<uint32_t> _actualFrequencyCount();
-		Windows::Foundation::IReference<uint32_t> _actualChannelCount();
-		Windows::Foundation::IReference<float> _actualMinFrequency();
-		Windows::Foundation::IReference<float> _actualMaxFrequency();
-		Windows::Foundation::IReference<AudioVisualizer::ScaleType> _actualFrequencyScale();
-
+		Windows::Foundation::IReference<uint32_t> ActualFrequencyCountImpl();
+		Windows::Foundation::IReference<uint32_t> ActualChannelCountImpl();
+		Windows::Foundation::IReference<float> ActualMinFrequencyImpl();
+		Windows::Foundation::IReference<float> ActualMaxFrequencyImpl();
+		Windows::Foundation::IReference<AudioVisualizer::ScaleType> ActualFrequencyScaleImpl();
         SourceConverter();
 
         AudioVisualizer::IVisualizationSource Source();
