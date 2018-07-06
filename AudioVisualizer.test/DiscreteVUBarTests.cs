@@ -6,9 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Core;
 using Windows.UI;
+using Windows.UI.Composition;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Hosting;
+using Windows.UI.Xaml.Media;
 
 namespace AudioVisualizer.test
 {
@@ -199,5 +203,47 @@ namespace AudioVisualizer.test
             sut.UnlitElement = Colors.Gray;
             Assert.AreEqual(Colors.Gray, sut.UnlitElement);
         }
+
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_ElementVisualIsContainerVisual()
+        {
+            Assert.IsInstanceOfType(ElementCompositionPreview.GetElementChildVisual(sut), typeof(ContainerVisual));
+        }
+
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_ElementVisualChildrenAreOfRightType()
+        {
+            Type[] expectedTypes = new Type[] { typeof(SpriteVisual), typeof(ContainerVisual) };
+            var elementVisual = (ContainerVisual) ElementCompositionPreview.GetElementChildVisual(sut);
+            CollectionAssert.AreEqual(expectedTypes, elementVisual.Children.Select(visual => visual.GetType()).ToArray());
+        }
+
+        /* TODO:
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_BackgroundVisualHasBackgroundBrush()
+        {
+            var elementVisual = (ContainerVisual)ElementCompositionPreview.GetElementChildVisual(sut);
+            var backgroundVisual = (SpriteVisual) elementVisual.Children.First();
+            sut.Background = new SolidColorBrush(Colors.OrangeRed);
+
+            var background = (CompositionColorBrush) backgroundVisual.Brush;
+            Assert.AreEqual(Colors.OrangeRed, background.Color);
+        }*/
+
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_CorrectAmountOfBarElementVisuals()
+        {
+            var elementVisual = (ContainerVisual)ElementCompositionPreview.GetElementChildVisual(sut);
+            var elementContainer = (ContainerVisual)elementVisual.Children.Last();
+            Assert.AreEqual(sut.Levels.Count(), elementContainer.Children.Count);
+        }
+
+
+
+
     }
 }

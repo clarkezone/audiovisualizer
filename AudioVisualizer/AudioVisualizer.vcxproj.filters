@@ -23,7 +23,6 @@
     <ClCompile Include="MediaAnalyzer.cpp" />
     <ClCompile Include="PlaybackSource.cpp" />
     <ClCompile Include="SourceConverter.cpp" />
-    <ClCompile Include="VisualizerControl.cpp" />
     <ClCompile Include="DiscreteVUBar.cpp" />
     <ClCompile Include="SpectrumVisualizer.cpp" />
     <ClCompile Include="CustomVisualizer.cpp" />
@@ -34,6 +33,7 @@
     <ClCompile Include="VisualizerEffectDefinition.cpp" />
     <ClCompile Include="VisualizerAudioEffect.cpp" />
     <ClCompile Include="AnalogVUMeter.cpp" />
+    <ClCompile Include="util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -48,7 +48,6 @@
     <ClInclude Include="PlaybackSource.h" />
     <ClInclude Include="SourceConverter.h" />
     <ClInclude Include="util.h" />
-    <ClInclude Include="VisualizerControl.h" />
     <ClInclude Include="DiscreteVUBar.h" />
     <ClInclude Include="SpectrumVisualizer.h" />
     <ClInclude Include="CustomVisualizer.h" />
@@ -71,7 +70,6 @@
     <Midl Include="VisualizationSource.idl" />
     <Midl Include="PlaybackSource.idl" />
     <Midl Include="SourceConverter.idl" />
-    <Midl Include="VisualizerControl.idl" />
     <Midl Include="DiscreteVUBar.idl" />
     <Midl Include="CustomVisualizer.idl" />
     <Midl Include="SpectrumVisualizer.idl" />

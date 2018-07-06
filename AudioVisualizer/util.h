@@ -9,4 +9,6 @@ namespace util
 	{
 		return (value & flag) != static_cast<EnumType>(0);
 	}
+
+	winrt::Windows::UI::Composition::CompositionBrush make_composition_brush(winrt::Windows::UI::Xaml::Media::Brush const &xamlBrush);
 }

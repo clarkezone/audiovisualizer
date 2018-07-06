@@ -681,7 +681,7 @@ namespace winrt::AudioVisualizer::implementation
 	*/
 	AudioVisualizer::VisualizationDataFrame SourceConverter::GetData()
 	{
-		std::shared_lock lock(_lock);
+		std::unique_lock lock(_lock);
 		if (!_source)
 		{
 			return nullptr;

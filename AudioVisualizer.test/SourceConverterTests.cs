@@ -632,5 +632,34 @@ namespace AudioVisualizer.test
 
             CollectionAssert.AreEqual(expectedRms, outFrame.RMS.ToArray());
         }
+
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_ProducesEmptyFrameWithSourceConfigured()
+        {
+            var frame = sut.GetData();
+            Assert.IsNotNull(frame);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_ProducesEmptyRmsWithSourceConfigured()
+        {
+            var frame = sut.GetData();
+            Assert.IsNotNull(frame.RMS);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_ProducesEmptyPeakWithSourceConfigured()
+        {
+            var frame = sut.GetData();
+            Assert.IsNotNull(frame.Peak);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_ProducesEmptySpectrumWithSourceConfigured()
+        {
+            var frame = sut.GetData();
+            Assert.IsNotNull(frame.Spectrum);
+        }
     }
 }

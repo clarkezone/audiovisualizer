@@ -53,8 +53,8 @@
                     </Grid>
                 </Grid>
             </PivotItem>
-            <PivotItem Header="Spectrum">
-                <a:SpectrumVisualizer Source="{StaticResource spectrumSource}"></a:SpectrumVisualizer>
+            <PivotItem  Header="Spectrum">
+                <a:SpectrumVisualizer Source="{StaticResource spectrumSource}" RelativeElementMargin="0.1,0.2,0.1,0.2"></a:SpectrumVisualizer>
             </PivotItem>
             <PivotItem Header="Custom draw">
                 <a:CustomVisualizer Grid.Column="0" x:Name="spectrum" Source="{StaticResource source}" CreateResources="spectrum_CreateResources" Draw="spectrum_Draw"></a:CustomVisualizer>

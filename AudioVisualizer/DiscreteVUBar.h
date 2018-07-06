@@ -2,7 +2,6 @@
 
 #include "DiscreteVUBar.g.h"
 #include "BarVisualizerBase.h"
-#include "VisualizerControl.h"
 
 namespace winrt::AudioVisualizer::implementation
 {

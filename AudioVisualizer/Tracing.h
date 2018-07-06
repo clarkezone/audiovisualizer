@@ -59,6 +59,37 @@ public:
 
 	static void PlaybackSource_CreateFromMediaPlayer();
 	static void PlaybackSource_SourcePropertyChanged(winrt::Windows::Foundation::IInspectable const &sourceObject);
+	static LoggingActivity AudioAnalyzer_Lifetime_Start(LPCTSTR className);
+	static void AudioAnalyzer_Lifetime_Stop(LoggingActivity activity);
 };
+
+namespace lifetime_tracker_impl
+{
+	static std::map<std::wstring, long> _objectCounter;
+};
+
+template<typename T>
+struct lifetime_tracker
+{
+private:
+	winrt::Windows::Foundation::Diagnostics::LoggingActivity _activity{ nullptr };
+public:
+	lifetime_tracker()
+	{
+		long objectCount = lifetime_tracker_impl::_objectCounter[winrt::name_of<T>().data()]++;
+		_activity = Trace::AudioAnalyzer_Lifetime_Start(winrt::name_of<T>().data());
+	}
+	virtual ~lifetime_tracker()
+	{
+		long count = --lifetime_tracker_impl::_objectCounter[winrt::name_of<T>().data()];
+		assert(count >= 0);
+		Trace::AudioAnalyzer_Lifetime_Stop(_activity);
+	}
+};
+#else
+
+template<typename T>
+struct lifetime_tracker
+{};
 
 #endif

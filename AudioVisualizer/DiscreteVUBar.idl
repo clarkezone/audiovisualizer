@@ -1,4 +1,3 @@
-import "VisualizerControl.idl";
 import "BarVisualizer.idl";
 
 namespace AudioVisualizer

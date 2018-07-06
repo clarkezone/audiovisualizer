@@ -441,4 +441,16 @@ void Trace::PlaybackSource_SourcePropertyChanged(winrt::Windows::Foundation::IIn
 	g_LogChannel.LogEvent(L"PlaybackSource_SourcePropertyChanged", fields);
 }
 
+LoggingActivity Trace::AudioAnalyzer_Lifetime_Start(LPCTSTR className)
+{
+	LoggingFields fields = LoggingFields();
+	fields.AddString(L"Type", className);
+	return g_LogChannel.StartActivity(L"Lifetime", fields);
+}
+
+void Trace::AudioAnalyzer_Lifetime_Stop(LoggingActivity activity)
+{
+	activity.StopActivity(activity.Name());
+}
+
 #endif

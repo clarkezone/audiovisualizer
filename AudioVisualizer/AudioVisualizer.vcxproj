@@ -104,7 +104,6 @@
     <ClInclude Include="SpectrumVisualizer.h" />
     <ClInclude Include="Tracing.h" />
     <ClInclude Include="VisualizerAudioEffect.h" />
-    <ClInclude Include="VisualizerControl.h" />
     <ClInclude Include="MediaAnalyzer.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PlaybackSource.h" />
@@ -131,8 +130,8 @@
     <ClCompile Include="ring_buffer.cpp" />
     <ClCompile Include="SpectrumVisualizer.cpp" />
     <ClCompile Include="Tracing.cpp" />
+    <ClCompile Include="util.cpp" />
     <ClCompile Include="VisualizerAudioEffect.cpp" />
-    <ClCompile Include="VisualizerControl.cpp" />
     <ClCompile Include="MediaAnalyzer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -164,7 +163,6 @@
     <Midl Include="VisualizationDataFrame.idl" />
     <Midl Include="VisualizationSource.idl" />
     <Midl Include="VisualizerAudioEffect.idl" />
-    <Midl Include="VisualizerControl.idl" />
     <Midl Include="VisualizerDrawEventArgs.idl" />
     <Midl Include="VisualizerEffectDefinition.idl" />
   </ItemGroup>

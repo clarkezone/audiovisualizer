@@ -111,7 +111,6 @@
     <Compile Include="FakeVisualizationSource.cs" />
     <Compile Include="DiscreteVUBarTests.cs" />
     <Compile Include="VisualizerAudioEffectTests.cs" />
-    <Compile Include="VisualizerControlTest.cs" />
     <Compile Include="MediaAnalyzerTests.cs" />
     <Compile Include="MFInterop.cs" />
     <Compile Include="MFPipeline.cs" />

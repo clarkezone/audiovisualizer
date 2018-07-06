@@ -8,6 +8,7 @@
 #include <winrt/Windows.System.Threading.h>
 #include <winrt/Windows.UI.Core.h>
 #include <set>
+#include "util.h"
 
 namespace winrt::AudioVisualizer::implementation
 {
@@ -32,7 +33,7 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::UI::Composition::ContainerVisual _meterVisual{ nullptr };	// Container visual for all other visuals
 		Windows::UI::Composition::SpriteVisual _meterBackgroundVisual{ nullptr }; // Backplate for the meter
 		Windows::UI::Composition::ContainerVisual _meterElementVisuals{ nullptr };	// Container for individual elements visuals
-		Windows::UI::Composition::CompositionColorBrush _backgroundBrush{ nullptr };
+		Windows::UI::Composition::CompositionBrush _backgroundBrush{ nullptr };
 		Windows::UI::Composition::CompositionColorBrush _unlitElementBrush{ nullptr };
 		Windows::UI::Composition::CompositionColorBrush _auxElementBrush{ nullptr };
 
@@ -69,10 +70,10 @@ namespace winrt::AudioVisualizer::implementation
 			_meterVisual = _compositor.CreateContainerVisual();
 			ElementCompositionPreview::SetElementChildVisual(*derived_this(), _meterVisual);
 
-			_backgroundBrush = _compositor.CreateColorBrush(Colors::LightYellow());
+			//_backgroundBrush = util::make_composition_brush(derived_this()->Background());
 			_auxElementBrush = _compositor.CreateColorBrush(Colors::BlueViolet());
 			_meterBackgroundVisual = _compositor.CreateSpriteVisual();
-			_meterBackgroundVisual.Brush(_backgroundBrush);
+			//_meterBackgroundVisual.Brush(_backgroundBrush);
 			_meterVisual.Children().InsertAtBottom(_meterBackgroundVisual);
 			_meterElementVisuals = _compositor.CreateContainerVisual();
 			_meterVisual.Children().InsertAtTop(_meterElementVisuals);
@@ -82,6 +83,7 @@ namespace winrt::AudioVisualizer::implementation
 			derived_this()->SizeChanged(SizeChangedEventHandler(this, &BarVisualizerBase::OnSizeChanged));
 			derived_this()->Loaded(Windows::UI::Xaml::RoutedEventHandler(this, &BarVisualizerBase::OnLoaded));
 			derived_this()->Unloaded(Windows::UI::Xaml::RoutedEventHandler(this, &BarVisualizerBase::OnUnloaded));
+			derived_this()->RegisterPropertyChangedCallback(Windows::UI::Xaml::Controls::Control::BackgroundProperty(), Windows::UI::Xaml::DependencyPropertyChangedCallback(this, &BarVisualizerBase::OnBackgroundChanged));
 		}
 
 		void InitializeDefaultLevels()
@@ -104,7 +106,6 @@ namespace winrt::AudioVisualizer::implementation
 
 		void CreateElementVisuals()
 		{
-			//TODO: Move to ui thread
 			_meterElementVisuals.Children().RemoveAll();
 			_elementVisuals.clear();
 			size_t elementRowCount = _levels.size();
@@ -128,6 +129,11 @@ namespace winrt::AudioVisualizer::implementation
 				}
 			}
 		}
+		void OnBackgroundChanged(Windows::UI::Xaml::DependencyObject const &sender, Windows::UI::Xaml::DependencyProperty const &dp)
+		{
+			_backgroundBrush = util::make_composition_brush(derived_this()->Background());
+		}
+
 
 		void OnSizeChanged(Windows::Foundation::IInspectable const &, Windows::UI::Xaml::SizeChangedEventArgs const &args)
 		{
@@ -327,13 +333,8 @@ namespace winrt::AudioVisualizer::implementation
 					_elementBrushes.insert(std::make_pair(level.Color, brush));
 				}
 			}
-			// Create new layout on ui thread
-			derived_this()->Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, Windows::UI::Core::DispatchedHandler(
-				[=] {
-				CreateElementVisuals();
-				LayoutVisuals();
-			}
-			));
+			CreateElementVisuals();
+			LayoutVisuals();
 		}
 
 		Windows::UI::Xaml::Controls::Orientation Orientation()

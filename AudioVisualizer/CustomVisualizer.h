@@ -1,9 +1,11 @@
 ﻿#pragma once
 
 #include "CustomVisualizer.g.h"
-#include "VisualizerControl.h"
 #include "CreateResourcesEventArgs.h"
 #include "VisualizerDrawEventArgs.h"
+#include <winrt/Microsoft.Graphics.Canvas.h>
+#include <winrt/Windows.Graphics.Display.h>
+
 
 namespace winrt::AudioVisualizer::implementation
 {
