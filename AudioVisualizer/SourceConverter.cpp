@@ -8,30 +8,6 @@
 
 using namespace util;
 
-struct performance_frequency
-{
-	LARGE_INTEGER frequency;
-	performance_frequency()
-	{
-		frequency.QuadPart = 0;
-		QueryPerformanceFrequency(&frequency);
-	}
-};
-
-struct system_time {
-private:
-	static performance_frequency _frequency;
-public:
-	static winrt::Windows::Foundation::TimeSpan time() {
-		LARGE_INTEGER pfc;
-		pfc.QuadPart = 0;
-		QueryPerformanceCounter(&pfc);
-		return winrt::Windows::Foundation::TimeSpan(10000000L * pfc.QuadPart / _frequency.frequency.QuadPart );
-	}
-};
-
-performance_frequency system_time::_frequency;
-
 
 namespace winrt::AudioVisualizer::implementation
 {
@@ -39,6 +15,7 @@ namespace winrt::AudioVisualizer::implementation
 	{
 		_analyzerTypes = AnalyzerType::All;
 		_bCacheData = true;
+		_cachedSourceFrameTime = Windows::Foundation::TimeSpan(-1000000000);	// Make it large negative value
 		_timeFromPrevious = Windows::Foundation::TimeSpan(166667);	// Default to 1/60sec
 	}
 
@@ -687,21 +664,23 @@ namespace winrt::AudioVisualizer::implementation
 			return nullptr;
 		}
 
+		auto sinceLastGet = _sourceGetTime.time() - _cachedSourceFrameTime;
+		// If there is cached source which was aquired less than 10ms ago just return cached output
+		if (_bCacheData && sinceLastGet.count() < 100000) 
+		{
+			return _cachedOutputFrame;
+		}
+
 		auto sourceFrame = _source.GetData();
+		auto sourceFrameTimeStamp = _sourceGetTime.time();
 
 		if (_analyzerTypes == AnalyzerType::All &&	// No analyzer changes
 			!_minFrequency && !_maxFrequency && !_frequencyCount && !_frequencyScale &&	// No frequency changes
 			!_channelCount &&
 			!_rmsRiseTime && !_rmsFallTime && !_peakRiseTime && !_peakFallTime && !_spectrumRiseTime && !_spectrumFallTime)	// No rise and fall changes
 		{
+			_cachedOutputFrame = sourceFrame;
 			return sourceFrame;	// Just return source frame - passthrough
-		}
-
-		// Test if the object we got is the same we keep as cached source
-		if (sourceFrame && sourceFrame == _cachedSourceFrame && _bCacheData)
-		{
-			// As it is the same input bypass calculations and return last calculated output frame
-			return _cachedOutputFrame;
 		}
 
 		if (!sourceFrame)
@@ -711,6 +690,8 @@ namespace winrt::AudioVisualizer::implementation
 			else
 				return nullptr;
 		}
+		//_timeFromPrevious = sinceLastGet;
+		_cachedSourceFrameTime = sourceFrameTimeStamp;
 		auto result = ProcessFrame(sourceFrame);
 		// _cachedOutputFrame = result;
 		return result;

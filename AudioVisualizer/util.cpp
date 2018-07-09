@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "util.h"
 
+util::performance_frequency util::stopwatch::_frequency;
+
+
 winrt::Windows::UI::Composition::CompositionBrush util::make_composition_brush(winrt::Windows::UI::Xaml::Media::Brush const & xamlBrush)
 {
 	if (!xamlBrush)

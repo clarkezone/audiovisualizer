@@ -71,7 +71,7 @@ namespace winrt::AudioVisualizer::implementation
 			ElementCompositionPreview::SetElementChildVisual(*derived_this(), _meterVisual);
 
 			//_backgroundBrush = util::make_composition_brush(derived_this()->Background());
-			_auxElementBrush = _compositor.CreateColorBrush(Colors::BlueViolet());
+			//_auxElementBrush = _compositor.CreateColorBrush(Colors::BlueViolet());
 			_meterBackgroundVisual = _compositor.CreateSpriteVisual();
 			//_meterBackgroundVisual.Brush(_backgroundBrush);
 			_meterVisual.Children().InsertAtBottom(_meterBackgroundVisual);
@@ -178,7 +178,7 @@ namespace winrt::AudioVisualizer::implementation
 					return (firstLevelGTE - std::begin(_levels)) - 1;
 				}
 				else {
-					return _levels.size();
+					return _levels.size() - 1;
 				}
 			}
 			return -1;
@@ -195,7 +195,8 @@ namespace winrt::AudioVisualizer::implementation
 
 			for (int rowIndex = 0; rowIndex < (int)_levels.size(); rowIndex++)
 			{
-				if (rowIndex >= updateFrom && rowIndex <= updateTo && updateFrom != updateTo ||
+				if (
+					(rowIndex >= updateFrom && rowIndex <= updateTo && updateFrom != updateTo) ||
 					(auxValueIndex != _barAuxStates[barIndex] && (rowIndex == auxValueIndex || rowIndex == _barAuxStates[barIndex]))
 					)
 				{
@@ -203,7 +204,7 @@ namespace winrt::AudioVisualizer::implementation
 					auto shadow = visual.Shadow().as<DropShadow>();
 					if (rowIndex <= mainValueIndex || rowIndex == auxValueIndex) {
 						Windows::UI::Composition::CompositionColorBrush brush{ nullptr };
-						if (rowIndex == auxValueIndex && _auxElementBrush)
+						if (rowIndex == auxValueIndex && auxValueIndex >= mainValueIndex && _auxElementBrush)
 						{
 							brush = _auxElementBrush;
 						}

@@ -25,6 +25,7 @@ namespace winrt::AudioVisualizer::implementation
 		AudioVisualizer::VisualizationDataFrame _emptySourceFrame{ nullptr };
 		bool _bCacheData;
 
+		util::stopwatch _sourceGetTime;
 		std::vector<float> _channelMap;			// External value
 		std::vector<float> _channelCombineMap;	// Internal, built value
 
