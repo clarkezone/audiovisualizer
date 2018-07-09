@@ -16,6 +16,7 @@ namespace winrt::AudioVisualizer::implementation
 		_analyzerTypes = AnalyzerType::All;
 		_bCacheData = true;
 		_cachedSourceFrameTime = Windows::Foundation::TimeSpan(-1000000000);	// Make it large negative value
+		_sourceGetTime = Windows::Foundation::TimeSpan(-100000000);
 		_timeFromPrevious = Windows::Foundation::TimeSpan(166667);	// Default to 1/60sec
 	}
 
@@ -66,7 +67,7 @@ namespace winrt::AudioVisualizer::implementation
 	void SourceConverter::CreateEmptyFrameFromSource()
 	{
 		_emptySourceFrame = nullptr;
-		if (!_source || !_source.ActualChannelCount() || _source.ActualFrequencyCount())
+		if (!_source || !_source.ActualChannelCount() || !_source.ActualFrequencyCount())
 			return;
 		AudioVisualizer::ScalarData rms{ nullptr };
 		if (enum_has_flag(_source.AnalyzerTypes(), AnalyzerType::RMS) && _source.ActualChannelCount()) {
@@ -644,6 +645,17 @@ namespace winrt::AudioVisualizer::implementation
 		return nullptr;
 
 	}
+
+	bool SourceConverter::CacheData()
+	{
+		return _bCacheData;
+	}
+
+	void SourceConverter::CacheData(bool value)
+	{
+		_bCacheData = value;
+	}
+
 	/*
 	This method proxies a call to data source and the logic works as follows
 	1. If source is nullptr return nullptr
@@ -656,6 +668,9 @@ namespace winrt::AudioVisualizer::implementation
 		3.b.2 If previous frame exists try to construct empty frame and return it
 
 	*/
+
+	const Windows::Foundation::TimeSpan getNewDataThreshold = Windows::Foundation::TimeSpan(100000);
+
 	AudioVisualizer::VisualizationDataFrame SourceConverter::GetData()
 	{
 		std::unique_lock lock(_lock);
@@ -664,17 +679,19 @@ namespace winrt::AudioVisualizer::implementation
 			return nullptr;
 		}
 
-		auto sinceLastGet = _sourceGetTime.time() - _cachedSourceFrameTime;
+		auto sinceLastGet = _sourceTimer.time() - _sourceGetTime;
 		// If there is cached source which was aquired less than 10ms ago just return cached output
-		if (_bCacheData && sinceLastGet.count() < 100000) 
+		if (_bCacheData && sinceLastGet < getNewDataThreshold) 
 		{
 			return _cachedOutputFrame;
 		}
 
 		auto sourceFrame = _source.GetData();
-		auto sourceFrameTimeStamp = _sourceGetTime.time();
+		_sourceGetTime = _sourceTimer.time();
+		auto sourceFrameTimeStamp = _sourceTimer.time();
 
-		if (_analyzerTypes == AnalyzerType::All &&	// No analyzer changes
+		if ( sourceFrame &&
+			_analyzerTypes == AnalyzerType::All &&	// No analyzer changes
 			!_minFrequency && !_maxFrequency && !_frequencyCount && !_frequencyScale &&	// No frequency changes
 			!_channelCount &&
 			!_rmsRiseTime && !_rmsFallTime && !_peakRiseTime && !_peakFallTime && !_spectrumRiseTime && !_spectrumFallTime)	// No rise and fall changes
@@ -693,7 +710,7 @@ namespace winrt::AudioVisualizer::implementation
 		//_timeFromPrevious = sinceLastGet;
 		_cachedSourceFrameTime = sourceFrameTimeStamp;
 		auto result = ProcessFrame(sourceFrame);
-		// _cachedOutputFrame = result;
+		_cachedOutputFrame = result;
 		return result;
 	}
 

@@ -21,11 +21,12 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::Foundation::IReference<ScaleType> _frequencyScale;
 		AudioVisualizer::VisualizationDataFrame _cachedSourceFrame{ nullptr };
 		Windows::Foundation::TimeSpan _cachedSourceFrameTime;
+		Windows::Foundation::TimeSpan _sourceGetTime;
 		AudioVisualizer::VisualizationDataFrame _cachedOutputFrame{ nullptr };
 		AudioVisualizer::VisualizationDataFrame _emptySourceFrame{ nullptr };
 		bool _bCacheData;
 
-		util::stopwatch _sourceGetTime;
+		util::stopwatch _sourceTimer;
 		std::vector<float> _channelMap;			// External value
 		std::vector<float> _channelCombineMap;	// Internal, built value
 
@@ -85,6 +86,8 @@ namespace winrt::AudioVisualizer::implementation
         void SpectrumRiseTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value);
         Windows::Foundation::IReference<Windows::Foundation::TimeSpan> SpectrumFallTime();
         void SpectrumFallTime(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& value);
+		bool CacheData();
+		void CacheData(bool value);
         AudioVisualizer::VisualizationDataFrame GetData();
         bool IsSuspended();
         void IsSuspended(bool value);

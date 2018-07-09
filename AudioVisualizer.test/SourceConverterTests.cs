@@ -12,9 +12,6 @@ using System.Runtime.InteropServices;
 
 namespace AudioVisualizer.test
 {
-
-
-
     [TestClass]
     public class SourceConverterPropertyTests
     {
@@ -89,6 +86,14 @@ namespace AudioVisualizer.test
         public void SourceConverter_Property_FrequencyScale()
         {
             TestProperty(ScaleType.Linear, "FrequencyScale");
+        }
+
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_Property_CacheData()
+        {
+            sut.CacheData = false;
+            Assert.IsFalse(sut.CacheData);
         }
 
         [TestMethod]
@@ -426,6 +431,13 @@ namespace AudioVisualizer.test
         {
             Assert.IsNull(sut.FrequencyScale);
         }
+        [TestCategory("SourceConverter")]
+        [TestMethod()]
+        public void SourceConverter_AfterInit_CacheDataIsTrue()
+        {
+            Assert.IsTrue(sut.CacheData);
+        }
+
     }
 
     [TestClass]
@@ -434,6 +446,7 @@ namespace AudioVisualizer.test
         SourceConverter sut;
         FakeVisualizationSource testSource;
         VisualizationDataFrame testFrame;
+        VisualizationDataFrame otherFrame;
 
         UInt32 expectedChannelCount = 5;
         UInt32 expectedFrequencyCount = 100;
@@ -456,6 +469,13 @@ namespace AudioVisualizer.test
                 ScalarData.CreateEmpty(expectedChannelCount),
                 SpectrumData.CreateEmpty(expectedChannelCount, expectedFrequencyCount, ScaleType.Linear, ScaleType.Linear, expectedMinFrequency, expectedMaxFrequency)
                 );
+            otherFrame = new VisualizationDataFrame(
+            expectedTime.Add(expectedDuration),
+            expectedDuration,
+            ScalarData.CreateEmpty(expectedChannelCount),
+            ScalarData.CreateEmpty(expectedChannelCount),
+            SpectrumData.CreateEmpty(expectedChannelCount, expectedFrequencyCount, ScaleType.Linear, ScaleType.Linear, expectedMinFrequency, expectedMaxFrequency)
+            );
 
             testSource.Frame = testFrame;
         }
@@ -525,6 +545,166 @@ namespace AudioVisualizer.test
             Assert.IsNotNull(data.RMS);
             Assert.IsNotNull(data.Peak);
             Assert.IsNotNull(data.Spectrum);
+        }
+
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_ProducesEmptyFrameWithSourceConfigured()
+        {
+            var frame = sut.GetData();
+            Assert.IsNotNull(frame);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_ProducesEmptyRmsWithSourceConfigured()
+        {
+            var frame = sut.GetData();
+            Assert.IsNotNull(frame.RMS);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_ProducesEmptyPeakWithSourceConfigured()
+        {
+            var frame = sut.GetData();
+            Assert.IsNotNull(frame.Peak);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_ProducesEmptySpectrumWithSourceConfigured()
+        {
+            var frame = sut.GetData();
+            Assert.IsNotNull(frame.Spectrum);
+        }
+
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_ProducesNullWithoutSource()
+        {
+            sut.Source = null;
+            Assert.IsNull(sut.GetData());
+        }
+
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_SameWhenCalledSoonWithCaching()
+        {
+            var frame = sut.GetData();
+            testSource.Frame = otherFrame;
+            var frame2 = sut.GetData();
+            Assert.AreSame(frame, frame2);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_SameWhenCalledLaterWithCaching()
+        {
+            var frame = sut.GetData();
+            testSource.Frame = otherFrame;
+            Task.Delay(15).Wait();
+            var frame2 = sut.GetData();
+            Assert.AreNotSame(frame, frame2);
+        }
+
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_NotSameWhenCalledSoonWithoutCaching()
+        {
+            sut.CacheData = false;
+            var frame = sut.GetData();
+            testSource.Frame = otherFrame;
+            var frame2 = sut.GetData();
+            Assert.AreNotSame(frame, frame2);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_With_NullFrameSourceShouldReturnEmptyFrame()
+        {
+            sut.CacheData = false;
+            testSource.Frame = null;
+            var frame = sut.GetData();
+            Assert.IsNotNull(frame);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_With_NullFrameSourceShouldReturnEmptyRMS()
+        {
+            sut.CacheData = false;
+            testSource.Frame = null;
+            var frame = sut.GetData();
+            Assert.IsNotNull(frame?.RMS);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_With_NullFrameSourceShouldReturnRMSOfSourceSize()
+        {
+            sut.CacheData = false;
+            testSource.Frame = null;
+            var frame = sut.GetData();
+            Assert.AreEqual((int) testSource.ExpectedChannels,frame.RMS.Count());
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_With_NullFrameSourceShouldReturnEmptyPeak()
+        {
+            sut.CacheData = false;
+            testSource.Frame = null;
+            var frame = sut.GetData();
+            Assert.IsNotNull(frame?.Peak);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_With_NullFrameSourceShouldReturnPeakOfSourceSize()
+        {
+            sut.CacheData = false;
+            testSource.Frame = null;
+            var frame = sut.GetData();
+            Assert.AreEqual((int) testSource.ExpectedChannels, frame.Peak.Count());
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_With_NullFrameSourceShouldReturnEmptySpectrum()
+        {
+            sut.CacheData = false;
+            testSource.Frame = null;
+            var frame = sut.GetData();
+            Assert.IsNotNull(frame?.Spectrum);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_With_NullFrameSourceShouldReturnSpectrumOfSourceSize()
+        {
+            sut.CacheData = false;
+            testSource.Frame = null;
+            var frame = sut.GetData();
+            Assert.AreEqual((int) testSource.ExpectedChannels, frame.Spectrum.Count());
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_With_NullFrameSourceShouldReturnSpectrumOfSourceFCount()
+        {
+            sut.CacheData = false;
+            testSource.Frame = null;
+            var frame = sut.GetData();
+            Assert.AreEqual(testSource.ActualFrequencyCount.Value, frame.Spectrum.FrequencyCount);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_With_NullFrameSource_CreateNewEmpty_AfterChannelsChange()
+        {
+            sut.CacheData = false;
+            testSource.Frame = null;
+            testSource.ExpectedChannels = 1;
+            var frame = sut.GetData();
+            Assert.AreEqual(1, frame.RMS.Count);
+        }
+        [TestMethod]
+        [TestCategory("SourceConverter")]
+        public void SourceConverter_GetData_With_NullFrameSource_CreateNewEmpty_AfterFrequencyChange()
+        {
+            sut.CacheData = false;
+            testSource.Frame = null;
+            testSource.ExpectedFrequencies = 10;
+            var frame = sut.GetData();
+            Assert.AreEqual(10, (int) frame.Spectrum.FrequencyCount);
         }
     }
 
@@ -631,35 +811,6 @@ namespace AudioVisualizer.test
             var outFrame = sut.GetData();
 
             CollectionAssert.AreEqual(expectedRms, outFrame.RMS.ToArray());
-        }
-
-        [TestMethod]
-        [TestCategory("SourceConverter")]
-        public void SourceConverter_GetData_ProducesEmptyFrameWithSourceConfigured()
-        {
-            var frame = sut.GetData();
-            Assert.IsNotNull(frame);
-        }
-        [TestMethod]
-        [TestCategory("SourceConverter")]
-        public void SourceConverter_GetData_ProducesEmptyRmsWithSourceConfigured()
-        {
-            var frame = sut.GetData();
-            Assert.IsNotNull(frame.RMS);
-        }
-        [TestMethod]
-        [TestCategory("SourceConverter")]
-        public void SourceConverter_GetData_ProducesEmptyPeakWithSourceConfigured()
-        {
-            var frame = sut.GetData();
-            Assert.IsNotNull(frame.Peak);
-        }
-        [TestMethod]
-        [TestCategory("SourceConverter")]
-        public void SourceConverter_GetData_ProducesEmptySpectrumWithSourceConfigured()
-        {
-            var frame = sut.GetData();
-            Assert.IsNotNull(frame.Spectrum);
         }
     }
 }

@@ -10,7 +10,34 @@ namespace AudioVisualizer.test
 {
     internal class FakeVisualizationSource : IVisualizationSource
     {
-        public uint? ExpectedChannels = 2;
+        private uint? expectedChannels = 2;
+        public uint? ExpectedChannels {
+            get => expectedChannels;
+            set {
+                if (value != expectedChannels)
+                {
+                    expectedChannels = value;
+                    Frame = null;
+                    ConfigurationChanged?.Invoke(this, "ChannelCount");
+                }
+            }
+        }
+        private uint? expectedFrequencies = 50;
+        public uint? ExpectedFrequencies
+        {
+            get => expectedFrequencies;
+            set
+            {
+                if (value != expectedFrequencies)
+                {
+                    expectedFrequencies = value;
+                    Frame = null;
+                    ConfigurationChanged?.Invoke(this, "FrequencyCount");
+                }
+            }
+        }
+
+
         public VisualizationDataFrame Frame;
         public VisualizationDataFrame GetData()
         {
@@ -35,13 +62,15 @@ namespace AudioVisualizer.test
 
         public uint? ActualChannelCount => ExpectedChannels;
 
-        public uint? ActualFrequencyCount => 50;
+        public uint? ActualFrequencyCount => ExpectedFrequencies;
 
         public float? ActualMaxFrequency => 20000.0f;
 
         public float? ActualMinFrequency => 0.0f;
 
         public ScaleType? ActualFrequencyScale => ScaleType.Linear;
+
+
     }
 
 }

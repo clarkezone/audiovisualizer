@@ -19,5 +19,6 @@ namespace AudioVisualizer
 		Windows.Foundation.IReference<Windows.Foundation.TimeSpan> PeakFallTime;
 		Windows.Foundation.IReference<Windows.Foundation.TimeSpan> SpectrumRiseTime;
 		Windows.Foundation.IReference<Windows.Foundation.TimeSpan> SpectrumFallTime;
+		Boolean CacheData;
 	}
 }
