@@ -27,6 +27,8 @@ namespace winrt::AudioVisualizer::implementation
 			Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, Windows::UI::Core::DispatchedHandler(
 				[=] {
 					_barCount = barCount;
+
+					std::lock_guard<std::mutex> lock(_lock);
 					CreateElementVisuals();
 					LayoutVisuals();
 				}

@@ -524,7 +524,7 @@ namespace AudioVisualizer.test
         {
             var spectralData = Enumerable.Repeat<float>(1.0f, (int)expectedFrequencyCount);
             var nextFrame = new VisualizationDataFrame(
-                testFrame.Time.Add(testFrame.Duration),
+                testFrame.Time.Value.Add(testFrame.Duration),
                 testFrame.Duration,
                 ScalarData.Create(Enumerable.Repeat<float>(1.0f, (int)expectedChannelCount).ToArray()),
                 ScalarData.Create(Enumerable.Repeat<float>(2.0f, (int)expectedChannelCount).ToArray()),

@@ -55,5 +55,17 @@ namespace AudioVisualizer.test
         {
             Assert.AreEqual(expectedSpectrum, sut.Spectrum);
         }
+        [TestMethod]
+        [TestCategory("VisualizationDataFrame")]
+        public void VisualizationDataFrame_PropertiesNotNull()
+        {
+            Assert.IsNotNull(sut.Properties);
+        }
+        [TestMethod]
+        [TestCategory("VisualizationDataFrame")]
+        public void VisualizationDataFrame_PropertiesEmpty()
+        {
+            Assert.IsFalse(sut.Properties.Any());
+        }
     }
 }

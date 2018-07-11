@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
@@ -220,7 +221,7 @@ namespace AudioVisualizer.test
             CollectionAssert.AreEqual(expectedTypes, elementVisual.Children.Select(visual => visual.GetType()).ToArray());
         }
 
-        /* TODO:
+
         [UITestMethod]
         [TestCategory("DiscreteVUBar")]
         public void DiscreteVUBar_BackgroundVisualHasBackgroundBrush()
@@ -231,7 +232,7 @@ namespace AudioVisualizer.test
 
             var background = (CompositionColorBrush) backgroundVisual.Brush;
             Assert.AreEqual(Colors.OrangeRed, background.Color);
-        }*/
+        }
 
         [UITestMethod]
         [TestCategory("DiscreteVUBar")]
@@ -242,8 +243,57 @@ namespace AudioVisualizer.test
             Assert.AreEqual(sut.Levels.Count(), elementContainer.Children.Count);
         }
 
+        class CustomElementFactory : AudioVisualizer.IBarElementFactory
+        {
+            public List<(object,Windows.UI.Color,Size,Compositor,CompositionGraphicsDevice)> Calls = new List<(object,Color,Size,Compositor,CompositionGraphicsDevice)>();
+            public CompositionBrush CreateElementBrush(object sender, Color elementColor, Size size, Compositor compositor, CompositionGraphicsDevice device)
+            {
+                Calls.Add((sender, elementColor, size, compositor, device));
+                return compositor.CreateColorBrush(elementColor);
+            }
 
-
-
+            public CompositionBrush CreateShadowMask(object sender, Size size, Compositor compositor, CompositionGraphicsDevice device)
+            {
+                return null;
+            }
+        }
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_ElementFactory_CreateBrushCalledForUnlitElement()
+        {
+            var factory = new CustomElementFactory();
+            sut.ElementFactory = factory;
+            factory.Calls.Clear();
+            sut.UnlitElement = Colors.Blue;
+            Assert.AreEqual(1, factory.Calls.Count);
+            var call = factory.Calls.First();
+            Assert.AreSame(sut, call.Item1);
+            Assert.AreEqual(Colors.Blue, call.Item2);
+            Assert.AreEqual(new Size(0,0), call.Item3);
+            Assert.IsNotNull(call.Item4);
+            Assert.IsNotNull(call.Item5);
+        }
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_ElementFactory_CreateBrushCalledForLitElements()
+        {
+            var factory = new CustomElementFactory();
+            sut.ElementFactory = factory;
+            factory.Calls.Clear();
+            sut.Levels = new MeterBarLevel[]
+            {
+                new MeterBarLevel() { Color = Colors.Red, Level = -20 },
+                new MeterBarLevel() { Color = Colors.Red, Level = -10 },
+                new MeterBarLevel() { Color = Colors.Green, Level = 0 }
+            };
+            Assert.AreEqual(2, factory.Calls.Count);
+            Assert.IsTrue(factory.Calls.Exists( (obj) => obj.Item2 == Colors.Red),"Should contain Red element call");
+            Assert.IsTrue(factory.Calls.Exists((obj) => obj.Item2 == Colors.Green),"Should contain Green element call");
+            var call = factory.Calls.First();
+            Assert.AreSame(sut, call.Item1);
+            Assert.AreEqual(new Size(0, 0), call.Item3);
+            Assert.IsNotNull(call.Item4);
+            Assert.IsNotNull(call.Item5);
+        }
     }
 }

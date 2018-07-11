@@ -41,5 +41,5 @@ namespace util
 		}
 	};
 
-	winrt::Windows::UI::Composition::CompositionBrush make_composition_brush(winrt::Windows::UI::Xaml::Media::Brush const &xamlBrush);
+	winrt::Windows::UI::Composition::CompositionBrush make_composition_brush(winrt::Windows::UI::Xaml::Media::Brush const &xamlBrush,winrt::Windows::UI::Composition::Compositor const & compositor);
 }

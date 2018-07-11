@@ -91,7 +91,7 @@ namespace winrt::AudioVisualizer::implementation
 		}
 		
 		_emptySourceFrame = AudioVisualizer::VisualizationDataFrame(
-			Windows::Foundation::TimeSpan(-1),
+			nullptr,
 			Windows::Foundation::TimeSpan((REFERENCE_TIME)(1e7 / _source.Fps())),
 			rms,
 			peak,

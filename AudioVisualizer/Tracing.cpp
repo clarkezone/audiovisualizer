@@ -148,7 +148,10 @@ LoggingActivity Trace::VisualizeControl_StartDraw(winrt::AudioVisualizer::Visual
 		fields.AddEmpty(L"PresentationTime");
 	}
 	if (frame) {
-		fields.AddTimeSpan(L"Frame.Time", frame.Time());
+		if (frame.Time())
+			fields.AddTimeSpan(L"Frame.Time", frame.Time().Value());
+		else
+			fields.AddEmpty(L"Frame.Time");
 		fields.AddTimeSpan(L"Frame.Duration", frame.Duration());
 	}
 	else
@@ -188,7 +191,10 @@ void Trace::VisualizerAudioEffect_OnAnalyzerOutput(VisualizationDataFrame const 
 {
 	auto fields = LoggingFields();
 	if (frame) {
-		fields.AddTimeSpan(L"Time", frame.Time());
+		if (frame.Time())
+			fields.AddTimeSpan(L"Time", frame.Time().Value());
+		else
+			fields.AddEmpty(L"Time");
 		fields.AddTimeSpan(L"Duration", frame.Duration());
 	} 
 	else
@@ -202,7 +208,11 @@ void Trace::VisualizerAudioEffect_GetData(VisualizationDataFrame const & frame)
 {
 	auto fields = LoggingFields();
 	if (frame) {
-		fields.AddTimeSpan(L"Time", frame.Time());
+		if (frame.Time())
+			fields.AddTimeSpan(L"Time", frame.Time().Value());
+		else
+			fields.AddEmpty(L"Time");
+
 		fields.AddTimeSpan(L"Duration", frame.Duration());
 	}
 	else
@@ -221,7 +231,11 @@ void Trace::MediaAnalyzer_AnalyzerOutput(winrt::AudioVisualizer::VisualizationDa
 {
 	auto fields = LoggingFields();
 	if (frame) {
-		fields.AddTimeSpan(L"Time", frame.Time());
+		if (frame.Time())
+			fields.AddTimeSpan(L"Time", frame.Time().Value());
+		else
+			fields.AddEmpty(L"Time");
+
 		fields.AddTimeSpan(L"Duration", frame.Duration());
 	}
 	g_LogChannel.LogEvent(L"MediaAnalyzer_AnalyzerOutput", fields);
@@ -237,7 +251,7 @@ void Trace::MediaAnalyzer_GetFrame(winrt::Windows::Foundation::IReference<winrt:
 		fields.AddEmpty(L"PresentationTime");
 	}
 	if (frame) {
-		fields.AddTimeSpan(L"Frame.Time", frame.Time());
+		fields.AddTimeSpan(L"Frame.Time", frame.Time().Value());
 		fields.AddTimeSpan(L"Frame.Duration", frame.Duration());
 	}
 	else
@@ -252,19 +266,28 @@ void Trace::MediaAnalyzer_OutputQueueAdd(VisualizationDataFrame const & frame, V
 {
 	auto fields = LoggingFields();
 	if (frame) {
-		fields.AddTimeSpan(L"Frame", frame.Time());
+		if (frame.Time())
+			fields.AddTimeSpan(L"Frame", frame.Time().Value());
+		else
+			fields.AddEmpty(L"Frame");
 	}
 	else {
 		fields.AddEmpty(L"Frame");
 	}
 	if (front) {
-		fields.AddTimeSpan(L"Front", front.Time());
+		if (front.Time())
+			fields.AddTimeSpan(L"Front", front.Time().Value());
+		else
+			fields.AddEmpty(L"Front");
 	}
 	else {
 		fields.AddEmpty(L"Front");
 	}
 	if (back) {
-		fields.AddTimeSpan(L"Back", back.Time());
+		if (back.Time())
+			fields.AddTimeSpan(L"Back", back.Time().Value());
+		else
+			fields.AddEmpty(L"Back");
 	}
 	else {
 		fields.AddEmpty(L"Back");
@@ -277,7 +300,10 @@ void Trace::MediaAnalyzer_OutputQueueRemove(VisualizationDataFrame const & frame
 {
 	auto fields = LoggingFields();
 	if (frame) {
-		fields.AddTimeSpan(L"Frame", frame.Time());
+		if (frame.Time())
+			fields.AddTimeSpan(L"Frame", frame.Time().Value());
+		else
+			fields.AddEmpty(L"Frame");
 	}
 	else {
 		fields.AddEmpty(L"Frame");
@@ -291,13 +317,19 @@ void Trace::MediaAnalyzer_OutputQueueGet(winrt::Windows::Foundation::TimeSpan ti
 	auto fields = LoggingFields();
 	fields.AddTimeSpan(L"Time", time);
 	if (front) {
-		fields.AddTimeSpan(L"Front", front.Time());
+		if (front.Time())
+			fields.AddTimeSpan(L"Front", front.Time().Value());
+		else
+			fields.AddEmpty(L"Front");
 	}
 	else {
 		fields.AddEmpty(L"Front");
 	}
 	if (back) {
-		fields.AddTimeSpan(L"Back", back.Time());
+		if (back.Time())
+			fields.AddTimeSpan(L"Back", back.Time().Value());
+		else
+			fields.AddEmpty(L"Back");
 	}
 	else {
 		fields.AddEmpty(L"Back");

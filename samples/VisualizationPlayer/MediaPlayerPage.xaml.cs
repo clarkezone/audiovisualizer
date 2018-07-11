@@ -1,6 +1,7 @@
 ﻿using AudioVisualizer;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
+using Microsoft.Graphics.Canvas.UI.Composition;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,12 +11,14 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Graphics.DirectX;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
 using Windows.Storage.Pickers;
 using Windows.UI;
+using Windows.UI.Composition;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -31,7 +34,7 @@ namespace VisualizationPlayer
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MediaPlayerPage : Page
+    public sealed partial class MediaPlayerPage : Page, IBarElementFactory
     {
         MediaPlayer _player;
         PlaybackSource _playbackSource;
@@ -83,7 +86,10 @@ namespace VisualizationPlayer
             }
             bar0.Levels = levels;
             bar1.Levels = levels;
-
+            barspectrum.ElementFactory = this;
+            barspectrum.ElementShadowBlurRadius = 3;
+            barspectrum.ElementShadowOffset = new Vector3(5, 5, 10);
+            barspectrum.ElementShadowColor = Colors.Black;
         }
 
         private void PlaybackSource_Changed(object sender, IVisualizationSource args)
@@ -293,9 +299,53 @@ namespace VisualizationPlayer
             }
         }
 
+        TimeSpan position = TimeSpan.Zero;
+
         private void PositionDisplay_Draw(object sender, VisualizerDrawEventArgs args)
         {
+            if (args.Data != null)
+            {
+                var ds = args.DrawingSession as CanvasDrawingSession;
+                if (args.Data.Time != null)
+                {
+                    position = args.Data.Time.Value;
+                }
+                string timeString = String.Format("mm:ss.ff", position);
+                ds.DrawText(timeString, 0, 0, Colors.DarkGray);
 
+            }
+        }
+
+        public CompositionBrush CreateElementBrush(object sender, Color elementColor, Size size, Compositor compositor, CompositionGraphicsDevice device)
+        {
+            if (size.Width == 0 && size.Height == 0)
+                return null;
+
+            var surface = device.CreateDrawingSurface(size, DirectXPixelFormat.B8G8R8A8UIntNormalized, DirectXAlphaMode.Premultiplied);
+            using (var drawingSession = CanvasComposition.CreateDrawingSession(surface))
+            {
+                drawingSession.Clear(Colors.Transparent);
+                var center = size.ToVector2() / 2.0f;
+                var radius = center.X > center.Y ? center.Y : center.X;
+                drawingSession.FillCircle(center,radius, elementColor);
+            }
+            return compositor.CreateSurfaceBrush(surface);
+        }
+
+        public CompositionBrush CreateShadowMask(object sender, Size size, Compositor compositor, CompositionGraphicsDevice device)
+        {
+            if (size.Width == 0 && size.Height == 0)
+                return null;
+
+            var surface = device.CreateDrawingSurface(size, DirectXPixelFormat.B8G8R8A8UIntNormalized, DirectXAlphaMode.Premultiplied);
+            using (var drawingSession = CanvasComposition.CreateDrawingSession(surface))
+            {
+                drawingSession.Clear(Colors.Transparent);
+                var center = size.ToVector2() / 2.0f;
+                var radius = center.X > center.Y ? center.Y : center.X;
+                drawingSession.FillCircle(center, radius, Color.FromArgb(255,255,255,255));
+            }
+            return compositor.CreateSurfaceBrush(surface);
         }
     }
 }

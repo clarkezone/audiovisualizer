@@ -3,13 +3,17 @@
 
 namespace winrt::AudioVisualizer::implementation
 {
-    VisualizationDataFrame::VisualizationDataFrame(Windows::Foundation::TimeSpan const& time, Windows::Foundation::TimeSpan const& duration, AudioVisualizer::ScalarData const& rms, AudioVisualizer::ScalarData const& peak, AudioVisualizer::SpectrumData const& spectrum) : _rms(rms), _peak(peak),_spectrum(spectrum)
+    VisualizationDataFrame::VisualizationDataFrame(Windows::Foundation::IReference<Windows::Foundation::TimeSpan> const& time, Windows::Foundation::TimeSpan const& duration, AudioVisualizer::ScalarData const& rms, AudioVisualizer::ScalarData const& peak, AudioVisualizer::SpectrumData const& spectrum) 
     {
+		_rms = rms;
+		_peak = peak;
+		_spectrum = spectrum;
 		_time = time;
 		_duration = duration;
+		_properties = Windows::Foundation::Collections::PropertySet();
     }
 
-    Windows::Foundation::TimeSpan VisualizationDataFrame::Time()
+    Windows::Foundation::IReference<Windows::Foundation::TimeSpan> VisualizationDataFrame::Time()
     {
 		return _time;
     }

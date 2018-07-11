@@ -16,7 +16,7 @@ namespace winrt::AudioVisualizer::implementation
 	struct BarVisualizerBase
 	{
 	private:
-		ControlType *derived_this() { return static_cast<ControlType *>(this); }
+		ControlType * derived_this() { return static_cast<ControlType *>(this); }
 
 	protected:
 		unsigned _barCount;
@@ -26,6 +26,11 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::UI::Xaml::Thickness _elementMargin;
 		Windows::UI::Color _unlitElementColor;
 		std::mutex _lock;
+		winrt::Windows::Foundation::Numerics::float2 _elementSize;
+		winrt::Windows::Foundation::Numerics::float3 _elementShadowOffset;
+		float _elementShadowOpacity;
+		Windows::UI::Color _elementShadowColor;
+		float _shadowBlurRadius;
 
 		AudioVisualizer::IVisualizationSource _source{ nullptr };
 		Windows::UI::Composition::Compositor _compositor{ nullptr };
@@ -34,8 +39,10 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::UI::Composition::SpriteVisual _meterBackgroundVisual{ nullptr }; // Backplate for the meter
 		Windows::UI::Composition::ContainerVisual _meterElementVisuals{ nullptr };	// Container for individual elements visuals
 		Windows::UI::Composition::CompositionBrush _backgroundBrush{ nullptr };
-		Windows::UI::Composition::CompositionColorBrush _unlitElementBrush{ nullptr };
-		Windows::UI::Composition::CompositionColorBrush _auxElementBrush{ nullptr };
+		Windows::UI::Composition::CompositionBrush _unlitElementBrush{ nullptr };
+		Windows::UI::Composition::CompositionBrush _auxElementBrush{ nullptr };
+		Windows::UI::Composition::CompositionBrush _shadowMask{nullptr};
+		AudioVisualizer::IBarElementFactory _elementFactory { nullptr };
 
 		Windows::System::Threading::ThreadPoolTimer _updateTimer{ nullptr };
 
@@ -70,14 +77,14 @@ namespace winrt::AudioVisualizer::implementation
 			_meterVisual = _compositor.CreateContainerVisual();
 			ElementCompositionPreview::SetElementChildVisual(*derived_this(), _meterVisual);
 
-			//_backgroundBrush = util::make_composition_brush(derived_this()->Background());
+			_backgroundBrush = util::make_composition_brush(derived_this()->Background(),_compositor);
 			//_auxElementBrush = _compositor.CreateColorBrush(Colors::BlueViolet());
 			_meterBackgroundVisual = _compositor.CreateSpriteVisual();
-			//_meterBackgroundVisual.Brush(_backgroundBrush);
+			_meterBackgroundVisual.Brush(_backgroundBrush);
 			_meterVisual.Children().InsertAtBottom(_meterBackgroundVisual);
 			_meterElementVisuals = _compositor.CreateContainerVisual();
 			_meterVisual.Children().InsertAtTop(_meterElementVisuals);
-			_unlitElementBrush = _compositor.CreateColorBrush(_unlitElementColor);
+			_unlitElementBrush = CreateBrushForColor(_unlitElementColor);
 
 			InitializeDefaultLevels();
 			derived_this()->SizeChanged(SizeChangedEventHandler(this, &BarVisualizerBase::OnSizeChanged));
@@ -119,9 +126,11 @@ namespace winrt::AudioVisualizer::implementation
 				{
 					auto elementVisual = _compositor.CreateSpriteVisual();
 					auto dropShadow = _compositor.CreateDropShadow();
-					dropShadow.BlurRadius(3);
-					dropShadow.Color(_unlitElementColor);
-					dropShadow.Offset(Windows::Foundation::Numerics::float3(1, 1, -5));
+					dropShadow.BlurRadius(_shadowBlurRadius);
+					// If unlit elements are transparent, so are their shadows
+					dropShadow.Color(_unlitElementColor == winrt::Windows::UI::Colors::Transparent() ? winrt::Windows::UI::Colors::Transparent() : _elementShadowColor);
+					dropShadow.Offset(_elementShadowOffset);
+					dropShadow.Opacity(_elementShadowOpacity);
 					elementVisual.Shadow(dropShadow);
 					elementVisual.Brush(_unlitElementBrush);
 					_meterElementVisuals.Children().InsertAtBottom(elementVisual);
@@ -131,12 +140,14 @@ namespace winrt::AudioVisualizer::implementation
 		}
 		void OnBackgroundChanged(Windows::UI::Xaml::DependencyObject const &sender, Windows::UI::Xaml::DependencyProperty const &dp)
 		{
-			_backgroundBrush = util::make_composition_brush(derived_this()->Background());
+			_backgroundBrush = util::make_composition_brush(derived_this()->Background(),_compositor);
+			_meterBackgroundVisual.Brush(_backgroundBrush);
 		}
 
 
 		void OnSizeChanged(Windows::Foundation::IInspectable const &, Windows::UI::Xaml::SizeChangedEventArgs const &args)
 		{
+			std::lock_guard<std::mutex> lock(_lock);
 			LayoutVisuals(args.NewSize());
 		}
 
@@ -159,6 +170,7 @@ namespace winrt::AudioVisualizer::implementation
 			if (_source) {
 				frame = _source.GetData();
 			}
+			std::lock_guard<std::mutex> lock(_lock);
 			OnUpdateMeter(frame);
 		}
 
@@ -203,7 +215,7 @@ namespace winrt::AudioVisualizer::implementation
 					auto visual = _elementVisuals[barIndex * _levels.size() + rowIndex];
 					auto shadow = visual.Shadow().as<DropShadow>();
 					if (rowIndex <= mainValueIndex || rowIndex == auxValueIndex) {
-						Windows::UI::Composition::CompositionColorBrush brush{ nullptr };
+						Windows::UI::Composition::CompositionBrush brush{ nullptr };
 						if (rowIndex == auxValueIndex && auxValueIndex >= mainValueIndex && _auxElementBrush)
 						{
 							brush = _auxElementBrush;
@@ -215,12 +227,12 @@ namespace winrt::AudioVisualizer::implementation
 							brush = brushEntry->second;
 						}
 						visual.Brush(brush);
-						shadow.Color(brush.Color());
+						shadow.Color(_elementShadowColor);
 					}
 					else
 					{
 						visual.Brush(_unlitElementBrush);
-						shadow.Color(_unlitElementColor);
+						shadow.Color(_unlitElementColor == winrt::Windows::UI::Colors::Transparent() ? winrt::Windows::UI::Colors::Transparent() : _elementShadowColor);	// Unlit element shadows are transparent
 					}
 				}		
 			}
@@ -250,7 +262,17 @@ namespace winrt::AudioVisualizer::implementation
 
 			float2 elementOffset = float2(float(_elementMargin.Left) * cellSize.x, float(_elementMargin.Top) * cellSize.y);
 			float2 relativeElementSize = float2((float)(1.0 - _elementMargin.Left - _elementMargin.Right), (float)(1.0 - _elementMargin.Top - _elementMargin.Bottom));
-			float2 elementSize = relativeElementSize * cellSize;
+			_elementSize = relativeElementSize * cellSize;
+			CreateElementBrushes();
+			
+			if (_elementFactory) {
+				_shadowMask = _elementFactory.CreateShadowMask(*derived_this(), _elementSize, _compositor, _compositionDevice);
+			}
+			else
+			{
+				_shadowMask = nullptr;
+			}
+			UpdateShadows([=](winrt::Windows::UI::Composition::DropShadow const & shadow) {shadow.Mask(_shadowMask); });
 
 			for (size_t barIndex = 0, elementIndex = 0; barIndex < _barCount; barIndex++)
 			{
@@ -262,13 +284,13 @@ namespace winrt::AudioVisualizer::implementation
 				{
 					auto elementVisual = _elementVisuals[elementIndex];
 					elementVisual.Offset(float3(elementCell, 0));
-					elementVisual.Size(elementSize);
+					elementVisual.Size(_elementSize);
 					if (_orientation == Orientation::Vertical) {
 						elementCell.y -= cellSize.y;
 					}
 					else {
 						elementCell.x += cellSize.x;
-					}
+					}				
 				}
 			}
 		}
@@ -308,10 +330,12 @@ namespace winrt::AudioVisualizer::implementation
 				return *((uint32_t*)&a) < *((uint32_t*)&b);
 			}
 		};
-		std::map<Windows::UI::Color, Windows::UI::Composition::CompositionColorBrush, windows_ui_color_is_less_than> _elementBrushes;
+		std::map<Windows::UI::Color, Windows::UI::Composition::CompositionBrush, windows_ui_color_is_less_than> _elementBrushes;
 
 		void Levels(array_view<AudioVisualizer::MeterBarLevel const> value)
 		{
+			std::lock_guard<std::mutex> lock(_lock);
+
 			if (value.data() == nullptr || value.size() < 1)
 				throw winrt::hresult_invalid_argument(L"Value cannot be empty");
 
@@ -325,17 +349,31 @@ namespace winrt::AudioVisualizer::implementation
 
 			_levels.resize(value.size());
 			std::copy(value.begin(), value.end(), _levels.begin());
-			// Create element brushes cache, store in map indexing by color
+			
+			CreateElementVisuals();		
+			LayoutVisuals();
+		}
+
+		void CreateElementBrushes()
+		{
 			_elementBrushes.clear();
 			for (auto level : _levels) {
 				auto existingElement = _elementBrushes.find(level.Color);
 				if (existingElement == std::end(_elementBrushes)) {
-					auto brush = _compositor.CreateColorBrush(level.Color);
-					_elementBrushes.insert(std::make_pair(level.Color, brush));
+					_elementBrushes.insert(std::make_pair(level.Color, CreateBrushForColor(level.Color)));
 				}
 			}
-			CreateElementVisuals();
-			LayoutVisuals();
+		}
+
+		winrt::Windows::UI::Composition::CompositionBrush CreateBrushForColor(winrt::Windows::UI::Color color)
+		{
+			if (_elementFactory) {
+				auto size = winrt::Windows::Foundation::Size(_elementSize.x, _elementSize.y);
+				return _elementFactory.CreateElementBrush(*derived_this(),color,size,_compositor,_compositionDevice);
+			}
+			else {
+				return _compositor.CreateColorBrush(color);
+			}
 		}
 
 		Windows::UI::Xaml::Controls::Orientation Orientation()
@@ -345,6 +383,8 @@ namespace winrt::AudioVisualizer::implementation
 
 		void Orientation(Windows::UI::Xaml::Controls::Orientation const& value)
 		{
+			std::lock_guard<std::mutex> lock(_lock);
+
 			_orientation = value;
 			LayoutVisuals();
 		}
@@ -372,6 +412,7 @@ namespace winrt::AudioVisualizer::implementation
 			if (value.Left + value.Right >= 1.0 || value.Top + value.Bottom >= 1.0)
 				throw hresult_invalid_argument();
 
+			std::lock_guard<std::mutex> lock(_lock);
 			_elementMargin = value;
 			LayoutVisuals();
 		}
@@ -383,9 +424,117 @@ namespace winrt::AudioVisualizer::implementation
 
 		void UnlitElement(Windows::UI::Color const& value)
 		{
+			std::lock_guard<std::mutex> lock(_lock);
 			_unlitElementColor = value;
-			_unlitElementBrush = _compositor.CreateColorBrush(_unlitElementColor);
+			_unlitElementBrush = CreateBrushForColor(_unlitElementColor);
+			UpdateUnlitElementsBrush();
+		}
+
+		void UpdateUnlitElementsBrush()
+		{
+			for (size_t barIndex = 0; barIndex < _barCount; barIndex++)
+			{
+				for (size_t rowIndex = _barStates[barIndex] + 1; rowIndex < _levels.size(); rowIndex++)
+				{
+					if (rowIndex != _barAuxStates[barIndex]) {
+						_elementVisuals[rowIndex + barIndex * _levels.size()].Brush(_unlitElementBrush);
+					}
+				}
+			}
+		}
+
+		AudioVisualizer::IBarElementFactory ElementFactory()
+		{
+			return _elementFactory;
+		}
+		void ElementFactory(AudioVisualizer::IBarElementFactory const &value)
+		{
+			std::lock_guard<std::mutex> lock(_lock);
+			_elementFactory = value;
+			_shadowMask = nullptr;
+			CreateElementVisuals();
 			LayoutVisuals();
-		}	
+		}
+
+		winrt::Windows::Foundation::Numerics::float3 ElementShadowOffset()
+		{
+			return _elementShadowOffset;
+		}
+
+		template<typename L> void UpdateShadows(L lambda)
+		{
+			for (auto visual : _elementVisuals) {
+				winrt::Windows::UI::Composition::DropShadow shadow = visual.Shadow() ? visual.Shadow().as<winrt::Windows::UI::Composition::DropShadow>() : nullptr;
+				if (shadow)
+				{
+					lambda(shadow);
+				}
+			}
+
+		}
+
+		void ElementShadowOffset(winrt::Windows::Foundation::Numerics::float3 const & value)
+		{
+			std::lock_guard<std::mutex> lock(_lock);
+			_elementShadowOffset = value;
+			UpdateShadows(
+				[=](winrt::Windows::UI::Composition::DropShadow const &shadow) { shadow.Offset(value); }
+			);
+		}
+
+		float ElementShadowOpacity()
+		{
+			return _elementShadowOpacity;
+		}
+		void ElementShadowOpacity(float value)
+		{
+			std::lock_guard<std::mutex> lock(_lock);
+			_elementShadowOpacity = value;
+			UpdateShadows(
+				[=](winrt::Windows::UI::Composition::DropShadow const &shadow) { shadow.Opacity(value); }
+			);
+		}
+		winrt::Windows::UI::Color ElementShadowColor()
+		{
+			return _elementShadowColor;
+		}
+
+		void ElementShadowColor(winrt::Windows::UI::Color value)
+		{
+			std::lock_guard<std::mutex> lock(_lock);
+			_elementShadowColor = value;
+			if (_unlitElementColor == winrt::Windows::UI::Colors::Transparent()) {
+				for (size_t barIndex = 0; barIndex < _barCount; barIndex++)
+				{
+					for (size_t rowIndex = 0; rowIndex < _levels.size(); rowIndex++)
+					{
+						// Update shadows for lit elements
+						if (rowIndex <= _barStates[barIndex] || rowIndex == _barAuxStates[barIndex]) {
+							auto shadow = _elementVisuals[rowIndex + barIndex * _levels.size()].Shadow();
+							winrt::Windows::UI::Composition::DropShadow dropShadow = shadow ? shadow.as<winrt::Windows::UI::Composition::DropShadow>() : nullptr;
+							if (dropShadow) {
+								dropShadow.Color(value);
+							}
+						}
+					}
+				}
+			}
+			else {	// If unlit elements are not transparent update all shadows
+				UpdateShadows([=](winrt::Windows::UI::Composition::DropShadow const & shadow) { shadow.Color(value); });
+			}
+
+		}
+		float ElementShadowBlurRadius()
+		{
+			return _shadowBlurRadius;
+		}
+		void ElementShadowBlurRadius(float value)
+		{
+			std::lock_guard<std::mutex> lock(_lock);
+			_shadowBlurRadius = value;
+			UpdateShadows(
+				[=](winrt::Windows::UI::Composition::DropShadow const &shadow) { shadow.BlurRadius(value); }
+			);
+		}
 	};
 }

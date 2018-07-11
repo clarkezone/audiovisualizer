@@ -8,7 +8,6 @@ namespace winrt::AudioVisualizer::implementation
     struct DiscreteVUBar : DiscreteVUBarT<DiscreteVUBar>,BarVisualizerBase<DiscreteVUBar>
     {
 		bool _displayPeak = true;
-		//virtual void OnDraw(Microsoft::Graphics::Canvas::CanvasDrawingSession drawingSession, VisualizationDataFrame dataFrame, Windows::Foundation::IReference<Windows::Foundation::TimeSpan> presentationTime);
 	public:
 		DiscreteVUBar();
 		bool DisplayPeak() { return _displayPeak; }

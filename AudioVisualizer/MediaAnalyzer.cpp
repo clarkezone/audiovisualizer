@@ -52,6 +52,7 @@ namespace winrt::AudioVisualizer::implementation
 #endif
 	}
 
+	// As all items are posted to the queue with time value set we can skip nullptr checks
 	AudioVisualizer::VisualizationDataFrame  MediaAnalyzer::dataframe_queue::get(Windows::Foundation::TimeSpan time)
 	{
 		std::lock_guard<std::mutex> lock(_outputQueueAccessMutex);
@@ -64,21 +65,21 @@ namespace winrt::AudioVisualizer::implementation
 		{
 #ifdef _TRACE_
 			auto frontItem = winrt::from_abi<VisualizationDataFrame>(_data.front());
-			Trace::MediaAnalyzer_OutputQueueTest(frontItem->Time(), time, time < frontItem->Time(), time >= frontItem->Time() + frontItem->Duration());
+			Trace::MediaAnalyzer_OutputQueueTest(frontItem->Time().Value(), time, time < frontItem->Time().Value(), time >= frontItem->Time().Value() + frontItem->Duration());
 #endif
-			if (time < _data.front().Time()) // Current position is before the visualization queue head - wait until we catch up
+			if (time < _data.front().Time().Value()) // Current position is before the visualization queue head - wait until we catch up
 			{
 #ifdef _TRACE_
-				Trace::MediaAnalyzer_OutputQueueBehind(frontItem->Time());
+				Trace::MediaAnalyzer_OutputQueueBehind(frontItem->Time().Value());
 #endif
 				return nullptr; 
 			}
 
 			// Test if front item is matching. Add 5uS to avoid int time representation rounding errors
-			if (time < _data.front().Time() + _data.front().Duration() + Windows::Foundation::TimeSpan(50))
+			if (time < _data.front().Time().Value() + _data.front().Duration() + Windows::Foundation::TimeSpan(50))
 			{
 #ifdef _TRACE_
-				Trace::MediaAnalyzer_OutputQueueItemFound(_data.front().Time());
+				Trace::MediaAnalyzer_OutputQueueItemFound(_data.front().Time().Value());
 #endif
 				return _data.front();	// Return front item
 			}
