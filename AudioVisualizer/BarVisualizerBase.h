@@ -138,7 +138,7 @@ namespace winrt::AudioVisualizer::implementation
 				}
 			}
 		}
-		void OnBackgroundChanged(Windows::UI::Xaml::DependencyObject const &sender, Windows::UI::Xaml::DependencyProperty const &dp)
+		void OnBackgroundChanged(Windows::UI::Xaml::DependencyObject const &, Windows::UI::Xaml::DependencyProperty const &)
 		{
 			_backgroundBrush = util::make_composition_brush(derived_this()->Background(),_compositor);
 			_meterBackgroundVisual.Brush(_backgroundBrush);
@@ -432,12 +432,12 @@ namespace winrt::AudioVisualizer::implementation
 
 		void UpdateUnlitElementsBrush()
 		{
-			for (size_t barIndex = 0; barIndex < _barCount; barIndex++)
+			for (int barIndex = 0; barIndex < (int)_barCount; barIndex++)
 			{
-				for (size_t rowIndex = _barStates[barIndex] + 1; rowIndex < _levels.size(); rowIndex++)
+				for (int rowIndex = _barStates[barIndex] + 1; rowIndex < (int)_levels.size(); rowIndex++)
 				{
 					if (rowIndex != _barAuxStates[barIndex]) {
-						_elementVisuals[rowIndex + barIndex * _levels.size()].Brush(_unlitElementBrush);
+						_elementVisuals[rowIndex + barIndex * (int)_levels.size()].Brush(_unlitElementBrush);
 					}
 				}
 			}
@@ -504,9 +504,9 @@ namespace winrt::AudioVisualizer::implementation
 			std::lock_guard<std::mutex> lock(_lock);
 			_elementShadowColor = value;
 			if (_unlitElementColor == winrt::Windows::UI::Colors::Transparent()) {
-				for (size_t barIndex = 0; barIndex < _barCount; barIndex++)
+				for (int barIndex = 0; barIndex < (int)_barCount; barIndex++)
 				{
-					for (size_t rowIndex = 0; rowIndex < _levels.size(); rowIndex++)
+					for (int rowIndex = 0; rowIndex < (int)_levels.size(); rowIndex++)
 					{
 						// Update shadows for lit elements
 						if (rowIndex <= _barStates[barIndex] || rowIndex == _barAuxStates[barIndex]) {

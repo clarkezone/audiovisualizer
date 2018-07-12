@@ -2,11 +2,32 @@ import "VisualizationSource.idl";
 
 namespace AudioVisualizer
 {
+	
+	struct MeterScaleSection {
+		Single Start;
+		Single Length;
+		Windows.UI.Color LineColor;
+		Single LineThickness;
+	};
+
+	struct MeterScaleLabel
+	{
+		Single TickLength;
+		Windows.UI.Color TickColor;
+		Single TickThickness;
+		String Label;
+		Single Position;
+	};
+
 	[default_interface]
 	runtimeclass AnalogVUMeter : Windows.UI.Xaml.Controls.Control
 	{
 		AnalogVUMeter();
 		IVisualizationSource Source;
 		Int32 ChannelIndex;
+		Windows.Foundation.Numerics.Vector2 DialRelativeFixPoint;
+		Windows.Foundation.Numerics.Vector2 ScaleRelativeStartingPoint;
+		MeterScaleSection[] ScaleSections;
+		MeterScaleLabel[] ScaleLabels;
 	}
 }

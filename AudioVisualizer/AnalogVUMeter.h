@@ -2,6 +2,7 @@
 
 #include "AnalogVUMeter.g.h"
 #include <winrt/Windows.System.Threading.h>
+#include <vector>
 
 using namespace winrt::Windows::Foundation::Numerics;
 
@@ -24,6 +25,9 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::UI::Composition::CompositionColorBrush _dialBrush{ nullptr };
 		Windows::UI::Color _dialShadowColor;
 
+		std::vector<MeterScaleSection> _scaleSections;
+		std::vector<MeterScaleLabel> _scaleLabels;
+
 		float2 _scaleArcCenterPoint = float2::zero();
 		float2 _scaleArcStartPoint = float2::zero();
 		float _scaleArcRadius = 0.0f;
@@ -44,6 +48,7 @@ namespace winrt::AudioVisualizer::implementation
 		float2 PointOnArc(float relativeValue,float relativeLength = 1.0f);
 
 		void OnSizeChanged(IInspectable sender, Windows::UI::Xaml::SizeChangedEventArgs const &args);
+		void UpdateLayout(winrt::Windows::Foundation::Numerics::float2 &newSize);
 		void OnLoaded(IInspectable sender, Windows::UI::Xaml::RoutedEventArgs const &args);
 		void OnBackgroundChanged(Windows::UI::Xaml::DependencyObject const &sender, Windows::UI::Xaml::DependencyProperty const &dp);
 		void UpdateMeter(Windows::System::Threading::ThreadPoolTimer const &timer);
@@ -53,6 +58,15 @@ namespace winrt::AudioVisualizer::implementation
 		void Source(AudioVisualizer::IVisualizationSource const& value);
 		int32_t ChannelIndex();
 		void ChannelIndex(int32_t value);
+		Windows::Foundation::Numerics::float2 DialRelativeFixPoint();
+		void DialRelativeFixPoint(Windows::Foundation::Numerics::float2 value);
+		Windows::Foundation::Numerics::float2 ScaleRelativeStartingPoint();
+		void ScaleRelativeStartingPoint(Windows::Foundation::Numerics::float2 value);
+		com_array<AudioVisualizer::MeterScaleSection> ScaleSections();
+		void ScaleSections(array_view<AudioVisualizer::MeterScaleSection const> value);
+		com_array<AudioVisualizer::MeterScaleLabel> ScaleLabels();
+		void ScaleLabels(array_view<AudioVisualizer::MeterScaleLabel const> value);
+
     };
 }
 

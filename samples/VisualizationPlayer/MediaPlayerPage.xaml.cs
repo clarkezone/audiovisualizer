@@ -160,15 +160,7 @@ namespace VisualizationPlayer
         }
 
 
-        private void PositionDisplay_Draw(VisualizerControl sender, VisualizerDrawEventArgs args)
-        {
-            if (args.PresentationTime != null)
-            {
-                string timeString = args.PresentationTime.Value.ToString("mm\\:ss\\.ff");
-                var ds = (CanvasDrawingSession)args.DrawingSession;
-                ds.DrawText(timeString, 0, 0, Colors.Gray);
-            }
-        }
+
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
@@ -303,17 +295,13 @@ namespace VisualizationPlayer
 
         private void PositionDisplay_Draw(object sender, VisualizerDrawEventArgs args)
         {
-            if (args.Data != null)
+            if (args.PresentationTime != null)
             {
-                var ds = args.DrawingSession as CanvasDrawingSession;
-                if (args.Data.Time != null)
-                {
-                    position = args.Data.Time.Value;
-                }
-                string timeString = String.Format("mm:ss.ff", position);
-                ds.DrawText(timeString, 0, 0, Colors.DarkGray);
-
+                position = args.PresentationTime.Value;
             }
+            string timeString = position.ToString("mm\\:ss\\.ff");
+            var ds = (CanvasDrawingSession)args.DrawingSession;
+            ds.DrawText(timeString, 0, 0, Colors.Gray);
         }
 
         public CompositionBrush CreateElementBrush(object sender, Color elementColor, Size size, Compositor compositor, CompositionGraphicsDevice device)

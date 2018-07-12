@@ -12,41 +12,8 @@ namespace winrt::AudioVisualizer::implementation
 {
 	const float pi = 3.14159f;
 
-	struct ScaleSection {
-		float Start;
-		float Length;
-		Windows::UI::Color LineColor;
-		float LineThickness;
-	};
 
-	struct ScaleLabel
-	{
-		float TickLength;
-		Windows::UI::Color TickColor;
-		float TickThickness;
-		hstring Label;
-		float Position;
-	};
 
-	std::vector<ScaleSection> _scaleSections = 
-	{
-		ScaleSection() = { 0.0f,0.66f,Windows::UI::Colors::Black(),3.0f },
-		ScaleSection() = { 0.67f,0.33f,Windows::UI::Colors::Red(),6.0f }
-	};
-
-	std::vector<ScaleLabel> _scaleLabels = 
-	{
-		ScaleLabel() = { 0.05f, Windows::UI::Colors::Black(), 3.0f, L"-20", 0.067f },
-		ScaleLabel() = { 0.05f, Windows::UI::Colors::Black(), 3, L"-10", 0.21f },
-		ScaleLabel() = { 0.05f, Windows::UI::Colors::Black(), 3, L"-7", 0.3f },
-		ScaleLabel() = { 0.05f, Windows::UI::Colors::Black(),  3, L"-5", 0.37f },
-		ScaleLabel() = { 0.05f, Windows::UI::Colors::Black(), 3, L"-3", 0.47f },
-		ScaleLabel() = { 0.05f, Windows::UI::Colors::Black(), 3, L"-1", 0.59f },
-		ScaleLabel() = { 0.05f, Windows::UI::Colors::Black(),  3, L"0", 0.66f },
-		ScaleLabel() = { 0.05f, Windows::UI::Colors::Red(),  3, L"+1", 0.75f },
-		ScaleLabel() = { 0.05f, Windows::UI::Colors::Red(), 3, L"+3", 0.94f }
-
-	};
 
 	AnalogVUMeter::AnalogVUMeter()
 	{
@@ -54,6 +21,27 @@ namespace winrt::AudioVisualizer::implementation
 		using namespace Windows::UI::Xaml;
 		using namespace Windows::UI::Xaml::Hosting;
 		using namespace Windows::Foundation::Numerics;
+
+		
+		_scaleSections =
+		{
+			MeterScaleSection() = { 0.0f,0.66f,Windows::UI::Colors::Black(),3.0f },
+			MeterScaleSection() = { 0.67f,0.33f,Windows::UI::Colors::Red(),6.0f }
+		};
+
+		_scaleLabels =
+		{
+			MeterScaleLabel() = { 0.05f, Windows::UI::Colors::Black(), 3.0f, L"-20", 0.067f },
+			MeterScaleLabel() = { 0.05f, Windows::UI::Colors::Black(), 3, L"-10", 0.21f },
+			MeterScaleLabel() = { 0.05f, Windows::UI::Colors::Black(), 3, L"-7", 0.3f },
+			MeterScaleLabel() = { 0.05f, Windows::UI::Colors::Black(),  3, L"-5", 0.37f },
+			MeterScaleLabel() = { 0.05f, Windows::UI::Colors::Black(), 3, L"-3", 0.47f },
+			MeterScaleLabel() = { 0.05f, Windows::UI::Colors::Black(), 3, L"-1", 0.59f },
+			MeterScaleLabel() = { 0.05f, Windows::UI::Colors::Black(),  3, L"0", 0.66f },
+			MeterScaleLabel() = { 0.05f, Windows::UI::Colors::Red(),  3, L"+1", 0.75f },
+			MeterScaleLabel() = { 0.05f, Windows::UI::Colors::Red(), 3, L"+3", 0.94f }
+
+		};
 
 		auto elementVisual = ElementCompositionPreview::GetElementVisual(*this);
 		_compositor = elementVisual.Compositor();
@@ -86,16 +74,6 @@ namespace winrt::AudioVisualizer::implementation
 		_dialVisual.Shadow(_dialShadow);
 
 		_meterVisual.Children().InsertAtTop(_dialVisual);
-		
-		/* TODO: Create a light
-		_meterLight = _compositor.CreateSpotLight();
-		_meterLight.Targets.Add(_meterVisual);
-		_meterLight.CoordinateSpace = _meterVisual;
-		_meterLight.InnerConeAngleInDegrees = 30f;
-		_meterLight.InnerConeColor = Colors.Blue;
-		_meterLight.InnerConeIntensity = 10f;
-		_meterLight.OuterConeAngleInDegrees = 60f;
-		_meterLight.OuterConeColor = Colors.BlueViolet; */
 
 		SizeChanged(SizeChangedEventHandler(this, &AnalogVUMeter::OnSizeChanged));
 		RegisterPropertyChangedCallback(Windows::UI::Xaml::Controls::Control::BackgroundProperty(), Windows::UI::Xaml::DependencyPropertyChangedCallback(this, &AnalogVUMeter::OnBackgroundChanged));
@@ -126,6 +104,66 @@ namespace winrt::AudioVisualizer::implementation
 		_channelIndex = value;
 	}
 
+	Windows::Foundation::Numerics::float2 AnalogVUMeter::DialRelativeFixPoint()
+	{
+		return _dialRelativeFixPoint;
+	}
+
+	void AnalogVUMeter::DialRelativeFixPoint(Windows::Foundation::Numerics::float2 value)
+	{
+		_dialRelativeFixPoint = value;
+		float2 size = float2((float)ActualWidth(), (float)ActualHeight());
+		UpdateLayout(size);
+
+	}
+
+	Windows::Foundation::Numerics::float2 AnalogVUMeter::ScaleRelativeStartingPoint()
+	{
+		return _scaleStartingPoint;
+	}
+
+	void AnalogVUMeter::ScaleRelativeStartingPoint(Windows::Foundation::Numerics::float2 value)
+	{
+		_scaleStartingPoint = value;
+		float2 size = float2((float)ActualWidth(), (float)ActualHeight());
+		UpdateLayout(size);
+	}
+
+	com_array<AudioVisualizer::MeterScaleSection> AnalogVUMeter::ScaleSections()
+	{
+		return com_array<AudioVisualizer::MeterScaleSection>(_scaleSections);
+	}
+
+	void AnalogVUMeter::ScaleSections(array_view<AudioVisualizer::MeterScaleSection const> value)
+	{
+		_scaleSections.resize(value.size());
+		auto copy = _scaleSections.begin();
+		for (auto item : value) {
+			*copy = item;
+			copy++;
+		}
+		float2 size = float2((float)ActualWidth(), (float)ActualHeight());
+		PaintScale(size);
+	}
+
+	com_array<AudioVisualizer::MeterScaleLabel> AnalogVUMeter::ScaleLabels()
+	{
+		return com_array<AudioVisualizer::MeterScaleLabel>(_scaleLabels);
+	}
+
+	void AnalogVUMeter::ScaleLabels(array_view<AudioVisualizer::MeterScaleLabel const> value)
+	{
+		_scaleLabels.resize(value.size());
+		auto copy = _scaleLabels.begin();
+		for (auto item : value) {
+			*copy = item;
+			copy++;
+		}
+		//std::copy(std::begin(value), std::end(value), _scaleLabels);
+		float2 size = float2((float)ActualWidth(), (float)ActualHeight());
+		PaintScale(size);
+	}
+
 	void AnalogVUMeter::UpdateDialPosition()
 	{
 		float clampedValue = _meterValue >= 0.0f && _meterValue <= 1.0f ? _meterValue : _meterValue <= 0.0f ? 0.0f : 1.0f;
@@ -139,11 +177,13 @@ namespace winrt::AudioVisualizer::implementation
 	float2 AnalogVUMeter::PointOnArc(float relativeValue, float relativeLength)
 	{
 		float angle = _scaleSweepAngle * relativeValue + _scaleArcStartAngle;
-		return _scaleArcCenterPoint + relativeLength * _scaleArcRadius * float2(cosf(angle),sinf(angle));
+		return _scaleArcCenterPoint + relativeLength * _scaleArcRadius * float2(cosf(angle), sinf(angle));
 	}
 
 	void AnalogVUMeter::PaintScale(const float2 &size)
 	{
+		if (size.x == 0 || size.y == 0)
+			return;
 		using namespace Windows::Graphics::DirectX;
 		using namespace Microsoft::Graphics::Canvas::Text;
 		using namespace Microsoft::Graphics::Canvas::Geometry;
@@ -158,9 +198,8 @@ namespace winrt::AudioVisualizer::implementation
 		// Draw scale
 		auto drawingSession = CanvasComposition::CreateDrawingSession(surface);
 		{
-			//drawingSession.DrawCircle(_scaleArcCenterPoint, _scaleArcRadius,Colors.Red);
 			drawingSession.Clear(Windows::UI::Colors::Transparent());
-			for(auto section : _scaleSections)
+			for (auto section : _scaleSections)
 			{
 				auto pathBuilder = CanvasPathBuilder(drawingSession);
 				float segmentStartAngle = _scaleSweepAngle * section.Start + _scaleArcStartAngle;
@@ -171,8 +210,8 @@ namespace winrt::AudioVisualizer::implementation
 				auto path = CanvasGeometry::CreatePath(pathBuilder);
 				drawingSession.DrawGeometry(path, section.LineColor, section.LineThickness);
 			}
-			
-			for(auto label : _scaleLabels)
+
+			for (auto label : _scaleLabels)
 			{
 				float2 tickStart = PointOnArc(label.Position);
 				float2 tickEnd = PointOnArc(label.Position, label.TickLength + 1.0f);
@@ -193,31 +232,34 @@ namespace winrt::AudioVisualizer::implementation
 	void AnalogVUMeter::OnSizeChanged(IInspectable sender, Windows::UI::Xaml::SizeChangedEventArgs const & args)
 	{
 		using namespace Windows::Foundation::Numerics;
-		float2 newSize = float2((float) args.NewSize().Width, (float)args.NewSize().Height);
+		float2 newSize = float2((float)args.NewSize().Width, (float)args.NewSize().Height);
 		_meterVisual.Size(newSize);
 		_meterBackgroundVisual.Size(newSize);
 		_scaleVisual.Size(newSize);
+		UpdateLayout(newSize);
+	}
+	void AnalogVUMeter::UpdateLayout(winrt::Windows::Foundation::Numerics::float2 &size)
+	{
 		// Recalculate internal metrics
-		_scaleArcCenterPoint = newSize * _dialRelativeFixPoint;
-		_scaleArcStartPoint = newSize * _scaleStartingPoint;
+		_scaleArcCenterPoint = size * _dialRelativeFixPoint;
+		_scaleArcStartPoint = size * _scaleStartingPoint;
 		_scaleArcRadius = distance(_scaleArcCenterPoint, _scaleArcStartPoint);
 		_scaleArcStartAngle = atan2f(_scaleArcStartPoint.y - _scaleArcCenterPoint.y, _scaleArcStartPoint.x - _scaleArcCenterPoint.x);
 
 		// Calculate angle sweep for symmetric meter
-		float2 scaleSymmetricEndPoint = float2(newSize.x - _scaleArcStartPoint.x, _scaleArcStartPoint.y);
+		float2 scaleSymmetricEndPoint = float2(size.x - _scaleArcStartPoint.x, _scaleArcStartPoint.y);
 		float  endPointAngle = atan2f(scaleSymmetricEndPoint.y - _scaleArcCenterPoint.y, scaleSymmetricEndPoint.x - _scaleArcCenterPoint.x);
 		_scaleSweepAngle = endPointAngle - _scaleArcStartAngle;
-		
 		_dialVisual.Size(float2(5, _scaleArcRadius * _dialRelativeLength));
 
 		UpdateDialPosition();
-		PaintScale(newSize);
+		PaintScale(size);
 	}
 	void AnalogVUMeter::OnLoaded(IInspectable sender, Windows::UI::Xaml::RoutedEventArgs const &)
 	{
 		Windows::System::Threading::ThreadPoolTimer::CreatePeriodicTimer(Windows::System::Threading::TimerElapsedHandler(this, &AnalogVUMeter::UpdateMeter), Windows::Foundation::TimeSpan(166667));	// Fire 60 times per second
 	}
-	void AnalogVUMeter::OnBackgroundChanged(Windows::UI::Xaml::DependencyObject const & sender, Windows::UI::Xaml::DependencyProperty const & dp)
+	void AnalogVUMeter::OnBackgroundChanged(Windows::UI::Xaml::DependencyObject const &, Windows::UI::Xaml::DependencyProperty const &)
 	{
 	}
 	void AnalogVUMeter::UpdateMeter(Windows::System::Threading::ThreadPoolTimer const &)

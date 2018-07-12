@@ -102,7 +102,7 @@ namespace winrt::AudioVisualizer::implementation
 		return _fOutputFps;
 	}
 
-	void VisualizerAudioEffect::Fps(float value)
+	void VisualizerAudioEffect::Fps(float )
 	{
 		throw hresult_not_implemented();
 	}
@@ -212,7 +212,7 @@ namespace winrt::AudioVisualizer::implementation
 		);
 	}
 
-	void VisualizerAudioEffect::OnAnalyzerOutput(AudioVisualizer::AudioAnalyzer const& analyzer, AudioVisualizer::VisualizationDataFrame const& frame)
+	void VisualizerAudioEffect::OnAnalyzerOutput(AudioVisualizer::AudioAnalyzer const&, AudioVisualizer::VisualizationDataFrame const& frame)
 	{
 		std::lock_guard<std::mutex> lock(_outputFrameLock);
 #ifdef _TRACE_
