@@ -22,6 +22,18 @@ winrt::Windows::UI::Composition::CompositionBrush util::make_composition_brush(w
 		auto color = xamlColorBrush.Color();
 		result = compositor.CreateColorBrush(color);
 	}
+	if (brushType == L"Windows.UI.Xaml.Media.LinearGradientBrush")
+	{
+		auto xamlLinearGradientBrush = xamlBrush.as<LinearGradientBrush>();
+		auto gradientBrush = compositor.CreateLinearGradientBrush();
+		gradientBrush.StartPoint(gradientBrush.StartPoint());
+		gradientBrush.EndPoint(gradientBrush.EndPoint());
+		for (auto gradientStop : xamlLinearGradientBrush.GradientStops()) {
+			auto compGradientStop = compositor.CreateColorGradientStop((float) gradientStop.Offset(), gradientStop.Color());
+			gradientBrush.ColorStops().Append(compGradientStop);
+		}
+		result = gradientBrush;
+	}
 	return result;
 }
 

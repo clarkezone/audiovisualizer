@@ -21,9 +21,7 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::UI::Composition::DropShadow _dialShadow{ nullptr }; // Shadow for the dial
 		Windows::UI::Composition::InsetClip _meterClip{ nullptr };// Clip the outside of the meter
 
-		Windows::UI::Composition::CompositionColorBrush _backgroundBrush{ nullptr };
 		Windows::UI::Composition::CompositionColorBrush _dialBrush{ nullptr };
-		Windows::UI::Color _dialShadowColor;
 
 		std::vector<MeterScaleSection> _scaleSections;
 		std::vector<MeterScaleLabel> _scaleLabels;
@@ -66,7 +64,20 @@ namespace winrt::AudioVisualizer::implementation
 		void ScaleSections(array_view<AudioVisualizer::MeterScaleSection const> value);
 		com_array<AudioVisualizer::MeterScaleLabel> ScaleLabels();
 		void ScaleLabels(array_view<AudioVisualizer::MeterScaleLabel const> value);
-
+		float DialShadowOpacity();
+		void DialShadowOpacity(float value);
+		float DialShadowBlurRadius();
+		void DialShadowBlurRadius(float value);
+		Windows::Foundation::Numerics::float3 DialShadowOffset();
+		void DialShadowOffset(Windows::Foundation::Numerics::float3 const& value);
+		Windows::UI::Color DialShadowColor();
+		void DialShadowColor(Windows::UI::Color const& value);
+		float DialRelativeLength();
+		void DialRelativeLength(float value);
+		Windows::UI::Color DialColor();
+		void DialColor(Windows::UI::Color const& value);
+		float DialWidth();
+		void DialWidth(float value);
     };
 }
 

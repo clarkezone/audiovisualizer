@@ -41,8 +41,8 @@
                     <TextBlock Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Center">Right Channel</TextBlock>
                     <a:DiscreteVUBar Grid.Row="0" Grid.Column="0" ChannelIndex="0" UnlitElement="LightGray" Source="{StaticResource source}" RelativeElementMargin="0.1,0.1,0.1,0.1" Margin="10,50,10,50" DisplayPeak="True"></a:DiscreteVUBar>
                     <a:DiscreteVUBar Grid.Row="0" Grid.Column="2" ChannelIndex="1" UnlitElement="LightGray" Source="{StaticResource source}"  RelativeElementMargin="0.1,0.1,0.1,0.1" Margin="10,50,10,50"></a:DiscreteVUBar>
-                    <a:AnalogVUMeter Grid.Row="0" Grid.Column="1" MinWidth="200" MinHeight="100" Margin="50,50,50,50" Source="{StaticResource analogSource}"  ChannelIndex="0"></a:AnalogVUMeter>
-                    <a:AnalogVUMeter Grid.Row="0" Grid.Column="3" MinWidth="200" MinHeight="100" Margin="50,50,50,50" Source="{StaticResource analogSource}" ChannelIndex="1"></a:AnalogVUMeter>
+                    <a:AnalogVUMeter Grid.Row="0" Grid.Column="1" MinWidth="200" MinHeight="100" Margin="50,50,50,50" Background="LightYellow" Source="{StaticResource analogSource}"  ChannelIndex="0"></a:AnalogVUMeter>
+                    <a:AnalogVUMeter Grid.Row="0" Grid.Column="3" MinWidth="200" MinHeight="100" Margin="50,50,50,50" Background="LightYellow" Source="{StaticResource analogSource}" ChannelIndex="1"/>
                     <Grid Grid.Row="1" Grid.ColumnSpan="4" Margin="100">
                         <Grid.RowDefinitions>
                             <RowDefinition></RowDefinition>

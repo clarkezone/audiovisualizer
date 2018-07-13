@@ -29,5 +29,12 @@ namespace AudioVisualizer
 		Windows.Foundation.Numerics.Vector2 ScaleRelativeStartingPoint;
 		MeterScaleSection[] ScaleSections;
 		MeterScaleLabel[] ScaleLabels;
+		Single DialShadowOpacity;
+		Single DialShadowBlurRadius;
+		Windows.Foundation.Numerics.Vector3 DialShadowOffset;
+		Windows.UI.Color DialShadowColor;
+		Single DialRelativeLength;
+		Windows.UI.Color DialColor;
+		Single DialWidth;
 	}
 }

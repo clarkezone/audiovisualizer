@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI;
@@ -137,6 +138,101 @@ namespace AudioVisualizer.test
             var newPoint = new System.Numerics.Vector2(0.4f, 1.6f);
             sut.ScaleRelativeStartingPoint = newPoint;
             Assert.AreEqual(newPoint, sut.ScaleRelativeStartingPoint);
+        }
+
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_IsDefaulDialColorRed()
+        {
+            Assert.AreEqual(Colors.Red, sut.DialColor);
+        }
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_CanSetDialColor()
+        {
+            sut.DialColor = Colors.Blue;
+            Assert.AreEqual(Colors.Blue, sut.DialColor);
+        }
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_IsDefaulDialWidth5()
+        {
+            Assert.AreEqual(5.0f, sut.DialWidth);
+        }
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_CanSetDialWidth()
+        {
+            sut.DialWidth = 10;
+            Assert.AreEqual(10.0f, sut.DialWidth);
+        }
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_IsDefaulDialRelativeLength1_08()
+        {
+            Assert.AreEqual(1.08f, sut.DialRelativeLength);
+        }
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_CanSetDialRelativeLength()
+        {
+            sut.DialRelativeLength = 1.1f;
+            Assert.AreEqual(1.1f, sut.DialRelativeLength);
+        }
+
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_IsDefaulDialShadowColorBlack()
+        {
+            Assert.AreEqual(Colors.Black, sut.DialShadowColor);
+        }
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_CanSetDialShadowColor()
+        {
+            sut.DialShadowColor = Colors.Red;
+            Assert.AreEqual(Colors.Red , sut.DialShadowColor);
+        }
+
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_IsDefaulDialShadowOffset()
+        {
+            Assert.AreEqual(new Vector3(-3,3,-10),sut.DialShadowOffset);
+        }
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_CanSetDialShadowOffset()
+        {
+            sut.DialShadowOffset = Vector3.Zero;
+            Assert.AreEqual(Vector3.Zero, sut.DialShadowOffset);
+        }
+
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_IsDefaulDialShadowBlurRadius5()
+        {
+            Assert.AreEqual(5.0f, sut.DialShadowBlurRadius);
+        }
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_CanSetDialShadowBlurRadius()
+        {
+            sut.DialShadowBlurRadius = 1.0f;
+            Assert.AreEqual(1.0f, sut.DialShadowBlurRadius);
+        }
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_IsDefaulDialShadowOpacity0_5()
+        {
+            Assert.AreEqual(5.0f, sut.DialShadowBlurRadius);
+        }
+        [UITestMethod]
+        [TestCategory("AnalogVUMeter")]
+        public void AnalogVUMeter_CanSetDialShadowOpacity()
+        {
+            sut.DialShadowOpacity = 1.0f;
+            Assert.AreEqual(1.0f, sut.DialShadowOpacity);
         }
 
     }

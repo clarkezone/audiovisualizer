@@ -52,25 +52,25 @@ namespace winrt::AudioVisualizer::implementation
 		_meterVisual = _compositor.CreateContainerVisual();
 		ElementCompositionPreview::SetElementChildVisual(*this, _meterVisual);
 
-		_backgroundBrush = _compositor.CreateColorBrush(Colors::LightYellow());
 		_meterBackgroundVisual = _compositor.CreateSpriteVisual();
-		_meterBackgroundVisual.Brush(_backgroundBrush);
+		_meterBackgroundVisual.Brush(util::make_composition_brush(Background(),_compositor));
 		_meterVisual.Children().InsertAtBottom(_meterBackgroundVisual);
 
-		_dialBrush = _compositor.CreateColorBrush(Colors::Red());
+		_dialBrush = _compositor.CreateColorBrush(Windows::UI::Colors::Red());
 		_scaleVisual = _compositor.CreateSpriteVisual();
 		_meterVisual.Children().InsertAtTop(_scaleVisual);
 		_dialVisual = _compositor.CreateSpriteVisual();
 		_dialVisual.Brush(_dialBrush);
+		_dialVisual.Size(float2(5.0f, 0.0f));	// Default width 5
 
 		_meterClip = _compositor.CreateInsetClip();
 		_meterVisual.Clip(_meterClip);
 
-		_dialShadowColor = Colors::DarkGray();
 		_dialShadow = _compositor.CreateDropShadow();
-		_dialShadow.Offset(float3(1, 1, -10));
-		_dialShadow.BlurRadius(3.0f);
-		_dialShadow.Color(_dialShadowColor);
+		_dialShadow.Offset(Windows::Foundation::Numerics::float3(-3, 3, -10));
+		_dialShadow.BlurRadius(5.0f);
+		_dialShadow.Color(Windows::UI::Colors::Black());
+		_dialShadow.Opacity(0.5f);
 		_dialVisual.Shadow(_dialShadow);
 
 		_meterVisual.Children().InsertAtTop(_dialVisual);
@@ -164,6 +164,78 @@ namespace winrt::AudioVisualizer::implementation
 		PaintScale(size);
 	}
 
+	float AnalogVUMeter::DialShadowOpacity()
+	{
+		return _dialShadow.Opacity();
+	}
+
+	void AnalogVUMeter::DialShadowOpacity(float value)
+	{
+		_dialShadow.Opacity(value);
+	}
+
+	float AnalogVUMeter::DialShadowBlurRadius()
+	{
+		return _dialShadow.BlurRadius();
+	}
+
+	void AnalogVUMeter::DialShadowBlurRadius(float value)
+	{
+		_dialShadow.BlurRadius(value);
+	}
+
+	Windows::Foundation::Numerics::float3 AnalogVUMeter::DialShadowOffset()
+	{
+		return _dialShadow.Offset();
+	}
+
+	void AnalogVUMeter::DialShadowOffset(Windows::Foundation::Numerics::float3 const& value)
+	{
+		_dialShadow.Offset(value);
+	}
+
+	Windows::UI::Color AnalogVUMeter::DialShadowColor()
+	{
+		return _dialShadow.Color();
+	}
+
+	void AnalogVUMeter::DialShadowColor(Windows::UI::Color const& value)
+	{
+		_dialShadow.Color(value);
+	}
+
+	float AnalogVUMeter::DialRelativeLength()
+	{
+		return _dialRelativeLength;
+	}
+
+	void AnalogVUMeter::DialRelativeLength(float value)
+	{
+		_dialRelativeLength = value;
+		_dialVisual.Size(float2(_dialVisual.Size().x, _scaleArcRadius * _dialRelativeLength));
+	}
+
+	Windows::UI::Color AnalogVUMeter::DialColor()
+	{
+		return _dialBrush.Color();
+	}
+
+	void AnalogVUMeter::DialColor(Windows::UI::Color const& value)
+	{
+		_dialBrush.Color(value);
+	}
+
+	float AnalogVUMeter::DialWidth()
+	{
+		return _dialVisual.Size().x;
+	}
+
+	void AnalogVUMeter::DialWidth(float value)
+	{
+		_dialVisual.Size(float2(value, _scaleArcRadius * _dialRelativeLength));
+	}
+
+
 	void AnalogVUMeter::UpdateDialPosition()
 	{
 		float clampedValue = _meterValue >= 0.0f && _meterValue <= 1.0f ? _meterValue : _meterValue <= 0.0f ? 0.0f : 1.0f;
@@ -250,17 +322,19 @@ namespace winrt::AudioVisualizer::implementation
 		float2 scaleSymmetricEndPoint = float2(size.x - _scaleArcStartPoint.x, _scaleArcStartPoint.y);
 		float  endPointAngle = atan2f(scaleSymmetricEndPoint.y - _scaleArcCenterPoint.y, scaleSymmetricEndPoint.x - _scaleArcCenterPoint.x);
 		_scaleSweepAngle = endPointAngle - _scaleArcStartAngle;
-		_dialVisual.Size(float2(5, _scaleArcRadius * _dialRelativeLength));
+		_dialVisual.Size(float2(_dialVisual.Size().x, _scaleArcRadius * _dialRelativeLength));
 
 		UpdateDialPosition();
 		PaintScale(size);
 	}
+
 	void AnalogVUMeter::OnLoaded(IInspectable sender, Windows::UI::Xaml::RoutedEventArgs const &)
 	{
 		Windows::System::Threading::ThreadPoolTimer::CreatePeriodicTimer(Windows::System::Threading::TimerElapsedHandler(this, &AnalogVUMeter::UpdateMeter), Windows::Foundation::TimeSpan(166667));	// Fire 60 times per second
 	}
 	void AnalogVUMeter::OnBackgroundChanged(Windows::UI::Xaml::DependencyObject const &, Windows::UI::Xaml::DependencyProperty const &)
 	{
+		_meterBackgroundVisual.Brush(util::make_composition_brush(Background(),_compositor));
 	}
 	void AnalogVUMeter::UpdateMeter(Windows::System::Threading::ThreadPoolTimer const &)
 	{
