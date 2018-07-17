@@ -40,11 +40,12 @@ namespace winrt::AudioVisualizer::implementation
 		_stepFrames(0),
 		_fOutSampleRate(0.0f),
 		_overlapFrames(0),
-		_pWindow(nullptr),
 		_pFftReal(nullptr),
 		_pFftUnityTable(nullptr),
 		_pFftBuffers(nullptr),
+		_pWindow(nullptr),
 		_analyzerTypes(AnalyzerType::All),
+		_evtProcessingThreadWait(INVALID_HANDLE_VALUE),
 		_bIsSuspended(false),
 		_bIsFlushPending(true)	// Pick up position from first frame added
 	{
@@ -70,6 +71,9 @@ namespace winrt::AudioVisualizer::implementation
 
 		if (_asyncProcessing) {
 			_evtProcessingThreadWait = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
+			if (_evtProcessingThreadWait == INVALID_HANDLE_VALUE) {
+				throw hresult_error(HRESULT_FROM_WIN32(GetLastError()));
+			}
 			_workThread = Windows::System::Threading::ThreadPool::RunAsync(
 				Windows::System::Threading::WorkItemHandler(this,&AudioAnalyzer::ProcessingProc),
 				Windows::System::Threading::WorkItemPriority::High);
@@ -417,9 +421,11 @@ namespace winrt::AudioVisualizer::implementation
 	{
 		if (!_bIsClosed) {
 			_bIsClosed = true;
-			SetEvent(_evtProcessingThreadWait);
+			if (_evtProcessingThreadWait != INVALID_HANDLE_VALUE) {
+				SetEvent(_evtProcessingThreadWait);
+			}
 			FreeBuffers();
-			if (_asyncProcessing) {
+			if (_asyncProcessing && _workThread) {
 				_workThread.Cancel();
 				_workThread.Close();
 				CloseHandle(_evtProcessingThreadWait);

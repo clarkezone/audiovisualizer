@@ -2,9 +2,51 @@
 #include "SpectrumData.h"
 #include "ScalarData.h"
 #include "AudioMath.h"
+#include "VectorData.h"
 
 namespace winrt::AudioVisualizer::implementation
 {
+	struct VectorDataIterator : implements<VectorDataIterator, Windows::Foundation::Collections::IIterator<AudioVisualizer::VectorData>>
+	{
+		const float *_pData;
+		size_t _size;
+		size_t _currentIndex;
+		size_t _elementStep;
+		SpectrumData _data{ nullptr };
+
+		VectorDataIterator(SpectrumData const &data) {
+			winrt::copy_to_abi(data, _data);
+			_currentIndex = 0;
+		}
+
+		uint32_t GetMany(array_view<AudioVisualizer::VectorData>)
+		{
+			throw hresult_not_implemented();
+		}
+
+		bool MoveNext()
+		{
+			if (_currentIndex < _data.Size())
+			{
+				_currentIndex++;
+			}
+			return  _currentIndex < _data.Size();
+		}
+
+		bool HasCurrent()
+		{
+			return _currentIndex < _data.Size();
+		}
+
+		AudioVisualizer::VectorData Current()
+		{
+			if (_currentIndex >= _data.Size()) {
+				throw hresult_out_of_bounds();
+			}
+			return make<VectorData>((float *)(_data._pData + _currentIndex * _data._vElementsCount), _data._size, *this);
+		}
+	};
+
     AudioVisualizer::ScaleType SpectrumData::AmplitudeScale()
     {
 		return _amplitudeScale;
@@ -207,29 +249,31 @@ namespace winrt::AudioVisualizer::implementation
 			_minimumFrequency * powf(_frequencyStep, (float)elementIndex + 0.5f);
     }
 
-    Windows::Foundation::Collections::IIterator<Windows::Foundation::Collections::IVectorView<float>> SpectrumData::First()
+    Windows::Foundation::Collections::IIterator<AudioVisualizer::VectorData> SpectrumData::First()
     {
-		return _view.First();
+		return make<VectorDataIterator>(*this).as<Windows::Foundation::Collections::IIterator<AudioVisualizer::VectorData>>();
     }
 
-    Windows::Foundation::Collections::IVectorView<float> SpectrumData::GetAt(uint32_t index)
+	AudioVisualizer::VectorData SpectrumData::GetAt(uint32_t index)
     {
-		return _view.GetAt(index);
+		if (index >= _channels)
+			throw hresult_invalid_argument();
+		return make<VectorData>((float *)(_pData + index *_vElementsCount), _size, *this);
     }
 
     uint32_t SpectrumData::Size()
     {
-		return _view.Size();
+		return _channels;
     }
 
-    bool SpectrumData::IndexOf(Windows::Foundation::Collections::IVectorView<float> const& value, uint32_t& index)
+    bool SpectrumData::IndexOf(AudioVisualizer::VectorData const& value, uint32_t& index)
     {
-		return _view.IndexOf(value, index);
+		throw hresult_not_implemented();
     }
 
-    uint32_t SpectrumData::GetMany(uint32_t startIndex, array_view<Windows::Foundation::Collections::IVectorView<float>> items)
+    uint32_t SpectrumData::GetMany(uint32_t startIndex, array_view<AudioVisualizer::VectorData> items)
     {
-		return _view.GetMany(startIndex, items);
+		throw hresult_not_implemented();
     }
 
     AudioVisualizer::SpectrumData SpectrumData::CreateEmpty(uint32_t cChannels, uint32_t cElements, AudioVisualizer::ScaleType const& amplitudeScale, AudioVisualizer::ScaleType const& frequencyScale, float minFrequency, float maxFrequency)
@@ -305,13 +349,6 @@ namespace winrt::AudioVisualizer::implementation
 		{
 			memset(_pData, 0, _vElementsCount * cChannels * sizeof(DirectX::XMVECTOR));
 		}
-		std::vector<Windows::Foundation::Collections::IVectorView<float>> values(_channels);
-
-		for (size_t index = 0, vIndex = 0; index < _channels; index++, vIndex += _vElementsCount)
-		{
-			values[index] = make<SpectrumChannelValues>((float *)(_pData + vIndex), cElements).as<Windows::Foundation::Collections::IVectorView<float>>();
-		}
-		_view = single_threaded_vector(std::move(values)).GetView();
 	}
 
 	SpectrumData::~SpectrumData()
@@ -321,23 +358,5 @@ namespace winrt::AudioVisualizer::implementation
 		_pData = nullptr;
 	}
 
-	Windows::Foundation::Collections::IIterator<float> SpectrumChannelValues::First()
-	{
-		return make<VectorDataIterator>(_pData, _size);
-	}
 
-	float SpectrumChannelValues::GetAt(uint32_t index)
-	{
-		if (index >= _size)
-			throw hresult_out_of_bounds();
-		return _pData[index];
-	}
-	bool SpectrumChannelValues::IndexOf(float const & /*value*/, uint32_t & /*index*/)
-	{
-		throw hresult_not_implemented();
-	}
-	uint32_t SpectrumChannelValues::GetMany(uint32_t /*startIndex*/, array_view<float> /*items*/)
-	{
-		throw hresult_not_implemented();
-	}
 }

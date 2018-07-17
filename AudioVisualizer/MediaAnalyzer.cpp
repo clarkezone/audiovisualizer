@@ -917,9 +917,8 @@ namespace winrt::AudioVisualizer::implementation
 		{
 			_presentationClock->RemoveClockStateSink(this);
 		}
-		_presentationClock = nullptr;
-		
-		_presentationClock.copy_from(pPresentationClock);
+
+		copy_from_abi(_presentationClock, pPresentationClock);
 		
 		if (_presentationClock) {
 			_presentationClock->AddClockStateSink(this);

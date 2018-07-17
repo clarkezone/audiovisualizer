@@ -3,6 +3,7 @@
 #include <memory>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <AudioMath.h>
+#include "ScalarValuesIterator.h"
 
 
 namespace winrt::AudioVisualizer::implementation
@@ -14,7 +15,7 @@ namespace winrt::AudioVisualizer::implementation
 
     Windows::Foundation::Collections::IIterator<float> ScalarData::First()
     {
-		return make<VectorDataIterator>((float *)_pData, _size);
+		return make<ScalarValuesIterator>((float *)_pData, _size,*this);
     }
 
     float ScalarData::GetAt(uint32_t index)

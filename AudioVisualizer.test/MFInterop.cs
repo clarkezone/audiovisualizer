@@ -281,16 +281,26 @@ namespace AudioVisualizer.test
             [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
             internal interface IMFClockConsumer
             {
-                void SetPresentationClock([In, MarshalAs(UnmanagedType.Interface)] IMFPresentationClock clock);
-                void GetPresentationClock([MarshalAs(UnmanagedType.Interface)] out IMFPresentationClock clock);
+                void SetPresentationClock([In, MarshalAs(UnmanagedType.IUnknown)] object clock);
+                void GetPresentationClock([MarshalAs(UnmanagedType.IUnknown)] out object clock);
             }
         }
         
         [ClassInterface(ClassInterfaceType.None)]
-        internal class FakePresentationClock : IMFClock, IMFPresentationClock
+        internal class FakePresentationClock : IMFPresentationClock, IMFClock
         {
             public TimeSpan Time = TimeSpan.Zero;
             private List<IMFClockStateSink> _sinks = new List<IMFClockStateSink>();
+
+            public void AddClockStateSink([In, MarshalAs(UnmanagedType.Interface)] IMFClockStateSink sink)
+            {
+                _sinks.Add(sink);
+            }
+
+            public void RemoveClockStateSink([In, MarshalAs(UnmanagedType.Interface)] IMFClockStateSink sink)
+            {
+                _sinks.Remove(sink);
+            }
 
             public void GetClockCharacteristics(out uint characteristics)
             {
@@ -331,17 +341,6 @@ namespace AudioVisualizer.test
             {
                 time = Time.Ticks;
             }
-
-            public void AddClockStateSink([In, MarshalAs(UnmanagedType.Interface)] IMFClockStateSink sink)
-            {
-                _sinks.Add(sink);
-            }
-
-            public void RemoveClockStateSink([In, MarshalAs(UnmanagedType.Interface)] IMFClockStateSink sink)
-            {
-                _sinks.Remove(sink);
-            }
-
 
             public void Start(long offset)
             {

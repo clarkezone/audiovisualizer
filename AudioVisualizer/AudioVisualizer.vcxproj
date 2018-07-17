@@ -101,8 +101,10 @@
     <ClInclude Include="CustomVisualizer.h" />
     <ClInclude Include="DiscreteVUBar.h" />
     <ClInclude Include="ring_buffer.h" />
+    <ClInclude Include="ScalarValuesIterator.h" />
     <ClInclude Include="SpectrumVisualizer.h" />
     <ClInclude Include="Tracing.h" />
+    <ClInclude Include="VectorData.h" />
     <ClInclude Include="VisualizerAudioEffect.h" />
     <ClInclude Include="MediaAnalyzer.h" />
     <ClInclude Include="pch.h" />
@@ -131,6 +133,7 @@
     <ClCompile Include="SpectrumVisualizer.cpp" />
     <ClCompile Include="Tracing.cpp" />
     <ClCompile Include="util.cpp" />
+    <ClCompile Include="VectorData.cpp" />
     <ClCompile Include="VisualizerAudioEffect.cpp" />
     <ClCompile Include="MediaAnalyzer.cpp" />
     <ClCompile Include="pch.cpp">
@@ -160,6 +163,7 @@
     <Midl Include="SpectrumData.idl" />
     <Midl Include="EnumTypes.idl" />
     <Midl Include="SpectrumVisualizer.idl" />
+    <Midl Include="VectorData.idl" />
     <Midl Include="VisualizationDataFrame.idl" />
     <Midl Include="VisualizationSource.idl" />
     <Midl Include="VisualizerAudioEffect.idl" />

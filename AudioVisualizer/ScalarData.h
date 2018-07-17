@@ -2,51 +2,10 @@
 
 #include "ScalarData.g.h"
 #include <windows.foundation.h>
-
+#include "ScalarValuesIterator.h"
 
 namespace winrt::AudioVisualizer::implementation
 {
-	struct VectorDataIterator : implements<VectorDataIterator, Windows::Foundation::Collections::IIterator<float>>
-	{
-		const float *_pData;
-		size_t _size;
-		size_t _currentIndex;
-
-		VectorDataIterator(const float *pData, size_t size) {
-			_pData = pData;
-			_size = size;
-			_currentIndex = 0;
-		}
-
-		uint32_t GetMany(array_view<float> )
-		{
-			throw hresult_not_implemented();
-		}
-
-		bool MoveNext()
-		{
-			if (_currentIndex < _size)
-			{
-				_currentIndex++;
-			}
-			return  _currentIndex < _size;
-		}
-
-		bool HasCurrent()
-		{
-			return _currentIndex < _size;
-		}
-
-		float Current()
-		{
-			if (_currentIndex >= _size) {
-				throw hresult_out_of_bounds();
-			}
-			return _pData[_currentIndex];
-		}
-
-	};
-
     struct ScalarData : ScalarDataT<ScalarData>
     {
         ScalarData() = delete;

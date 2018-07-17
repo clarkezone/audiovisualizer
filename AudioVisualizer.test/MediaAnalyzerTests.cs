@@ -382,14 +382,15 @@ namespace AudioVisualizer.test
             Assert.IsNull(_analyzer.PresentationTime);
         }
 
-        /* COMInterop issues with this test need to implement as native
+        /* Need more work there are com interop issues executing this test
         [TestCategory("MediaAnalyzer")]
         [TestMethod]
         public void MediaAnalyzer_VisualizationSource_IsPresentationClockTimePassed()
         {
             MediaFoundation.FakePresentationClock clock = new MediaFoundation.FakePresentationClock() { Time = TimeSpan.FromSeconds(10) };
             var clockConsumer = ((IMFClockConsumer)(object)_analyzer);
-            clock.AddClockStateSink(null);
+            //clock.AddClockStateSink(null);
+
             clockConsumer.SetPresentationClock(clock);
             Assert.AreEqual(TimeSpan.FromSeconds(10),_analyzer.PresentationTime);
         }*/
