@@ -23,7 +23,7 @@ namespace AudioVisualizer
 
 
 		static SpectrumData CreateEmpty(UInt32 cChannels, UInt32 cElements, ScaleType amplitudeScale, ScaleType frequencyScale, Single minFrequency, Single maxFrequency);
-		static SpectrumData Create(Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<Single> > values, ScaleType amplitudeScale, ScaleType frequencyScale, Single minFrequency, Single maxFrequency);
+		static SpectrumData Create(Single [] values, UInt32 cChannels, ScaleType amplitudeScale, ScaleType frequencyScale, Single minFrequency, Single maxFrequency);
 		static SpectrumData ApplyRiseAndFallToEmpty(SpectrumData previous, Windows.Foundation.TimeSpan riseTime, Windows.Foundation.TimeSpan fallTime, Windows.Foundation.TimeSpan timeFromPrevious);
 	}
 }

@@ -8,14 +8,11 @@ namespace winrt::AudioVisualizer::implementation
 {
 	struct VectorDataIterator : implements<VectorDataIterator, Windows::Foundation::Collections::IIterator<AudioVisualizer::VectorData>>
 	{
-		const float *_pData;
-		size_t _size;
 		size_t _currentIndex;
-		size_t _elementStep;
-		SpectrumData _data{ nullptr };
+		AudioVisualizer::SpectrumData _data{ nullptr };
 
-		VectorDataIterator(SpectrumData const &data) {
-			winrt::copy_to_abi(data, _data);
+		VectorDataIterator(AudioVisualizer::SpectrumData const &data) {
+			_data = data;
 			_currentIndex = 0;
 		}
 
@@ -43,7 +40,8 @@ namespace winrt::AudioVisualizer::implementation
 			if (_currentIndex >= _data.Size()) {
 				throw hresult_out_of_bounds();
 			}
-			return make<VectorData>((float *)(_data._pData + _currentIndex * _data._vElementsCount), _data._size, *this);
+			auto impl_data = winrt::from_abi<SpectrumData>(_data);
+			return make<VectorData>((float *)(impl_data->_pData + _currentIndex * impl_data->_vElementsCount), impl_data->_size, _data);
 		}
 	};
 
@@ -266,12 +264,12 @@ namespace winrt::AudioVisualizer::implementation
 		return _channels;
     }
 
-    bool SpectrumData::IndexOf(AudioVisualizer::VectorData const& value, uint32_t& index)
+    bool SpectrumData::IndexOf(AudioVisualizer::VectorData const&, uint32_t&)
     {
 		throw hresult_not_implemented();
     }
 
-    uint32_t SpectrumData::GetMany(uint32_t startIndex, array_view<AudioVisualizer::VectorData> items)
+    uint32_t SpectrumData::GetMany(uint32_t, array_view<AudioVisualizer::VectorData>)
     {
 		throw hresult_not_implemented();
     }
@@ -288,10 +286,12 @@ namespace winrt::AudioVisualizer::implementation
 		return make<SpectrumData>(cChannels, cElements, amplitudeScale, frequencyScale, minFrequency, maxFrequency, true);
     }
 
-    AudioVisualizer::SpectrumData SpectrumData::Create(Windows::Foundation::Collections::IVectorView<Windows::Foundation::Collections::IVectorView<float>> const& values, AudioVisualizer::ScaleType const& amplitudeScale, AudioVisualizer::ScaleType const& frequencyScale, float minFrequency, float maxFrequency)
+    AudioVisualizer::SpectrumData SpectrumData::Create(array_view<const float> values, uint32_t cChannels, AudioVisualizer::ScaleType const& amplitudeScale, AudioVisualizer::ScaleType const& frequencyScale, float minFrequency, float maxFrequency)
     {
-		if (values == nullptr)
+		if (values.data() == nullptr)
 			throw hresult_error(E_POINTER);
+		if (values.size() / cChannels == 0)
+			throw hresult_invalid_argument();
 
 		if (maxFrequency <= minFrequency || maxFrequency <= 0 || minFrequency < 0)
 			throw hresult_invalid_argument();
@@ -299,29 +299,20 @@ namespace winrt::AudioVisualizer::implementation
 		if (frequencyScale == ScaleType::Logarithmic && minFrequency <= 0)
 			throw hresult_invalid_argument();
 
-		uint32_t cChannels = values.Size();
-
 		if (cChannels == 0)
 			throw hresult_invalid_argument();
 
-		uint32_t cElements = values.GetAt(0).Size();
-
-		for (size_t channelIndex = 1; channelIndex < cChannels; channelIndex++)
-		{
-			if (values.GetAt(channelIndex).Size() != cElements) {
-				throw hresult_invalid_argument(hstring(L"Need to have equal number of elements per channel"));	// Need to have same number of elements per channel
-			}
-		}
+		uint32_t cElements = values.size() / cChannels;
 
 		auto result = make_self<SpectrumData>(cChannels, cElements, amplitudeScale, frequencyScale, minFrequency, maxFrequency, false);
 		DirectX::XMVECTOR *pData = result->_pData;
 
-		for (size_t channelIndex = 0; channelIndex < cChannels; channelIndex++,pData+=result->_vElementsCount)
+		for (size_t channelIndex = 0, sourceOffset = 0; channelIndex < cChannels; channelIndex++,pData+=result->_vElementsCount,sourceOffset
+			+=cElements)
 		{
-			auto sourceData = values.GetAt(channelIndex);
-			for (size_t index = 0; index < sourceData.Size(); index++)
+			for (size_t index = 0, sourceIndex = sourceOffset ; index < cElements; index++,sourceIndex++)
 			{
-				((float*)pData)[index] = sourceData.GetAt(index);
+				((float*)pData)[index] = values[sourceIndex];
 			}
 		}
 		return result.as<AudioVisualizer::SpectrumData>();

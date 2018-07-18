@@ -64,7 +64,13 @@ namespace AudioVisualizer.test
             var data = ScalarData.Create(testValues);
             var logData = data.ConvertToDecibels(-100, 0);
             CollectionAssert.AreEqual(new float[] { -100.0f, -20.0f, 0.0f, -100.0f, 0.0f, -100.0f }, logData.ToArray());
-            Assert.ThrowsException<COMException>(() => { var d2 = logData.ConvertToDecibels(-100, 0); });
+#if DEBUG
+            Assert.ThrowsException<COMException>(
+#else
+            Assert.ThrowsException<Exception>(
+#endif      
+            () => { var d2 = logData.ConvertToDecibels(-100, 0); }
+            );
             Assert.ThrowsException<ArgumentException>(() => { var d3 = data.ConvertToDecibels(0, 0); });
         }
 
@@ -268,11 +274,17 @@ namespace AudioVisualizer.test
                 }
                 );
         }
+
+
         [TestMethod()]
         [TestCategory("ScalarData")]
         public void ScalarData_CombineChannelsWithLogScaleThrows()
         {
+#if DEBUG
             Assert.ThrowsException<COMException>(
+#else
+            Assert.ThrowsException<Exception>(
+#endif
                 () =>
                 {
                     ScalarData.CreateEmpty(2).ConvertToDecibels(-100,0).CombineChannels(new float[] { 0.5f,0.5f });

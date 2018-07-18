@@ -27,12 +27,12 @@ namespace winrt::AudioVisualizer::implementation
 		return _size;
     }
 
-    bool VectorData::IndexOf(float const& value, uint32_t& index)
+    bool VectorData::IndexOf(float const&, uint32_t&)
     {
         throw hresult_not_implemented();
     }
 
-    uint32_t VectorData::GetMany(uint32_t startIndex, array_view<float> items)
+    uint32_t VectorData::GetMany(uint32_t, array_view<float>)
     {
         throw hresult_not_implemented();
     }

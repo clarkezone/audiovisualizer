@@ -36,12 +36,13 @@ namespace winrt::AudioVisualizer::implementation
 		if (_source)
 		{
 			_source.ConfigurationChanged(_sourceChanged);
+			_sourceChanged = event_token();
 		}
 		_source = value;
 
 		if (_source)
 		{
-			_source.ConfigurationChanged(
+			_sourceChanged = _source.ConfigurationChanged(
 				Windows::Foundation::TypedEventHandler<IVisualizationSource, hstring>(
 					[this](IVisualizationSource sender, hstring propertyName) {
 				// Source configuration changed

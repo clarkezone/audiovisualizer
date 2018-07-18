@@ -54,7 +54,7 @@ namespace winrt::AudioVisualizer::implementation
 		auto effect = make<VisualizerEffectDefinition>(_propSet);
 		
 		if (!node.EffectDefinitions())
-			throw hresult_error(E_FAIL);
+			throw hresult_error(E_NOT_VALID_STATE);
 
 		node.EffectDefinitions().Append(effect);
 	}

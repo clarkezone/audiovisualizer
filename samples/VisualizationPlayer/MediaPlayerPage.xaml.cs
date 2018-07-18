@@ -87,9 +87,9 @@ namespace VisualizationPlayer
             bar0.Levels = levels;
             bar1.Levels = levels;
             barspectrum.ElementFactory = this;
-            barspectrum.ElementShadowBlurRadius = 3;
-            barspectrum.ElementShadowOffset = new Vector3(5, 5, 10);
-            barspectrum.ElementShadowColor = Colors.Black;
+            barspectrum.ElementShadowBlurRadius = 5;
+            barspectrum.ElementShadowOffset = new Vector3(2, 2, -10);
+            barspectrum.ElementShadowColor = Colors.LightGreen;
         }
 
         private void PlaybackSource_Changed(object sender, IVisualizationSource args)

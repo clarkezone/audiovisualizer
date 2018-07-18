@@ -222,7 +222,12 @@ namespace AudioVisualizer.test
         [TestCategory("SourceConverter")]
         public void SourceConverter_SettingChannelMapWithoutCountThrows()
         {
-            Assert.ThrowsException<COMException>(() => { sut.ChannelMapping = new float[] { 0 }; });
+#if DEBUG
+            Assert.ThrowsException<COMException>(
+#else
+            Assert.ThrowsException<Exception>(
+#endif                
+                () => { sut.ChannelMapping = new float[] { 0 }; });
         }
 
         [TestMethod]
@@ -313,7 +318,12 @@ namespace AudioVisualizer.test
         [TestMethod()]
         public void SourceConverter_GetFpsThrows()
         {
-            Assert.ThrowsException<COMException>(() =>
+#if DEBUG
+            Assert.ThrowsException<COMException>(
+#else
+            Assert.ThrowsException<Exception>(
+#endif
+            () =>
             {
                 var v = sut.Fps;
             });
@@ -332,7 +342,12 @@ namespace AudioVisualizer.test
         [TestMethod()]
         public void SourceConverter_GetIsSuspendedThrows()
         {
-            Assert.ThrowsException<COMException>(() =>
+#if DEBUG
+            Assert.ThrowsException<COMException>(
+#else
+            Assert.ThrowsException<Exception>(
+#endif
+            () =>
             {
                 var v = sut.IsSuspended;
             });
@@ -522,14 +537,13 @@ namespace AudioVisualizer.test
         [TestMethod]
         public void SourceConverter_RiseAndFall()
         {
-            var spectralData = Enumerable.Repeat<float>(1.0f, (int)expectedFrequencyCount);
             var nextFrame = new VisualizationDataFrame(
                 testFrame.Time.Value.Add(testFrame.Duration),
                 testFrame.Duration,
                 ScalarData.Create(Enumerable.Repeat<float>(1.0f, (int)expectedChannelCount).ToArray()),
                 ScalarData.Create(Enumerable.Repeat<float>(2.0f, (int)expectedChannelCount).ToArray()),
                 SpectrumData.Create( 
-                    Enumerable.Repeat(spectralData.ToArray(),(int)expectedChannelCount).ToArray(), ScaleType.Linear, ScaleType.Linear, expectedMinFrequency, expectedMaxFrequency)
+                    Enumerable.Repeat<float>(1.0f,(int)(expectedChannelCount * expectedFrequencyCount)).ToArray(), expectedChannelCount, ScaleType.Linear, ScaleType.Linear, expectedMinFrequency, expectedMaxFrequency)
                     );
 
             sut.SpectrumRiseTime = TimeSpan.FromMilliseconds(100);
