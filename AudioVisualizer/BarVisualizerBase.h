@@ -30,7 +30,7 @@ namespace winrt::AudioVisualizer::implementation
 		winrt::Windows::Foundation::Numerics::float3 _elementShadowOffset;
 		float _elementShadowOpacity;
 		Windows::UI::Color _elementShadowColor;
-		float _shadowBlurRadius;
+		float _elementShadowBlurRadius;
 
 		AudioVisualizer::IVisualizationSource _source{ nullptr };
 		Windows::UI::Composition::Compositor _compositor{ nullptr };
@@ -45,7 +45,6 @@ namespace winrt::AudioVisualizer::implementation
 		AudioVisualizer::IBarElementFactory _elementFactory { nullptr };
 
 		Windows::System::Threading::ThreadPoolTimer _updateTimer{ nullptr };
-
 
 		std::vector<Windows::UI::Composition::SpriteVisual> _elementVisuals;
 		std::vector<int> _barStates;	// Keeps state of the bar elements lit
@@ -67,7 +66,10 @@ namespace winrt::AudioVisualizer::implementation
 			_orientation = Windows::UI::Xaml::Controls::Orientation::Vertical;
 			_elementMargin = Windows::UI::Xaml::ThicknessHelper::FromUniformLength(0);
 			_unlitElementColor = Windows::UI::Colors::Transparent();
-
+			_elementShadowBlurRadius = 0.0f;
+			_elementShadowOpacity = 1.0f;
+			_elementShadowColor = Colors::Transparent();
+			_elementShadowOffset = float3(0, 0, 0);
 			auto elementVisual = ElementCompositionPreview::GetElementVisual(*derived_this());
 			_compositor = elementVisual.Compositor();
 
@@ -126,7 +128,7 @@ namespace winrt::AudioVisualizer::implementation
 				{
 					auto elementVisual = _compositor.CreateSpriteVisual();
 					auto dropShadow = _compositor.CreateDropShadow();
-					dropShadow.BlurRadius(_shadowBlurRadius);
+					dropShadow.BlurRadius(_elementShadowBlurRadius);
 					// If unlit elements are transparent, so are their shadows
 					dropShadow.Color(_unlitElementColor == winrt::Windows::UI::Colors::Transparent() ? winrt::Windows::UI::Colors::Transparent() : _elementShadowColor);
 					dropShadow.Offset(_elementShadowOffset);
@@ -526,12 +528,12 @@ namespace winrt::AudioVisualizer::implementation
 		}
 		float ElementShadowBlurRadius()
 		{
-			return _shadowBlurRadius;
+			return _elementShadowBlurRadius;
 		}
 		void ElementShadowBlurRadius(float value)
 		{
 			std::lock_guard<std::mutex> lock(_lock);
-			_shadowBlurRadius = value;
+			_elementShadowBlurRadius = value;
 			UpdateShadows(
 				[=](winrt::Windows::UI::Composition::DropShadow const &shadow) { shadow.BlurRadius(value); }
 			);

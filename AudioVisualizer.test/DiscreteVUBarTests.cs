@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
@@ -203,6 +204,60 @@ namespace AudioVisualizer.test
         {
             sut.UnlitElement = Colors.Gray;
             Assert.AreEqual(Colors.Gray, sut.UnlitElement);
+        }
+
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_ShadowBlurRadiusIsZero()
+        {
+            Assert.AreEqual(0, sut.ElementShadowBlurRadius);
+        }
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_CanSetShadowBlurRadius()
+        {
+            sut.ElementShadowBlurRadius = 1.0f;
+            Assert.AreEqual(1.0f, sut.ElementShadowBlurRadius);
+        }
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_ShadowColorIsTransparent()
+        {
+            Assert.AreEqual(Colors.Transparent, sut.ElementShadowColor);
+        }
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_CanSetShadowColor()
+        {
+            sut.ElementShadowColor = Colors.Black;
+            Assert.AreEqual(Colors.Black, sut.ElementShadowColor);
+        }
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_ShadowOffsetIsZeroSet()
+        {
+            Assert.AreEqual(new System.Numerics.Vector3(0,0,0), sut.ElementShadowOffset);
+        }
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_CanSetShadowOffset()
+        {
+            sut.ElementShadowOffset = new Vector3(1, 1, 1);
+            Assert.AreEqual(new Vector3(1, 1, 1), sut.ElementShadowOffset);
+        }
+
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_ShadowOpacityIsOne()
+        {
+            Assert.AreEqual(1.0f, sut.ElementShadowOpacity);
+        }
+        [UITestMethod]
+        [TestCategory("DiscreteVUBar")]
+        public void DiscreteVUBar_CanSetShadowOpacity()
+        {
+            sut.ElementShadowOpacity = 0.0f;
+            Assert.AreEqual(0.0f, sut.ElementShadowOpacity);
         }
 
         [UITestMethod]

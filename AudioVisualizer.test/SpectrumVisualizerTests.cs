@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -203,6 +204,61 @@ namespace AudioVisualizer.test
             sut.UnlitElement = Colors.Gray;
             Assert.AreEqual(Colors.Gray, sut.UnlitElement);
         }
+
+        [UITestMethod]
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_ShadowBlurRadiusIsZero()
+        {
+            Assert.AreEqual(0, sut.ElementShadowBlurRadius);
+        }
+        [UITestMethod]
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_CanSetShadowBlurRadius()
+        {
+            sut.ElementShadowBlurRadius = 1.0f;
+            Assert.AreEqual(1.0f, sut.ElementShadowBlurRadius);
+        }
+        [UITestMethod]
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_ShadowColorIsTransparent()
+        {
+            Assert.AreEqual(Colors.Transparent, sut.ElementShadowColor);
+        }
+        [UITestMethod]
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_CanSetShadowColor()
+        {
+            sut.ElementShadowColor = Colors.Black;
+            Assert.AreEqual(Colors.Black, sut.ElementShadowColor);
+        }
+        [UITestMethod]
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_ShadowOffsetIsZeroSet()
+        {
+            Assert.AreEqual(new Vector3(0, 0, 0), sut.ElementShadowOffset);
+        }
+        [UITestMethod]
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_CanSetShadowOffset()
+        {
+            sut.ElementShadowOffset = new Vector3(1, 1, 1);
+            Assert.AreEqual(new Vector3(1, 1, 1), sut.ElementShadowOffset);
+        }
+
+        [UITestMethod]
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_ShadowOpacityIsOne()
+        {
+            Assert.AreEqual(1.0f, sut.ElementShadowOpacity);
+        }
+        [UITestMethod]
+        [TestCategory("SpectrumVisualizer")]
+        public void SpectrumVisualizer_CanSetShadowOpacity()
+        {
+            sut.ElementShadowOpacity = 0.0f;
+            Assert.AreEqual(0.0f, sut.ElementShadowOpacity);
+        }
+
         class CustomElementFactory : AudioVisualizer.IBarElementFactory
         {
             public List<(object, Windows.UI.Color, Size, Compositor, CompositionGraphicsDevice)> Calls = new List<(object, Color, Size, Compositor, CompositionGraphicsDevice)>();
