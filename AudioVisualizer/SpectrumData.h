@@ -15,9 +15,9 @@ namespace winrt::AudioVisualizer::implementation
 		float _frequencyStep;
 
         DirectX::XMVECTOR *_pData = nullptr;
-		size_t _vElementsCount = 0;	// XMVector elements count per channel
-		size_t _size = 0;	// Elements count per channel
-		size_t _channels = 0;
+		uint32_t _vElementsCount = 0;	// XMVector elements count per channel
+		uint32_t _size = 0;	// Elements count per channel
+		uint32_t _channels = 0;
 		//Windows::Foundation::Collections::IVectorView<AudioVisualizer::VectorData> _view;
 
         SpectrumData() = delete;

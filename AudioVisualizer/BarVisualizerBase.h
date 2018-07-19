@@ -187,10 +187,10 @@ namespace winrt::AudioVisualizer::implementation
 					if (firstLevelGTE == std::begin(_levels))
 						return -1;
 
-					return (firstLevelGTE - std::begin(_levels)) - 1;
+					return (int)((firstLevelGTE - std::begin(_levels)) - 1);
 				}
 				else {
-					return _levels.size() - 1;
+					return (int)(_levels.size() - 1);
 				}
 			}
 			return -1;
@@ -340,7 +340,7 @@ namespace winrt::AudioVisualizer::implementation
 				throw winrt::hresult_invalid_argument(L"Value cannot be empty");
 
 			float lastValue = value.at(0).Level;
-			for (size_t index = 1; index < value.size(); index++)
+			for (uint32_t index = 1; index < value.size(); index++)
 			{
 				if (value.at(index).Level <= lastValue)
 					throw winrt::hresult_invalid_argument(L"Array elements need to be in ascending order");

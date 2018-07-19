@@ -18,7 +18,7 @@
 namespace winrt::AudioVisualizer::implementation
 {
 
-	const size_t RingBufferSize = 960000;	// 10 sec worth of stereo audio at 48k
+	const uint32_t RingBufferSize = 960000;	// reserve buffer for 10 sec worth of stereo audio at 48k
 
 
 	void MediaAnalyzer::dataframe_queue::add(AudioVisualizer::VisualizationDataFrame const &frame)
@@ -931,14 +931,14 @@ namespace winrt::AudioVisualizer::implementation
 	{
 		UINT32 sampleRate = 0;
 		m_spInputType->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, &sampleRate);
-		size_t stepFrameCount = (size_t)(sampleRate / _fOutputFps);
-		size_t overlapFrames = (size_t) (_fInputOverlap * stepFrameCount);
+		uint32_t stepFrameCount = (uint32_t)(sampleRate / _fOutputFps);
+		uint32_t overlapFrames = (uint32_t) (_fInputOverlap * stepFrameCount);
 		UINT32 channelCount = 0;
 		m_spInputType->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &channelCount);
 		if (_analyzer) {
 			_analyzer.Output(_analyzerOutputEvent);
 		}
-		_analyzer = make<AudioAnalyzer>(RingBufferSize, channelCount, sampleRate, stepFrameCount, overlapFrames, _fftLength, true);
+		_analyzer = make<AudioAnalyzer>(RingBufferSize, (uint32_t) channelCount, (uint32_t) sampleRate, stepFrameCount, overlapFrames, _fftLength, true);
 		_analyzer.AnalyzerTypes(_analyzerTypes);
 		_analyzerOutputEvent = _analyzer.Output(
 			Windows::Foundation::TypedEventHandler<AudioVisualizer::AudioAnalyzer, AudioVisualizer::VisualizationDataFrame>(this, &MediaAnalyzer::OnAnalyzerOutput)

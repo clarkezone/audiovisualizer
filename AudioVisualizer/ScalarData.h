@@ -18,7 +18,7 @@ namespace winrt::AudioVisualizer::implementation
 
         Windows::Foundation::Collections::IIterator<float> First();
         float GetAt(uint32_t index);
-		uint32_t Size() { return _size; }
+		uint32_t Size() { return (uint32_t) _size; }
         bool IndexOf(float const& value, uint32_t& index);
         uint32_t GetMany(uint32_t startIndex, array_view<float> items);
 
@@ -28,9 +28,9 @@ namespace winrt::AudioVisualizer::implementation
     
 		ScaleType _amplitudeScale;
 		DirectX::XMVECTOR *_pData;
-		size_t _size;
+		uint32_t _size;
 
-		ScalarData(size_t cElements, ScaleType scaleType = ScaleType::Linear,bool bInitToZero = true);
+		ScalarData(uint32_t cElements, ScaleType scaleType = ScaleType::Linear,bool bInitToZero = true);
 		ScalarData(array_view<float const> values, ScaleType scaleType = ScaleType::Linear);
 		~ScalarData();
 	};

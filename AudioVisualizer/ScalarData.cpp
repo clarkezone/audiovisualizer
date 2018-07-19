@@ -146,11 +146,11 @@ namespace winrt::AudioVisualizer::implementation
 		return result.as<AudioVisualizer::ScalarData>();
     }
 
-	ScalarData::ScalarData(size_t cElements, ScaleType scaleType,bool bInitToZero)
+	ScalarData::ScalarData(uint32_t cElements, ScaleType scaleType,bool bInitToZero)
 	{
 		_pData = nullptr;
 		_amplitudeScale = scaleType;
-		size_t vectorLength = (cElements + 3) >> 2;
+		uint32_t vectorLength = (cElements + 3) >> 2;
 		_pData = static_cast<DirectX::XMVECTOR*>(_aligned_malloc_dbg(sizeof(DirectX::XMVECTOR)*vectorLength,16,__FILE__,__LINE__));
 		if (!_pData) {
 			throw std::bad_alloc();

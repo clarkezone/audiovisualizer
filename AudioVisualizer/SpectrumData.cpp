@@ -307,10 +307,10 @@ namespace winrt::AudioVisualizer::implementation
 		auto result = make_self<SpectrumData>(cChannels, cElements, amplitudeScale, frequencyScale, minFrequency, maxFrequency, false);
 		DirectX::XMVECTOR *pData = result->_pData;
 
-		for (size_t channelIndex = 0, sourceOffset = 0; channelIndex < cChannels; channelIndex++,pData+=result->_vElementsCount,sourceOffset
+		for (uint32_t channelIndex = 0, sourceOffset = 0; channelIndex < cChannels; channelIndex++,pData+=result->_vElementsCount,sourceOffset
 			+=cElements)
 		{
-			for (size_t index = 0, sourceIndex = sourceOffset ; index < cElements; index++,sourceIndex++)
+			for (uint32_t index = 0, sourceIndex = sourceOffset ; index < cElements; index++,sourceIndex++)
 			{
 				((float*)pData)[index] = values[sourceIndex];
 			}

@@ -43,7 +43,7 @@ namespace winrt::AudioVisualizer::implementation
 			spectrumValues = frame.Spectrum().GetAt(_channelIndex);
 		}
 
-		for (size_t barIndex = 0; barIndex < _barCount; barIndex++)
+		for (uint32_t barIndex = 0; barIndex < _barCount; barIndex++)
 		{
 			float value = -100.0f;
 			if (spectrumValues) {

@@ -48,7 +48,7 @@ namespace winrt::AudioVisualizer::implementation
 		com_ptr<IAudioFrameNativeFactory> _audioFrameFactory;
 		dataframe_queue _analyzerOutput;
 
-		size_t _fftLength;
+		uint32_t _fftLength;
 		float _fOutputFps;
 		float _fInputOverlap;
 
