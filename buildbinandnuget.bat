@@ -5,7 +5,7 @@ powershell -command "(New-Object System.Net.WebClient).DownloadFile('http://dist
 		msbuild AudioVisualizer.sln /t:build /p:Configuration=Release;Platform=x86 && (
 			vstest.console /Platform:x86 /Framework:FrameworkUAP10 AudioVisualizer.test\bin\x86\Release\AudioVisualizer.test.build.appxrecipe && (
 				msbuild AudioVisualizer.sln /t:build /p:Configuration=Release;Platform=x64 && (
-					vstest.console /Platform:x86 /Framework:FrameworkUAP10 AudioVisualizer.test\bin\x86\Release\AudioVisualizer.test.build.appxrecipe && (
+					vstest.console /Platform:x64 /Framework:FrameworkUAP10 AudioVisualizer.test\bin\x64\Release\AudioVisualizer.test.build.appxrecipe && (
 						Tools\nuget.exe pack AudioAnalyzer.nuspec -o .\package -Version %1 && ( echo "Package created" ) || (echo "Nuget failed")
 					) || ( echo "x64 build failed" )
 				) || ( echo "x64 tests failed")
