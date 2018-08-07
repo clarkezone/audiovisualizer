@@ -1,5 +1,5 @@
 @echo off
-
+PATH=Tools;%PATH%
 powershell -command "(New-Object System.Net.WebClient).DownloadFile('http://dist.nuget.org/win-x86-commandline/latest/nuget.exe', 'nuget.exe')" && (
 	nuget.exe restore AudioVisualizer.sln && (
 		msbuild AudioVisualizer.sln /t:build /p:Configuration=Release;Platform=x86 && (
