@@ -176,7 +176,7 @@ namespace winrt::AudioVisualizer::implementation
 			OnUpdateMeter(frame);
 		}
 
-		virtual void OnUpdateMeter(VisualizationDataFrame const &frame) {};
+		virtual void OnUpdateMeter(VisualizationDataFrame const &) {};
 
 		int GetBarElementIndex(float value) {
 			if (value > _levels.front().Level) {
