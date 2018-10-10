@@ -10,6 +10,7 @@
 	#define _TRACE_
 #endif
 
+#include <Unknwn.h>
 #include "winrt/Windows.Foundation.h"
 #include <mfapi.h>
 #include <mftransform.h>
