@@ -29,7 +29,3 @@
    <file src="Release\AudioVisualizer\x64\AudioVisualizer.pri" target="runtimes\win10-x64\native"/>
  </files>
 </package>
-
-<!-- 
-when rebuilding nuke this: C:\Users\<you>\.nuget\packages\audio
--->

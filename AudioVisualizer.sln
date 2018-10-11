@@ -5,13 +5,9 @@ VisualStudioVersion = 15.0.27004.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "source", "source", "{B5663715-9AAB-4DD6-BEED-0E51B2029AEC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{111A7E4A-BDB2-46CF-9D56-D93D2242FCB6}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{648791B2-F68B-4588-B1C5-80E2DBD9699E}"
 	ProjectSection(SolutionItems) = preProject
-		appveyorbuild.bat = appveyorbuild.bat
 		AudioAnalyzer.nuspec = AudioAnalyzer.nuspec
-		buildbinandnuget.bat = buildbinandnuget.bat
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{91B50F5A-DEBB-4578-A2BF-28AF1BDF7A1C}"
@@ -37,9 +33,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioVisualizer.test", "Aud
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		CIBUILD|ARM = CIBUILD|ARM
-		CIBUILD|x64 = CIBUILD|x64
-		CIBUILD|x86 = CIBUILD|x86
 		Debug|ARM = Debug|ARM
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
@@ -48,12 +41,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DA1A2266-1149-4A19-8A3A-3F1CA7717A6F}.CIBUILD|ARM.ActiveCfg = Release|ARM
-		{DA1A2266-1149-4A19-8A3A-3F1CA7717A6F}.CIBUILD|ARM.Build.0 = Release|ARM
-		{DA1A2266-1149-4A19-8A3A-3F1CA7717A6F}.CIBUILD|x64.ActiveCfg = Release|x64
-		{DA1A2266-1149-4A19-8A3A-3F1CA7717A6F}.CIBUILD|x64.Build.0 = Release|x64
-		{DA1A2266-1149-4A19-8A3A-3F1CA7717A6F}.CIBUILD|x86.ActiveCfg = Release|Win32
-		{DA1A2266-1149-4A19-8A3A-3F1CA7717A6F}.CIBUILD|x86.Build.0 = Release|Win32
 		{DA1A2266-1149-4A19-8A3A-3F1CA7717A6F}.Debug|ARM.ActiveCfg = Debug|ARM
 		{DA1A2266-1149-4A19-8A3A-3F1CA7717A6F}.Debug|ARM.Build.0 = Debug|ARM
 		{DA1A2266-1149-4A19-8A3A-3F1CA7717A6F}.Debug|x64.ActiveCfg = Debug|x64
@@ -66,15 +53,6 @@ Global
 		{DA1A2266-1149-4A19-8A3A-3F1CA7717A6F}.Release|x64.Build.0 = Release|x64
 		{DA1A2266-1149-4A19-8A3A-3F1CA7717A6F}.Release|x86.ActiveCfg = Release|Win32
 		{DA1A2266-1149-4A19-8A3A-3F1CA7717A6F}.Release|x86.Build.0 = Release|Win32
-		{74DD3AA5-013A-4648-B169-D4B84E5B6E92}.CIBUILD|ARM.ActiveCfg = Release|ARM
-		{74DD3AA5-013A-4648-B169-D4B84E5B6E92}.CIBUILD|ARM.Build.0 = Release|ARM
-		{74DD3AA5-013A-4648-B169-D4B84E5B6E92}.CIBUILD|ARM.Deploy.0 = Release|ARM
-		{74DD3AA5-013A-4648-B169-D4B84E5B6E92}.CIBUILD|x64.ActiveCfg = Release|x64
-		{74DD3AA5-013A-4648-B169-D4B84E5B6E92}.CIBUILD|x64.Build.0 = Release|x64
-		{74DD3AA5-013A-4648-B169-D4B84E5B6E92}.CIBUILD|x64.Deploy.0 = Release|x64
-		{74DD3AA5-013A-4648-B169-D4B84E5B6E92}.CIBUILD|x86.ActiveCfg = Release|x86
-		{74DD3AA5-013A-4648-B169-D4B84E5B6E92}.CIBUILD|x86.Build.0 = Release|x86
-		{74DD3AA5-013A-4648-B169-D4B84E5B6E92}.CIBUILD|x86.Deploy.0 = Release|x86
 		{74DD3AA5-013A-4648-B169-D4B84E5B6E92}.Debug|ARM.ActiveCfg = Debug|ARM
 		{74DD3AA5-013A-4648-B169-D4B84E5B6E92}.Debug|ARM.Build.0 = Debug|ARM
 		{74DD3AA5-013A-4648-B169-D4B84E5B6E92}.Debug|ARM.Deploy.0 = Debug|ARM
