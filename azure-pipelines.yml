@@ -1,4 +1,4 @@
-resources:
+resources: 
 - repo: self
 queue:
   name: Cloud VM
