@@ -1,0 +1,11 @@
+import "BarVisualizer.idl";
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass SpectrumVisualizer : Windows.UI.Xaml.Controls.Control, IBarVisualizer
+	{
+		SpectrumVisualizer();
+		IVisualizationSource Source;
+	}
+}

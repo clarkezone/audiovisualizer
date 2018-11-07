@@ -1,0 +1,7 @@
+namespace AudioVisualizer
+{
+	interface ISpectralAnalyzer
+	{
+		void ConfigureSpectrum(UInt32 fftLength,Single overlap);
+	}
+}

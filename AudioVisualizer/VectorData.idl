@@ -1,0 +1,7 @@
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass VectorData : Windows.Foundation.Collections.IVectorView<Single>,Windows.Foundation.Collections.IIterable<Single> {
+
+	};
+}

@@ -1,0 +1,30 @@
+import "VisualizationSource.idl";
+
+namespace AudioVisualizer
+{
+	struct MeterBarLevel
+	{
+		Single Level;
+		Windows.UI.Color Color;
+	};
+
+	interface IBarElementFactory : IInspectable
+	{
+		Windows.UI.Composition.CompositionBrush CreateElementBrush(IInspectable sender,Windows.UI.Color elementColor,Windows.Foundation.Size size,Windows.UI.Composition.Compositor compositor,Windows.UI.Composition.CompositionGraphicsDevice device);
+		Windows.UI.Composition.CompositionBrush CreateShadowMask(IInspectable sender, Windows.Foundation.Size size, Windows.UI.Composition.Compositor compositor, Windows.UI.Composition.CompositionGraphicsDevice device);
+	};
+
+	interface IBarVisualizer : IInspectable
+	{
+		MeterBarLevel[] Levels;
+		Windows.UI.Xaml.Controls.Orientation Orientation;
+		Int32 ChannelIndex;
+		Windows.UI.Xaml.Thickness RelativeElementMargin;
+		Windows.UI.Color UnlitElement;
+		Windows.Foundation.Numerics.Vector3 ElementShadowOffset;
+		Single ElementShadowOpacity;
+		Windows.UI.Color ElementShadowColor;
+		Single ElementShadowBlurRadius;
+		IBarElementFactory ElementFactory;
+	}
+}

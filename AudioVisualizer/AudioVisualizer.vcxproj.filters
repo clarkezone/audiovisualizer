@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>accd3aa8-1ba0-4223-9bbe-0c431709210b</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{926ab91d-31b4-48c3-b9a4-e681349f27f0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Generated Files\module.g.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScalarData.cpp" />
+    <ClCompile Include="AudioMath.cpp" />
+    <ClCompile Include="SpectrumData.cpp" />
+    <ClCompile Include="CreateResourcesEventArgs.cpp" />
+    <ClCompile Include="VisualizationDataFrame.cpp" />
+    <ClCompile Include="VisualizerDrawEventArgs.cpp" />
+    <ClCompile Include="MediaAnalyzer.cpp" />
+    <ClCompile Include="PlaybackSource.cpp" />
+    <ClCompile Include="SourceConverter.cpp" />
+    <ClCompile Include="DiscreteVUBar.cpp" />
+    <ClCompile Include="SpectrumVisualizer.cpp" />
+    <ClCompile Include="CustomVisualizer.cpp" />
+    <ClCompile Include="DllMain.cpp" />
+    <ClCompile Include="Tracing.cpp" />
+    <ClCompile Include="AudioAnalyzer.cpp" />
+    <ClCompile Include="ring_buffer.cpp" />
+    <ClCompile Include="VisualizerEffectDefinition.cpp" />
+    <ClCompile Include="VisualizerAudioEffect.cpp" />
+    <ClCompile Include="AnalogVUMeter.cpp" />
+    <ClCompile Include="util.cpp" />
+    <ClCompile Include="VectorData.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="ScalarData.h" />
+    <ClInclude Include="AudioMath.h" />
+    <ClInclude Include="XDSP.h" />
+    <ClInclude Include="SpectrumData.h" />
+    <ClInclude Include="CreateResourcesEventArgs.h" />
+    <ClInclude Include="VisualizationDataFrame.h" />
+    <ClInclude Include="VisualizerDrawEventArgs.h" />
+    <ClInclude Include="MediaAnalyzer.h" />
+    <ClInclude Include="PlaybackSource.h" />
+    <ClInclude Include="SourceConverter.h" />
+    <ClInclude Include="util.h" />
+    <ClInclude Include="DiscreteVUBar.h" />
+    <ClInclude Include="SpectrumVisualizer.h" />
+    <ClInclude Include="CustomVisualizer.h" />
+    <ClInclude Include="Tracing.h" />
+    <ClInclude Include="AudioAnalyzer.h" />
+    <ClInclude Include="ring_buffer.h" />
+    <ClInclude Include="VisualizerEffectDefinition.h" />
+    <ClInclude Include="VisualizerAudioEffect.h" />
+    <ClInclude Include="AnalogVUMeter.h" />
+    <ClInclude Include="BarVisualizerBase.h" />
+    <ClInclude Include="VectorData.h" />
+    <ClInclude Include="ScalarValuesIterator.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="ScalarData.idl" />
+    <Midl Include="SpectrumData.idl" />
+    <Midl Include="EnumTypes.idl" />
+    <Midl Include="CreateResourcesEventArgs.idl" />
+    <Midl Include="VisualizationDataFrame.idl" />
+    <Midl Include="VisualizerDrawEventArgs.idl" />
+    <Midl Include="MediaAnalyzer.idl" />
+    <Midl Include="VisualizationSource.idl" />
+    <Midl Include="PlaybackSource.idl" />
+    <Midl Include="SourceConverter.idl" />
+    <Midl Include="DiscreteVUBar.idl" />
+    <Midl Include="CustomVisualizer.idl" />
+    <Midl Include="SpectrumVisualizer.idl" />
+    <Midl Include="AudioAnalyzer.idl" />
+    <Midl Include="VisualizerEffectDefinition.idl" />
+    <Midl Include="VisualizerAudioEffect.idl" />
+    <Midl Include="SpectralAnalyzer.idl" />
+    <Midl Include="AnalogVUMeter.idl" />
+    <Midl Include="BarVisualizer.idl" />
+    <Midl Include="VectorData.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AudioVisualizer.def" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="readme.txt" />
+  </ItemGroup>
+</Project>
