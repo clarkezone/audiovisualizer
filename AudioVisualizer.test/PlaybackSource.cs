@@ -62,11 +62,16 @@ namespace AudioVisualizer.test
         public async Task PlaybackSource_CreateFromAudioNode()
         {
             var graphResult = await AudioGraph.CreateAsync(new AudioGraphSettings(Windows.Media.Render.AudioRenderCategory.Media));
-            Assert.AreEqual(graphResult.Status, AudioGraphCreationStatus.Success);
-            var node = graphResult.Graph.CreateFrameInputNode();
-            var source = PlaybackSource.CreateFromAudioNode(node);
-            graphResult.Graph.Start();
-            Assert.IsNotNull(source.Source);
+            if (graphResult.Status == AudioGraphCreationStatus.Success)
+            {
+                var node = graphResult.Graph.CreateFrameInputNode();
+                var source = PlaybackSource.CreateFromAudioNode(node);
+                graphResult.Graph.Start();
+                Assert.IsNotNull(source.Source);
+            } else
+            {
+                Assert.Inconclusive($"Not able conduct test, could not activate audio graph, result = {graphResult.Status}, {graphResult.ExtendedError.Message}")
+            }
         }
    }
  
