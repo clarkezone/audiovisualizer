@@ -3,11 +3,9 @@ resources:
 - repo: self
 
 variables:
-- major: 1
-
-- minor: 0
-
-- patch: $[counter('versioncounter', 1)]
+ major: 1
+ minor: 0
+ patch: $[counter('versioncounter', 1)]
 
 queue:
 
