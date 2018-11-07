@@ -613,7 +613,7 @@ namespace AudioVisualizer.test
         {
             var frame = sut.GetData();
             testSource.Frame = otherFrame;
-            Task.Delay(15).Wait();
+            Task.Delay(50).Wait();
             var frame2 = sut.GetData();
             Assert.AreNotSame(frame, frame2);
         }
