@@ -2,6 +2,13 @@ resources:
 
 - repo: self
 
+variables:
+- major: 1
+
+- minor: 0
+
+- patch: $[counter('versioncounter', 1)]
+
 queue:
 
   name: Cloud VM
@@ -150,6 +157,13 @@ steps:
 
 
     packagesToPack: AudioAnalyzer.nuspec
+
+
+
+    versioningScheme: byBuildNumber
+    majorVersion: $(major)
+    minorVersion: $(minor)
+    patchVersion: $(patch)
 
 
 

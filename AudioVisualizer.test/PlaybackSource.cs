@@ -70,7 +70,7 @@ namespace AudioVisualizer.test
                 Assert.IsNotNull(source.Source);
             } else
             {
-                Assert.Inconclusive($"Not able conduct test, could not activate audio graph, result = {graphResult.Status}, {graphResult.ExtendedError.Message}")
+                Assert.Inconclusive($"Not able conduct test, could not activate audio graph, result = {graphResult.Status}, {graphResult.ExtendedError.Message}");
             }
         }
    }
