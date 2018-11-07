@@ -1,51 +1,172 @@
-resources: 
+resources:
+
 - repo: self
+
 queue:
+
   name: Cloud VM
+
   demands: 
+
   - msbuild
+
   - visualstudio
+
   - vstest
 
+
+
 steps:
+
 - task: NuGetToolInstaller@0
+
   displayName: 'Use NuGet 4.4.1'
+
   inputs:
+
     versionSpec: 4.4.1
 
 
+
+
+
 - task: NuGetCommand@2
+
   displayName: 'NuGet restore **\*.sln'
+
   inputs:
+
     restoreSolution: AudioVisualizer.sln
 
 
-#Task group has not been exported, task groups are not supported yet
+
+
+
+- task: VSBuild@1
+
+  displayName: 'Build AudioVisualizer x86'
+
+  inputs:
+
+    solution: AudioVisualizer.sln
+
+
+
+    platform: x86
+
+
+
+    configuration: Release
+
+
+
+    clean: true
+
+
+
+
+
+- task: VSBuild@1
+
+  displayName: 'Build AudioVisualizer x64'
+
+  inputs:
+
+    solution: AudioVisualizer.sln
+
+
+
+    platform: x64
+
+
+
+    configuration: Release
+
+
+
+    clean: true
+
+
+
+
+
+- task: VSBuild@1
+
+  displayName: 'Build AudioVisualizer ARM'
+
+  inputs:
+
+    solution: AudioVisualizer.sln
+
+
+
+    platform: arm
+
+
+
+    configuration: Release
+
+
+
+    clean: true
+
+
+
+
 
 - task: VSTest@2
+
   displayName: 'Unit tests'
+
   inputs:
+
     testAssemblyVer2: |
      $(Build.SourcesDirectory)\AudioVisualizer.test\bin\x86\Release\AudioVisualizer.Test.build.appxrecipe
      $(Build.SourcesDirectory)\AudioVisualizer.test\bin\x64\Release\AudioVisualizer.Test.build.appxrecipe
      
 
 
+
+
+
 - task: richardfennellBM.BM-VSTS-Versioning-Task.Version-Nuspec-Task.VersionNuspec@2
+
   displayName: 'Version Nuspec'
 
 
+
+  enabled: false
+
+
+
 - task: NuGetCommand@2
+
   displayName: 'NuGet pack'
+
   inputs:
+
     command: pack
+
+
 
     packagesToPack: AudioAnalyzer.nuspec
 
 
+
+
+
 - task: AppCenterDistribute@0
+
   displayName: 'Deploy  to Visual Studio App Center'
+
   inputs:
+
     symbolsIncludeParentDirectory: false
 
+
+
   enabled: false
+
+
+
+
