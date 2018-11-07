@@ -5,7 +5,7 @@ resources:
 variables:
  major: 1
  minor: 0
- patch: $[counter('versioncounter', 1)]
+ patch: $[counter('versioncounter', 0)]
 
 queue:
 
@@ -19,7 +19,7 @@ queue:
 
   - vstest
 
-
+name: $(TeamProject)_$(SourceBranchName)_$(major).$(minor).$(patch)
 
 steps:
 
@@ -152,26 +152,11 @@ steps:
 
     command: pack
 
-
+    versioningScheme: byBuildNumber
 
     packagesToPack: AudioAnalyzer.nuspec
 
 
-- task: CopyFiles@2
-
-  displayName: 'Copy nuget package to artifacts'
-
-  inputs:
-
-    SourceFolder: '$(Build.SourcesDirectory)'
-
-
-
-    Contents: '*.nuget'
-
-
-
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 
 - task: PublishBuildArtifacts@1
