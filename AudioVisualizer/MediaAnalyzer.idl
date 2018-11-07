@@ -1,0 +1,11 @@
+import "VisualizationSource.idl";
+import "SpectralAnalyzer.idl";
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass MediaAnalyzer : Windows.Media.IMediaExtension, IVisualizationSource, ISpectralAnalyzer
+	{
+		MediaAnalyzer();
+	}
+}

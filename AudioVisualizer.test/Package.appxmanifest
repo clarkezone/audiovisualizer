@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  IgnorableNamespaces="uap mp">
+
+  <Identity Name="fddae5ba-40af-4735-acbd-547d3cd154dd"
+            Publisher="CN=tonuv"
+            Version="1.0.0.0" />
+
+  <mp:PhoneIdentity PhoneProductId="fddae5ba-40af-4735-acbd-547d3cd154dd" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+
+  <Properties>
+    <DisplayName>AudioVisualizer.test</DisplayName>
+    <PublisherDisplayName>tonuv</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  <Applications>
+    <Application Id="vstest.executionengine.universal.App"
+        Executable="$targetnametoken$.exe"
+        EntryPoint="AudioVisualizer.test.App">
+      <uap:VisualElements
+        DisplayName="AudioVisualizer.test"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png"
+        Description="AudioVisualizer.test"
+        BackgroundColor="transparent">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+  <Extensions>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>AudioVisualizer.dll</Path>
+        <ActivatableClass ActivatableClassId="AudioVisualizer.MediaAnalyzer" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="AudioVisualizer.VisualizerAudioEffect" ThreadingModel="both" />
+      </InProcessServer>
+    </Extension>
+  </Extensions>
+  <Capabilities>
+    <Capability Name="internetClientServer" />
+    <Capability Name="privateNetworkClientServer" />
+  </Capabilities>
+</Package>

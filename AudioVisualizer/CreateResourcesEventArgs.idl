@@ -1,0 +1,13 @@
+import "enumTypes.idl";
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass CreateResourcesEventArgs
+	{
+		CreateResourcesReason Reason { get; };
+		Object ResourceCreator{ get; };
+
+		CreateResourcesEventArgs(CreateResourcesReason reason, Object resourceCreator);
+	}
+}

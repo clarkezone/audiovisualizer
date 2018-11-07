@@ -1,0 +1,89 @@
+﻿<Page
+    x:Class="VisualizationPlayer.MediaPlayerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:VisualizationPlayer"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:a="using:AudioVisualizer"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <local:BooleanToVisibilityConverter x:Key="visibilityConverter"></local:BooleanToVisibilityConverter>
+        <a:SourceConverter x:Key="source"></a:SourceConverter>
+        <a:SourceConverter x:Key="analogSource"></a:SourceConverter>
+        <a:SourceConverter x:Key="spectrumSource"></a:SourceConverter>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="nowPlaying" Margin="20,0,0,0"></TextBlock>
+        <Pivot Grid.Row="1">
+            <PivotItem Header="Analog">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition Width="100"></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center">Left Channel</TextBlock>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Center">Right Channel</TextBlock>
+                    <a:DiscreteVUBar Grid.Row="0" Grid.Column="0" ChannelIndex="0" UnlitElement="LightGray" Source="{StaticResource source}" RelativeElementMargin="0.1,0.1,0.1,0.1" Margin="10,50,10,50" DisplayPeak="True"></a:DiscreteVUBar>
+                    <a:DiscreteVUBar Grid.Row="0" Grid.Column="2" ChannelIndex="1" UnlitElement="LightGray" Source="{StaticResource source}"  RelativeElementMargin="0.1,0.1,0.1,0.1" Margin="10,50,10,50"></a:DiscreteVUBar>
+                    <a:AnalogVUMeter Grid.Row="0" Grid.Column="1" MinWidth="200" MinHeight="100" Margin="50,50,50,50" Background="LightYellow" Source="{StaticResource analogSource}"  ChannelIndex="0"></a:AnalogVUMeter>
+                    <a:AnalogVUMeter Grid.Row="0" Grid.Column="3" MinWidth="200" MinHeight="100" Margin="50,50,50,50" Background="LightYellow" Source="{StaticResource analogSource}" ChannelIndex="1"/>
+                    <Grid Grid.Row="1" Grid.ColumnSpan="4" Margin="100">
+                        <Grid.RowDefinitions>
+                            <RowDefinition></RowDefinition>
+                            <RowDefinition></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <a:DiscreteVUBar Grid.Row="0" Source="{StaticResource analogSource}" Orientation="Horizontal" x:Name="bar0" RelativeElementMargin="0.25,0.05,0.25,0.05"></a:DiscreteVUBar>
+                        <a:DiscreteVUBar Grid.Row="1" Source="{StaticResource analogSource}" Orientation="Horizontal" x:Name="bar1" RelativeElementMargin="0.25,0.05,0.25,0.05"></a:DiscreteVUBar>
+                    </Grid>
+                </Grid>
+            </PivotItem>
+            <PivotItem  Header="Spectrum">
+                <a:SpectrumVisualizer x:Name="barspectrum" Source="{StaticResource spectrumSource}" RelativeElementMargin="0.1,0.2,0.1,0.2"></a:SpectrumVisualizer>
+            </PivotItem>
+            <PivotItem Header="Custom draw">
+                <a:CustomVisualizer Grid.Column="0" x:Name="spectrum" Source="{StaticResource source}" CreateResources="spectrum_CreateResources" Draw="spectrum_Draw"></a:CustomVisualizer>
+            </PivotItem>
+        </Pivot>
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Slider
+                        x:Name="seekSlider"
+                        Grid.Row="0"
+                        Margin="40,5"
+                        Orientation="Horizontal"
+                        ValueChanged="seekSlider_ValueChanged" />
+            <StackPanel
+                        Grid.Row="1"
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal">
+                <a:CustomVisualizer
+                            Source="{StaticResource source}"
+                            Width="75"
+                            Height="40"
+                            Draw="PositionDisplay_Draw" />
+                <AppBarButton Click="PlayButton_Click" Icon="Play"/>
+                <AppBarButton Click="StopButton_Click" Icon="Pause" />
+                <AppBarButton Click="OpenFile_Click" Icon="OpenFile" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

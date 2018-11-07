@@ -1,0 +1,14 @@
+import "VisualizationSource.idl";
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass PlaybackSource {
+		IVisualizationSource Source{ get; };
+		
+		event Windows.Foundation.TypedEventHandler<Object,IVisualizationSource> SourceChanged;
+
+		static PlaybackSource CreateFromMediaPlayer(Windows.Media.Playback.MediaPlayer mediaPlayer);
+		static PlaybackSource CreateFromAudioNode(Windows.Media.Audio.IAudioNode node);
+	}
+}

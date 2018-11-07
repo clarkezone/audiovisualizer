@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2041
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualizationPlayer", "VisualizationPlayer\VisualizationPlayer.csproj", "{105FCC78-533D-4C38-A302-BB8D63AA1E5F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		CIBUILD|ARM = CIBUILD|ARM
+		CIBUILD|x64 = CIBUILD|x64
+		CIBUILD|x86 = CIBUILD|x86
+		Debug|ARM = Debug|ARM
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|ARM = Release|ARM
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.CIBUILD|ARM.ActiveCfg = CIBUILD|ARM
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.CIBUILD|ARM.Build.0 = CIBUILD|ARM
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.CIBUILD|ARM.Deploy.0 = CIBUILD|ARM
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.CIBUILD|x64.ActiveCfg = CIBUILD|x64
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.CIBUILD|x64.Build.0 = CIBUILD|x64
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.CIBUILD|x64.Deploy.0 = CIBUILD|x64
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.CIBUILD|x86.ActiveCfg = CIBUILD|x86
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.CIBUILD|x86.Build.0 = CIBUILD|x86
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.CIBUILD|x86.Deploy.0 = CIBUILD|x86
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Debug|ARM.ActiveCfg = Debug|ARM
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Debug|ARM.Build.0 = Debug|ARM
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Debug|ARM.Deploy.0 = Debug|ARM
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Debug|x64.ActiveCfg = Debug|x64
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Debug|x64.Build.0 = Debug|x64
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Debug|x64.Deploy.0 = Debug|x64
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Debug|x86.ActiveCfg = Debug|x86
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Debug|x86.Build.0 = Debug|x86
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Debug|x86.Deploy.0 = Debug|x86
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Release|ARM.ActiveCfg = Release|ARM
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Release|ARM.Build.0 = Release|ARM
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Release|ARM.Deploy.0 = Release|ARM
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Release|x64.ActiveCfg = Release|x64
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Release|x64.Build.0 = Release|x64
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Release|x64.Deploy.0 = Release|x64
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Release|x86.ActiveCfg = Release|x86
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Release|x86.Build.0 = Release|x86
+		{105FCC78-533D-4C38-A302-BB8D63AA1E5F}.Release|x86.Deploy.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1FD8C70A-32F9-45E5-8822-9A4D8F0BB3DF}
+	EndGlobalSection
+EndGlobal

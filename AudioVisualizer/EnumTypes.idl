@@ -1,0 +1,38 @@
+namespace AudioVisualizer
+{
+	enum ScaleType {
+		Linear = 0,
+		Logarithmic = 1
+	};
+
+	enum InterpolationType
+	{
+		Linear = 0,
+		CubicSpline = 1
+	};
+
+	enum CreateResourcesReason
+	{
+		New = 0,
+		DeviceLost = 1,
+		DpiChanged = 2
+	};	
+
+	[flags]
+	enum AnalyzerType
+	{
+		None = 0,
+		RMS = 0x1,
+		Peak = 0x2,
+		Spectrum = 0x4,
+		All = 0x7
+	};
+
+	enum SourcePlaybackState
+	{
+		Stopped = 0,
+		Playing = 1,
+		Paused = 2
+	};
+
+}

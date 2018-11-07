@@ -1,0 +1,17 @@
+import "EnumTypes.idl";
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass ScalarData : Windows.Foundation.Collections.IVectorView<Single>,Windows.Foundation.Collections.IIterable<Single>
+	{
+		static ScalarData CreateEmpty(UInt32 channels);
+		static ScalarData Create(Single[] values);
+		static ScalarData ApplyRiseAndFallToEmpty(ScalarData previous, Windows.Foundation.TimeSpan riseTime, Windows.Foundation.TimeSpan fallTime, Windows.Foundation.TimeSpan timeFromPrevious);
+
+		ScaleType AmplitudeScale{ get; };
+		ScalarData ConvertToDecibels(Single minValue, Single maxValue);
+		ScalarData ApplyRiseAndFall(ScalarData previous, Windows.Foundation.TimeSpan riseTime, Windows.Foundation.TimeSpan fallTime, Windows.Foundation.TimeSpan timeFromPrevious);
+		ScalarData CombineChannels(Single[] map);
+	}
+}
