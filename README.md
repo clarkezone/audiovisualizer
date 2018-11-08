@@ -5,8 +5,7 @@
 
 | Target | Branch | Status | Recommended Nuget packages version |
 | ------ | ------ | ------ | ------ |
-| Current Release | master | [![Build status](https://ci.appveyor.com/api/projects/status/p4a7jmpa9391bxu8/branch/master?svg=true)](https://ci.appveyor.com/api/projects/status/p4a7jmpa9391bxu8/branch/master?svg=true) | [![NuGet](https://img.shields.io/nuget/v/UWPAudioVisualizer.svg)](https://www.nuget.org/packages/UWPAudioVisualizer/) |
-| Pre-release | dev | [![Build status](https://ci.appveyor.com/api/projects/status/p4a7jmpa9391bxu8?svg=true)](https://ci.appveyor.com/project/clarkezone/audiovisualizer) | |
+| Current Release | master | [![Build status](https://dev.azure.com/tvanatalu/AudioVisualizer/_apis/build/status/Official%20Build%20from%20PR%20to%20master)](https://ci.appveyor.com/api/projects/status/p4a7jmpa9391bxu8/branch/master?svg=true) | [![NuGet](https://img.shields.io/nuget/v/UWPAudioVisualizer.svg)](https://www.nuget.org/packages/UWPAudioVisualizer/) |
 
 # Introduction
 
