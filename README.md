@@ -5,14 +5,16 @@
 
 | Target | Branch | Status | Recommended Nuget packages version |
 | ------ | ------ | ------ | ------ |
-| Current Release | master | [![Build status](https://ci.appveyor.com/api/projects/status/p4a7jmpa9391bxu8/branch/master?svg=true)](https://ci.appveyor.com/api/projects/status/p4a7jmpa9391bxu8/branch/master?svg=true) | [![NuGet](https://img.shields.io/nuget/v/UWPAudioVisualizer.svg)](https://www.nuget.org/packages/UWPAudioVisualizer/) |
-| Pre-release | dev | [![Build status](https://ci.appveyor.com/api/projects/status/p4a7jmpa9391bxu8?svg=true)](https://ci.appveyor.com/project/clarkezone/audiovisualizer) | |
+| Current Release | master | [![Build status](https://dev.azure.com/tvanatalu/AudioVisualizer/_apis/build/status/Official%20Build%20from%20PR%20to%20master)](https://ci.appveyor.com/api/projects/status/p4a7jmpa9391bxu8/branch/master?svg=true) | [![NuGet](https://img.shields.io/nuget/v/UWPAudioVisualizer.svg)](https://www.nuget.org/packages/UWPAudioVisualizer/) |
 
 # Introduction
 
 [![Image](readme_images/spectrum.gif)]
 
 The AudioAnalyzer UWP extension DLL contains a MF component and companion XAML controls that can provide realtime audio analysis information for visualization and other purposes. The library contains prebuilt controls implementing VU meters, a spectrum analyzer as well as a control that has a custom draw capability.  This project is a continuation of the work [here](https://github.com/clarkezone/audiovisualization) and originally [here](https://github.com/robmikh/audiovisualization).
+
+## What's new
+A large refactor has just made it's way to Master.  This moves the native library from WRL onto C++/WinRT resulting in a drastic simplification of the COM boilerplate.
 
 # Getting started
 ## Installing the library
