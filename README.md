@@ -19,6 +19,7 @@ A large refactor has just made it's way to Master.  This moves the native librar
 ### Version 1.0.7
 
 [![](http://img.youtube.com/vi/nS0scXYIGhU/0.jpg)](http://www.youtube.com/watch?v=nS0scXYIGhU "")
+
 _(click image to play video)_
 
 * You can now insert analyzer both into MediaPlayer and AudioGraph pipeline
