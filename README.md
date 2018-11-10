@@ -17,6 +17,9 @@ The AudioAnalyzer UWP extension DLL contains a MF component and companion XAML c
 A large refactor has just made it's way to Master.  This moves the native library from WRL onto C++/WinRT resulting in a drastic simplification of the COM boilerplate. Compared to the initial beta release there are also some further improvements.
 
 ### Version 1.0.7
+
+[![](http://img.youtube.com/vi/nS0scXYIGhU/0.jpg)](http://www.youtube.com/watch?v=nS0scXYIGhU "")
+
 * You can now insert analyzer both into MediaPlayer and AudioGraph pipeline
 * [AudioAnalyzer](wiki/AudioAnalyzer.md) itself is exposed so you can use it to generate data on audio frames from file as an example
 * There is a new data source [SourceConverter](wiki/SourceConverter.md) that helps reshaping the visualization data and applying physics (combine channels, convert spectrum to logarithmic scale, apply rise and fall times)
