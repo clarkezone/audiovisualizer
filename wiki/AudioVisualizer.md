@@ -24,12 +24,14 @@ SourceConverter itself implements IVisualizationSource interface so it can be us
 [CustomVisualizer](CustomVisualizer.md) is a Win2D based control that has a Draw event which supplies both Win2D drawing session and visualization data. [AnalogVUMeter](AnalogVUMeter.md) is a VU meter which looks like classical analog meter with a dial and scale. [DigitalVUBar](DigitalVUBar.md) and [SpectrumVisualizer](SpectrumVisualizer.md) are both stacked bar type visualizer, the first one displaying the amplitude of the signal and the second one the spectrum. All visualizers are adapting to the size of the screen and get their configuration (like the number of bars displayed for spectrum) from the source data.
 
 ## Classes
+- [AnalogVUMeter](AnalogVUMeter.md)
 - [ArrayData](ArrayData.md)
 - [AudioAnalyzer](AudioAnalyzer.md)
 - [CustomVisualizer](CustomVisualizer.md)
 - [DiscreteVUBar](DiscreteVUBar.md)
 - [PlaybackSource](PlaybackSource.md)
 - [ScalarData](ScalarData.md)
+- [SourceConverter](SourceConverter.md)
 - [SpectrumVisualizer](spectrumVisualizer.md)
 - [VisualizationDataFrame](VisualizationDataFrame.md)
 - [VisualizationSource](VisualizationSource.md)

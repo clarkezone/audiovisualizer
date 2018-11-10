@@ -1,5 +1,5 @@
-# ClassName
-Short description
+# SpectrumVisualizer
+Displays spectrum in stacked bars representation
 ## Interfaces
 Interface1, Interface2
 ## Methods
