@@ -9,7 +9,7 @@
 
 # Introduction
 
-[![Image](readme_images/spectrum.gif)]
+![Image](readme_images/spectrum.gif)
 
 The AudioAnalyzer UWP extension DLL contains a MF component and companion XAML controls that can provide realtime audio analysis information for visualization and other purposes. The library contains prebuilt controls implementing VU meters, a spectrum analyzer as well as a control that has a custom draw capability.  This project is a continuation of the work [here](https://github.com/clarkezone/audiovisualization) and originally [here](https://github.com/robmikh/audiovisualization).
 
@@ -19,6 +19,7 @@ A large refactor has just made it's way to Master.  This moves the native librar
 ### Version 1.0.7
 
 [![](http://img.youtube.com/vi/nS0scXYIGhU/0.jpg)](http://www.youtube.com/watch?v=nS0scXYIGhU "")
+_(click image to play video)_
 
 * You can now insert analyzer both into MediaPlayer and AudioGraph pipeline
 * [AudioAnalyzer](wiki/AudioAnalyzer.md) itself is exposed so you can use it to generate data on audio frames from file as an example
