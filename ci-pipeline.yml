@@ -1,0 +1,166 @@
+resources:
+
+- repo: self
+
+variables:
+ major: 1
+ minor: 0
+ patch: 0
+
+queue:
+
+  name: Cloud VM
+
+  demands: 
+
+  - msbuild
+
+  - visualstudio
+
+  - vstest
+
+name: $(TeamProject)_$(SourceBranchName)_$(major).$(minor).$(patch)
+
+steps:
+
+- task: NuGetToolInstaller@0
+
+  displayName: 'Use NuGet 4.4.1'
+
+  inputs:
+
+    versionSpec: 4.4.1
+
+
+
+
+
+- task: NuGetCommand@2
+
+  displayName: 'NuGet restore **\*.sln'
+
+  inputs:
+
+    restoreSolution: AudioVisualizer.sln
+
+
+
+
+- task: VSBuild@1
+
+  displayName: 'Build AudioVisualizer x86'
+
+  inputs:
+
+    solution: AudioVisualizer.sln
+
+
+
+    platform: x86
+
+
+
+    configuration: Release
+
+
+
+    clean: true
+
+
+
+
+
+- task: VSBuild@1
+
+  displayName: 'Build AudioVisualizer x64'
+
+  inputs:
+
+    solution: AudioVisualizer.sln
+
+
+
+    platform: x64
+
+
+
+    configuration: Release
+
+
+
+    clean: true
+
+
+
+
+
+- task: VSBuild@1
+
+  displayName: 'Build AudioVisualizer ARM'
+
+  inputs:
+
+    solution: AudioVisualizer.sln
+
+
+
+    platform: arm
+
+
+
+    configuration: Release
+
+
+
+    clean: true
+
+
+
+
+
+- task: VSTest@2
+
+  displayName: 'Unit tests'
+
+  inputs:
+
+    testAssemblyVer2: |
+     $(Build.SourcesDirectory)\AudioVisualizer.test\bin\x86\Release\AudioVisualizer.Test.build.appxrecipe
+     $(Build.SourcesDirectory)\AudioVisualizer.test\bin\x64\Release\AudioVisualizer.Test.build.appxrecipe
+     
+
+
+
+
+- task: richardfennellBM.BM-VSTS-Versioning-Task.Version-Nuspec-Task.VersionNuspec@2
+
+  displayName: 'Version Nuspec'
+
+
+
+  enabled: false
+
+
+
+- task: NuGetCommand@2
+
+  displayName: 'NuGet pack'
+
+  inputs:
+
+    command: pack
+
+    versioningScheme: byBuildNumber
+
+    packagesToPack: AudioAnalyzer.nuspec
+
+
+
+
+- task: PublishBuildArtifacts@1
+
+  displayName: 'Publish Artifact: nuget'
+
+  inputs:
+
+    ArtifactName: nuget
