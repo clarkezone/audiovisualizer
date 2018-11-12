@@ -1,5 +1,5 @@
-# ClassName
-Short description
+# DiscreteVUBar
+Stacked bar type visualizer taking input from the RMS and Peak 
 ## Interfaces
 Interface1, Interface2
 ## Methods

@@ -1,5 +1,6 @@
-# CustomVisualizer
-Win2D based visualizer that generates events for custom drawing
+# AnalogVUMeter
+Mimics the appearance and function of an analog meter.
+![Analog Meter](analogvumeter.png)
 ## Interfaces
 Interface1, Interface2
 ## Methods
