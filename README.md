@@ -13,6 +13,8 @@
 
 The AudioAnalyzer UWP extension DLL contains a MF component and companion XAML controls that can provide realtime audio analysis information for visualization and other purposes. The library contains prebuilt controls implementing VU meters, a spectrum analyzer as well as a control that has a custom draw capability.  This project is a continuation of the work [here](https://github.com/clarkezone/audiovisualization) and originally [here](https://github.com/robmikh/audiovisualization).
 
+To play with a demo app the shows the controls in action, grab [this app from the Windows Store](https://www.microsoft.com/en-us/p/audio-spectrum-visualizer/9nfrlr613699?activetab=pivot:overviewtab).
+
 ## What's new
 A large refactor has just made it's way to Master.  This moves the native library from WRL onto C++/WinRT resulting in a drastic simplification of the COM boilerplate. Compared to the initial beta release there are also some further improvements.
 
