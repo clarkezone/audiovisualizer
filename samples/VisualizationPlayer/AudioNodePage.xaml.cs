@@ -8,6 +8,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Media.Audio;
 using Windows.System.Threading;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -55,26 +56,31 @@ namespace VisualizationPlayer
                 throw new InvalidOperationException($"Graph creation failed {graphResult.Status}");
             _graph = graphResult.Graph;
             var inputNodeResult = await _graph.CreateDeviceInputNodeAsync(Windows.Media.Capture.MediaCategory.Media);
-            if (inputNodeResult.Status != AudioDeviceNodeCreationStatus.Success)
-                throw new InvalidOperationException($"Input node creation failed {inputNodeResult.Status}");
+            if (inputNodeResult.Status == AudioDeviceNodeCreationStatus.Success)
+            {
 
-            _inputNode = inputNodeResult.DeviceInputNode;
+                _inputNode = inputNodeResult.DeviceInputNode;
 
-            _source = AudioVisualizer.PlaybackSource.CreateFromAudioNode(_inputNode);
-            _converter = new SourceConverter();
-            _converter.Source = _source.Source;
-            _converter.MinFrequency = 110.0f;    // Note A2
-            _converter.MaxFrequency = 3520.0f;  // Note A7
-            _converter.FrequencyCount = 12 * 5 * 5; // 5 octaves, 5 bars per note
-            _converter.FrequencyScale = ScaleType.Logarithmic;
-            _converter.SpectrumRiseTime = TimeSpan.FromMilliseconds(20);
-            _converter.SpectrumFallTime = TimeSpan.FromMilliseconds(200);
-            _converter.RmsRiseTime = TimeSpan.FromMilliseconds(20); // Use RMS to gate noise, fast rise slow fall
-            _converter.RmsFallTime = TimeSpan.FromMilliseconds(500);
-            _converter.ChannelCount = 1;
-            notesSpectrum.Source = _converter;
+                _source = AudioVisualizer.PlaybackSource.CreateFromAudioNode(_inputNode);
+                _converter = new SourceConverter();
+                _converter.Source = _source.Source;
+                _converter.MinFrequency = 110.0f;    // Note A2
+                _converter.MaxFrequency = 3520.0f;  // Note A7
+                _converter.FrequencyCount = 12 * 5 * 5; // 5 octaves, 5 bars per note
+                _converter.FrequencyScale = ScaleType.Logarithmic;
+                _converter.SpectrumRiseTime = TimeSpan.FromMilliseconds(20);
+                _converter.SpectrumFallTime = TimeSpan.FromMilliseconds(200);
+                _converter.RmsRiseTime = TimeSpan.FromMilliseconds(20); // Use RMS to gate noise, fast rise slow fall
+                _converter.RmsFallTime = TimeSpan.FromMilliseconds(500);
+                _converter.ChannelCount = 1;
+                notesSpectrum.Source = _converter;
 
-            _graph.Start();
+                _graph.Start();
+            } else
+            {
+                MessageDialog md = new MessageDialog("Cannot access microphone");
+                await md.ShowAsync();
+            }
         }
     }
 }
