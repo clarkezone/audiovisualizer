@@ -22,6 +22,8 @@ A large refactor has just made it's way to Master.  This moves the native librar
 
 [![](http://img.youtube.com/vi/nS0scXYIGhU/0.jpg)](http://www.youtube.com/watch?v=nS0scXYIGhU "")
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/nS0scXYIGhU" frameborder="0" allowfullscreen></iframe>
+
 _(click image to play video)_
 
 * You can now insert analyzer both into MediaPlayer and AudioGraph pipeline
