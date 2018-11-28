@@ -8,11 +8,13 @@ Calling this method will return [VisualizationDataFrame](VisualizationDataFrame.
 #### Notes
 This method can return null if the stream is in stopped state or the analyzer is catching up with stream change (for example seek)
 #### Example
+```C#
     var data = source.GetData();
 	if (data != null)
 	{
 		// Render visualization
 	}
+```
 ## Properties
 ### AnalyzerTypes (AnalyzerType)
 This is a combination of flags that will configure the type of analyzes that will be run
