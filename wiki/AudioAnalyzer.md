@@ -53,3 +53,4 @@ Set this property to true to suspend the processing, however it will not stop th
 This event is raised every time there is output data frame generated from input data. The event will provide the analyzer as first parameter and data frame as second parameter
 
 
+[Home](AudioVisualizer.md)

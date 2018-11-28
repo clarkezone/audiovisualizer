@@ -66,7 +66,4 @@ Specifies the rise time of RMS data in the output
 ### SpectrumFallTime (TimeSpan?)
 Specifies the rise time of RMS data in the output
 
-
-
-
-
+[Home](AudioVisualizer.md)

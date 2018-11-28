@@ -25,13 +25,15 @@ SourceConverter itself implements IVisualizationSource interface so it can be us
 
 ## Classes
 - [AnalogVUMeter](AnalogVUMeter.md)
-- [ArrayData](ArrayData.md)
 - [AudioAnalyzer](AudioAnalyzer.md)
 - [CustomVisualizer](CustomVisualizer.md)
 - [DiscreteVUBar](DiscreteVUBar.md)
+- [MeterScaleLabel](MeterScaleLabel.md)
+- [MeterScaleSection](MeterScaleSection.md)
 - [PlaybackSource](PlaybackSource.md)
 - [ScalarData](ScalarData.md)
 - [SourceConverter](SourceConverter.md)
+- [SpectrumyData](SpectrumData.md)
 - [SpectrumVisualizer](spectrumVisualizer.md)
 - [VisualizationDataFrame](VisualizationDataFrame.md)
 - [VisualizationSource](VisualizationSource.md)

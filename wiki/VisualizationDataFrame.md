@@ -13,9 +13,6 @@ Contains the calculated RMS value of the input signal.
 Contains the spectrum data of the input signal. This is calculated by windowing overlapping input 
 frames and applying FFT to it. The number of elements in the spectrum will be half of the FFT elements.
 ### Time (TimeSpan?)
-If set will indicate the presentation time for the data
+If set will indicate the presentation time for the data. You can use this to display the play position.
 
-#### Remarks
-
-#### See also
-[Link](Link)
+[Home](AudioVisualizer.md)
