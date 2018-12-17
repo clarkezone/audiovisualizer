@@ -150,8 +150,12 @@ namespace AudioVisualizer.test
         public void MediaSourceReader_SeekBeyondEnd()
         {
             sut.Format = AudioEncodingProperties.CreatePcm(48000, 2, 16);
+#if _DEBUG
             Assert.ThrowsException<COMException>(
-                ()=>
+#else
+            Assert.ThrowsException<Exception>(
+#endif
+            ()=>
                 {
                     sut.Seek(TimeSpan.FromHours(1));
                 }
