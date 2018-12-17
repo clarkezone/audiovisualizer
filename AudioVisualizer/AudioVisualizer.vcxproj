@@ -124,6 +124,7 @@
     <ClInclude Include="CreateResourcesEventArgs.h" />
     <ClInclude Include="CustomVisualizer.h" />
     <ClInclude Include="DiscreteVUBar.h" />
+    <ClInclude Include="AudioSourceReader.h" />
     <ClInclude Include="ring_buffer.h" />
     <ClInclude Include="ScalarValuesIterator.h" />
     <ClInclude Include="SpectrumVisualizer.h" />
@@ -153,6 +154,7 @@
     <ClCompile Include="CustomVisualizer.cpp" />
     <ClCompile Include="DiscreteVUBar.cpp" />
     <ClCompile Include="DllMain.cpp" />
+    <ClCompile Include="AudioSourceReader.cpp" />
     <ClCompile Include="ring_buffer.cpp" />
     <ClCompile Include="SpectrumVisualizer.cpp" />
     <ClCompile Include="Tracing.cpp" />
@@ -180,6 +182,7 @@
     <Midl Include="CustomVisualizer.idl" />
     <Midl Include="DiscreteVUBar.idl" />
     <Midl Include="MediaAnalyzer.idl" />
+    <Midl Include="AudioSourceReader.idl" />
     <Midl Include="PlaybackSource.idl" />
     <Midl Include="ScalarData.idl" />
     <Midl Include="SourceConverter.idl" />

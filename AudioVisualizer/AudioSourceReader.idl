@@ -1,0 +1,32 @@
+namespace AudioVisualizer
+{
+	[flags]
+	enum AudioSourceReaderFlags {
+		None = 0,
+		Error = 1,
+		EndOfStream = 2,
+		NewStream = 4,
+		NativeMediaTypeChanged = 0x10,
+		CurrentMediaTypeChanged = 0x20,
+		StreamTick = 0x100,
+		AllEffectsRemoved = 0x200
+	};
+
+	[default_interface]
+	runtimeclass AudioSourceReader {
+		static Int32 FirstAudioStreamIndex { get; };
+
+		Int32 StreamIndex;
+		AudioSourceReaderFlags Flags{ get; };
+
+		AudioSourceReader(Windows.Storage.Streams.IRandomAccessStream stream);
+		Windows.Foundation.TimeSpan Duration { get; };
+
+		Windows.Media.MediaProperties.IMediaEncodingProperties GetNativeFormat(Int32 streamIndex);
+		Windows.Media.MediaProperties.IMediaEncodingProperties Format;
+
+		void Seek(Windows.Foundation.TimeSpan position);
+
+		Windows.Media.AudioFrame Read();
+	}
+}
