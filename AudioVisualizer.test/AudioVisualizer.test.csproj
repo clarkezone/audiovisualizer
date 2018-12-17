@@ -107,6 +107,7 @@
     <Compile Include="FakeAudioNode.cs" />
     <Compile Include="CreateResourcesArgsTests.cs" />
     <Compile Include="CustomVisualizerTests.cs" />
+    <Compile Include="MediaSourceReaderTests.cs" />
     <Compile Include="SpectrumVisualizerTests.cs" />
     <Compile Include="FakeVisualizationSource.cs" />
     <Compile Include="DiscreteVUBarTests.cs" />
@@ -148,6 +149,7 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="TestContent\rt_16b_pcm.wav" />
     <Content Include="TestContent\test_signal.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
