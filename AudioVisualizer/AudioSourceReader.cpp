@@ -22,8 +22,16 @@ namespace winrt::AudioVisualizer::implementation
 		return MF_SOURCE_READER_FIRST_AUDIO_STREAM;
 	}
 
+	void AudioSourceReader::Close()
+	{
+		reader = nullptr;
+	}
+
 	int32_t AudioSourceReader::StreamIndex()
 	{
+		if (!reader) {
+			throw hresult_error(RO_E_CLOSED);
+		}
 		return streamIndex;
 	}
 
@@ -53,6 +61,9 @@ namespace winrt::AudioVisualizer::implementation
 
 	void AudioSourceReader::Seek(Windows::Foundation::TimeSpan position)
 	{
+		if (!reader) {
+			throw hresult_error(RO_E_CLOSED);
+		}
 		PROPVARIANT pvPosition;
 		PropVariantInit(&pvPosition);
 		pvPosition.vt = VT_I8;
@@ -63,6 +74,9 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Media::AudioFrame AudioSourceReader::Read()
 	{
+		if (!reader) {
+			throw hresult_error(RO_E_CLOSED);
+		}
 		com_ptr<IMFSample> sample;
 		DWORD dwStreamFlags = 0;
 		check_hresult(reader->ReadSample(streamIndex, 0, nullptr, &dwStreamFlags, nullptr, sample.put()));
@@ -128,6 +142,9 @@ namespace winrt::AudioVisualizer::implementation
 	}
 	Windows::Foundation::TimeSpan AudioSourceReader::Duration()
 	{
+		if (!reader) {
+			throw hresult_error(RO_E_CLOSED);
+		}
 		PROPVARIANT pvDuration;
 		PropVariantInit(&pvDuration);
 		check_hresult(reader->GetPresentationAttribute((DWORD)MF_SOURCE_READER_MEDIASOURCE, MF_PD_DURATION, &pvDuration));
@@ -135,6 +152,9 @@ namespace winrt::AudioVisualizer::implementation
 	}
 	Windows::Media::MediaProperties::IMediaEncodingProperties AudioSourceReader::GetNativeFormat(int32_t forStreamIndex)
 	{
+		if (!reader) {
+			throw hresult_error(RO_E_CLOSED);
+		}
 		com_ptr<IMFMediaType> mediaType;
 		HRESULT hr = reader->GetNativeMediaType(forStreamIndex, 0, mediaType.put());
 		if (hr == MF_E_INVALIDSTREAMNUMBER)
@@ -151,6 +171,9 @@ namespace winrt::AudioVisualizer::implementation
 
 	Windows::Media::MediaProperties::IMediaEncodingProperties AudioSourceReader::Format()
 	{
+		if (!reader) {
+			throw hresult_error(RO_E_CLOSED);
+		}
 		com_ptr<IMFMediaType> mediaType;
 		check_hresult(reader->GetCurrentMediaType(streamIndex, mediaType.put()));
 		com_ptr<ABI::Windows::Media::MediaProperties::IMediaEncodingProperties> abiMediaProps;
@@ -163,6 +186,9 @@ namespace winrt::AudioVisualizer::implementation
 
 	void AudioSourceReader::Format(Windows::Media::MediaProperties::IMediaEncodingProperties const & format)
 	{
+		if (!reader) {
+			throw hresult_error(RO_E_CLOSED);
+		}
 		com_ptr<IMFMediaType> mediaType;
 		check_hresult(MFCreateMediaTypeFromProperties(reinterpret_cast<IUnknown*>(winrt::get_abi(format)), mediaType.put()));
 		check_hresult(reader->SetCurrentMediaType(streamIndex, nullptr, mediaType.get()));

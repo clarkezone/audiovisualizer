@@ -23,6 +23,12 @@ namespace AudioVisualizer.test
             var stream = await testFile.OpenAsync(FileAccessMode.Read);
             sut = new AudioSourceReader(stream);
         }
+        [TestCleanup]
+        public void Cleanup()
+        {
+            sut.Dispose();
+            sut = null;
+        }
 
         [TestMethod]
         [TestCategory("MediaSourceReader")]
@@ -150,7 +156,7 @@ namespace AudioVisualizer.test
         public void MediaSourceReader_SeekBeyondEnd()
         {
             sut.Format = AudioEncodingProperties.CreatePcm(48000, 2, 16);
-#if _DEBUG
+#if DEBUG
             Assert.ThrowsException<COMException>(
 #else
             Assert.ThrowsException<Exception>(
