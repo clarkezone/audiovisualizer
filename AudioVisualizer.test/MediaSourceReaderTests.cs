@@ -37,6 +37,7 @@ namespace AudioVisualizer.test
             Assert.AreEqual(-3, AudioSourceReader.FirstAudioStreamIndex);
         }
 
+
         [TestMethod]
         [TestCategory("MediaSourceReader")]
         public void MediaSourceReader_Duration()
