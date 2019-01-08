@@ -13,7 +13,7 @@ namespace AudioVisualizer
 	};
 
 	[default_interface]
-	runtimeclass AudioSourceReader {
+	runtimeclass AudioSourceReader : Windows.Foundation.IClosable {
 		static Int32 FirstAudioStreamIndex { get; };
 
 		Int32 StreamIndex;

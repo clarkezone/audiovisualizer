@@ -60,6 +60,8 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::Media::AudioFrame Read();
 
 		static int32_t FirstAudioStreamIndex();
+
+		void Close();
     };
 }
 

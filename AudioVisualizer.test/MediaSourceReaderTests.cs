@@ -23,6 +23,12 @@ namespace AudioVisualizer.test
             var stream = await testFile.OpenAsync(FileAccessMode.Read);
             sut = new AudioSourceReader(stream);
         }
+        [TestCleanup]
+        public void Cleanup()
+        {
+            sut.Dispose();
+            sut = null;
+        }
 
         [TestMethod]
         [TestCategory("MediaSourceReader")]
@@ -30,6 +36,7 @@ namespace AudioVisualizer.test
         {
             Assert.AreEqual(-3, AudioSourceReader.FirstAudioStreamIndex);
         }
+
 
         [TestMethod]
         [TestCategory("MediaSourceReader")]
@@ -92,7 +99,7 @@ namespace AudioVisualizer.test
         [DataRow(48000u, 1u, 16u)]
         [DataRow(48000u, 2u, 32u)]
         [DataRow(48000u, 1u, 32u)]
-        public void MediaSourceReader_Read(uint sampleRate, uint channels, uint bitsPerSample)
+        public void MediaSourceReader_Read(UInt32 sampleRate, UInt32 channels, UInt32 bitsPerSample)
         {
             var bytesPerSample = bitsPerSample >> 3;
             var format = AudioEncodingProperties.CreatePcm(sampleRate, channels, bitsPerSample);
@@ -127,13 +134,17 @@ namespace AudioVisualizer.test
         }
 
         /* Functional test of reader. All of the file is read to the end in different formats and reader and frame states and properties validated */
-        [TestMethod]
+        [DataTestMethod]
+        [DataRow(new double[] { 0.0 })]
+        [DataRow(new double[] { 5.0 })]
+        [DataRow(new double[] { 5.0,1.0 })]
+        [DataRow(new double[] { 2.0, 2.1 })]
         [TestCategory("MediaSourceReader")]
-        public void MediaSourceReader_Seek()
+        public void MediaSourceReader_Seek(double [] seekSequence)
         {
             sut.Format = AudioEncodingProperties.CreatePcm(48000, 2, 16);
-            double [] seeks = new double[] { 0.0,5.0,1.0,2.0,4.0,3.0,0.0 };
-            foreach (var position in seeks)
+
+            foreach (var position in seekSequence)
             {
                 var seekTime = TimeSpan.FromSeconds(position);
 
@@ -150,7 +161,7 @@ namespace AudioVisualizer.test
         public void MediaSourceReader_SeekBeyondEnd()
         {
             sut.Format = AudioEncodingProperties.CreatePcm(48000, 2, 16);
-#if _DEBUG
+#if DEBUG
             Assert.ThrowsException<COMException>(
 #else
             Assert.ThrowsException<Exception>(
