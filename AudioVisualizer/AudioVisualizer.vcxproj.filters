@@ -35,6 +35,7 @@
     <ClCompile Include="AnalogVUMeter.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VectorData.cpp" />
+    <ClCompile Include="AudioSourceReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -61,6 +62,7 @@
     <ClInclude Include="BarVisualizerBase.h" />
     <ClInclude Include="VectorData.h" />
     <ClInclude Include="ScalarValuesIterator.h" />
+    <ClInclude Include="AudioSourceReader.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ScalarData.idl" />
@@ -83,6 +85,7 @@
     <Midl Include="AnalogVUMeter.idl" />
     <Midl Include="BarVisualizer.idl" />
     <Midl Include="VectorData.idl" />
+    <Midl Include="AudioSourceReader.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

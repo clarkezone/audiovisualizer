@@ -15,5 +15,6 @@
 #include <mfapi.h>
 #include <mftransform.h>
 #include <mfidl.h>
+#include <mfreadwrite.h>
 #include <mferror.h>
 #include "util.h"
