@@ -16,7 +16,10 @@ The AudioAnalyzer UWP extension DLL contains a MF component and companion XAML c
 To play with a demo app the shows the controls in action, grab [this app from the Windows Store](https://www.microsoft.com/en-us/p/audio-spectrum-visualizer/9nfrlr613699?activetab=pivot:overviewtab).
 
 ## What's new
-A large refactor has just made it's way to Master.  This moves the native library from WRL onto C++/WinRT resulting in a drastic simplification of the COM boilerplate. Compared to the initial beta release there are also some further improvements.
+You can now analyze media files without playing them.
+
+### Version 1.0.8
+[AudioSourceReader](wiki/AudioSourceReader.md) class has been added that enables reading audio frames from media file, decompress them if needed and pass on to AudioAnalyzer or use them on their own without the need to play media file. Both video and audio files are supported as long as appropriate codecs are installed.
 
 ### Version 1.0.7
 
@@ -109,3 +112,6 @@ visualization data by calling GetData(). This method will return [VisualizationD
 for the current audio being played or null if the current state of stream is stopped or if the analyzer is catching up processing 
 for example due to seek operation.
 All controls have a source property, once you assign the source to the controls, they will pull and display data automatically.
+
+## Reading the file
+Please see [AudioSourceReader](wiki/AudioSourceReader.md) for the sample.
