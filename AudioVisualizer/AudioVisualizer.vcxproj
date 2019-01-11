@@ -119,7 +119,9 @@
   <ItemGroup>
     <ClInclude Include="AnalogVUMeter.h" />
     <ClInclude Include="AudioAnalyzer.h" />
+    <ClInclude Include="SampleBuffer.h" />
     <ClInclude Include="AudioMath.h" />
+    <ClInclude Include="AudioViewData.h" />
     <ClInclude Include="BarVisualizerBase.h" />
     <ClInclude Include="CreateResourcesEventArgs.h" />
     <ClInclude Include="CustomVisualizer.h" />
@@ -150,6 +152,7 @@
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
     </ClCompile>
     <ClCompile Include="AudioMath.cpp" />
+    <ClCompile Include="AudioViewData.cpp" />
     <ClCompile Include="CreateResourcesEventArgs.cpp" />
     <ClCompile Include="CustomVisualizer.cpp" />
     <ClCompile Include="DiscreteVUBar.cpp" />
@@ -177,6 +180,7 @@
   <ItemGroup>
     <Midl Include="AnalogVUMeter.idl" />
     <Midl Include="AudioAnalyzer.idl" />
+    <Midl Include="AudioViewData.idl" />
     <Midl Include="BarVisualizer.idl" />
     <Midl Include="CreateResourcesEventArgs.idl" />
     <Midl Include="CustomVisualizer.idl" />
