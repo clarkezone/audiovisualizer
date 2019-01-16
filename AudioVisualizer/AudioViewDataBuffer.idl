@@ -1,0 +1,13 @@
+import "AudioViewData.idl";
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass AudioViewDataBuffer
+	{
+		AudioViewDataBuffer(UInt32 capacity,UInt32 downsampleRate,UInt32 detailLevels);
+		void Append(Windows.Media.AudioFrame frame);
+		void Append(Windows.Media.AudioFrame frame, UInt32 stride, UInt32 offset);
+		Windows.Foundation.Collections.IVectorView<AudioVisualizer.AudioViewData> Data{ get; };
+	}
+}

@@ -1,11 +1,9 @@
+
 namespace AudioVisualizer
 {
-	[default_interface]
-	runtimeclass AudioViewData
+	runtimeclass AudioViewData : Windows.Foundation.Collections.IVectorView<Single>,Windows.Foundation.Collections.IIterable<Single>
 	{
-		AudioViewData();
-		void Append(Windows.Media.AudioFrame frame);
-		[method_name("AppendWithStrideAndOffset")] 
-		void Append(Windows.Media.AudioFrame frame, UInt32 stride, UInt32 offset);
-	}
+		UInt32 Scale { get; };
+
+	};
 }

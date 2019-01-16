@@ -119,9 +119,10 @@
   <ItemGroup>
     <ClInclude Include="AnalogVUMeter.h" />
     <ClInclude Include="AudioAnalyzer.h" />
+    <ClInclude Include="AudioViewData.h" />
     <ClInclude Include="SampleBuffer.h" />
     <ClInclude Include="AudioMath.h" />
-    <ClInclude Include="AudioViewData.h" />
+    <ClInclude Include="AudioViewDataBuffer.h" />
     <ClInclude Include="BarVisualizerBase.h" />
     <ClInclude Include="CreateResourcesEventArgs.h" />
     <ClInclude Include="CustomVisualizer.h" />
@@ -153,6 +154,7 @@
     </ClCompile>
     <ClCompile Include="AudioMath.cpp" />
     <ClCompile Include="AudioViewData.cpp" />
+    <ClCompile Include="AudioViewDataBuffer.cpp" />
     <ClCompile Include="CreateResourcesEventArgs.cpp" />
     <ClCompile Include="CustomVisualizer.cpp" />
     <ClCompile Include="DiscreteVUBar.cpp" />
@@ -181,6 +183,7 @@
     <Midl Include="AnalogVUMeter.idl" />
     <Midl Include="AudioAnalyzer.idl" />
     <Midl Include="AudioViewData.idl" />
+    <Midl Include="AudioViewDataBuffer.idl" />
     <Midl Include="BarVisualizer.idl" />
     <Midl Include="CreateResourcesEventArgs.idl" />
     <Midl Include="CustomVisualizer.idl" />
