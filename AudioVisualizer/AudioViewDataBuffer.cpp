@@ -3,11 +3,43 @@
 #include "AudioViewData.h"
 #include "SampleBuffer.h"
 #include <DirectXMath.h>
+#include <windows.storage.h>
+#include <windows.storage.Streams.h>
+#include <AudioSourceReader.h>
 
 using namespace winrt::Windows::Media;
 
 namespace winrt::AudioVisualizer::implementation
 {
+	Windows::Foundation::IAsyncOperationWithProgress<AudioVisualizer::AudioViewDataBuffer, AudioVisualizer::AudioViewDataBufferCreateProgress> AudioViewDataBuffer::CreateFromFileAsync(Windows::Storage::StorageFile const file)
+	{
+		auto progress { winrt::get_progress_token() };
+
+		auto stream = co_await file.OpenAsync(Windows::Storage::FileAccessMode::Read);
+		auto reader = AudioSourceReader(stream);
+
+		auto nativeFormat = reader.GetNativeFormat(AudioSourceReader::FirstAudioStreamIndex()).as<Windows::Media::MediaProperties::AudioEncodingProperties>();
+		// Set decoded format to same sample rate as source but mono
+		auto encoding = Windows::Media::MediaProperties::AudioEncodingProperties::CreatePcm(nativeFormat.SampleRate(), 1, 32);
+		// Clear the bottom 2 bits to make divisible by 4
+		// aim for approximately 1ms sample rate for most detailed data
+		uint32_t downSampleRate = (encoding.SampleRate() / 1000) & ~3;
+		Windows::Foundation::TimeSpan estimatedDuration = reader.Duration();
+		estimatedDuration += Windows::Foundation::TimeSpan(20000000);	// Pad with 2 seconds just to be sure
+		uint32_t reserveCapacity = uint64_t(encoding.SampleRate()) * estimatedDuration.count() / (10000000 * downSampleRate);
+		uint32_t sampleCount = reserveCapacity;
+		uint32_t detailLevels = 1;
+		while (sampleCount > 1024) {
+			sampleCount >>= 2;
+			detailLevels++;
+		}
+
+		auto data = AudioViewDataBuffer(reserveCapacity, downSampleRate, detailLevels);
+
+		stream.Close();
+		throw hresult_not_implemented();
+	}
+
 	AudioViewDataBuffer::AudioViewDataBuffer(uint32_t reserveCapacity, uint32_t downsampleRate, uint32_t detailLevels)
 	{
 		if ((downsampleRate & 3) != 0 || downsampleRate == 0) {

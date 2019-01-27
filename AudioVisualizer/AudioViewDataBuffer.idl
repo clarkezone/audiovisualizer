@@ -1,4 +1,5 @@
 import "AudioViewData.idl";
+import "AudioViewDataBufferCreateProgress.idl";
 
 namespace AudioVisualizer
 {
@@ -9,5 +10,6 @@ namespace AudioVisualizer
 		void Append(Windows.Media.AudioFrame frame);
 		void Append(Windows.Media.AudioFrame frame, UInt32 stride, UInt32 offset);
 		Windows.Foundation.Collections.IVectorView<AudioVisualizer.AudioViewData> Data{ get; };
+		static Windows.Foundation.IAsyncOperationWithProgress<AudioViewDataBuffer,AudioViewDataBufferCreateProgress> CreateFromFileAsync(Windows.Storage.StorageFile file);
 	}
 }

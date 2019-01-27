@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Media.MediaProperties;
+using Windows.Storage;
 
 namespace AudioVisualizer.test
 {
@@ -164,6 +165,14 @@ namespace AudioVisualizer.test
             {
                 var data = new AudioViewDataBuffer(0, (UInt32)40, (UInt32) detailLevels);
             });
+        }
+
+        [TestMethod]
+        [TestCategory("AudioViewDataBuffer")]
+        public async Task AudioViewDataBuffer_CreateFromFileAsync()
+        {
+            var testFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///TestContent/test_signal.mp3"));
+            var data = await AudioViewDataBuffer.CreateFromFileAsync(testFile);
         }
     }
 }

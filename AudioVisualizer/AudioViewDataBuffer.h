@@ -24,6 +24,8 @@ namespace winrt::AudioVisualizer::implementation
         void Append(Windows::Media::AudioFrame const& frame, uint32_t stride, uint32_t offset);
 
 		Windows::Foundation::Collections::IVectorView<AudioVisualizer::AudioViewData> Data();
+
+		static Windows::Foundation::IAsyncOperationWithProgress<AudioVisualizer::AudioViewDataBuffer, AudioVisualizer::AudioViewDataBufferCreateProgress> CreateFromFileAsync(Windows::Storage::StorageFile const file);
     };
 }
 
