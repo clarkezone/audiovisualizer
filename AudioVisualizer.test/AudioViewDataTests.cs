@@ -172,7 +172,12 @@ namespace AudioVisualizer.test
         public async Task AudioViewDataBuffer_CreateFromFileAsync()
         {
             var testFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///TestContent/test_signal.mp3"));
-            var data = await AudioViewDataBuffer.CreateFromFileAsync(testFile);
+            var dataOp = AudioViewDataBuffer.CreateFromFileAsync(testFile,1,new uint[] { 0 },null);
+            dataOp.Progress += (op,progress) => 
+            {
+                System.Diagnostics.Debug.WriteLine($"{progress}%");
+            };
+            var data = await dataOp;
         }
     }
 }

@@ -184,7 +184,6 @@
     <Midl Include="AudioAnalyzer.idl" />
     <Midl Include="AudioViewData.idl" />
     <Midl Include="AudioViewDataBuffer.idl" />
-    <Midl Include="AudioViewDataBufferCreateProgress.idl" />
     <Midl Include="BarVisualizer.idl" />
     <Midl Include="CreateResourcesEventArgs.idl" />
     <Midl Include="CustomVisualizer.idl" />

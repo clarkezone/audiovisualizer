@@ -11,22 +11,38 @@ using namespace winrt::Windows::Media;
 
 namespace winrt::AudioVisualizer::implementation
 {
-	Windows::Foundation::IAsyncOperationWithProgress<AudioVisualizer::AudioViewDataBuffer, AudioVisualizer::AudioViewDataBufferCreateProgress> AudioViewDataBuffer::CreateFromFileAsync(Windows::Storage::StorageFile const file)
+	
+	Windows::Foundation::IAsyncOperationWithProgress<Windows::Foundation::Collections::IVectorView<AudioVisualizer::AudioViewDataBuffer>, uint32_t> AudioViewDataBuffer::CreateFromFileAsync(Windows::Storage::StorageFile const file, uint32_t readerChannels, array_view<uint32_t const> outputChannels, AudioVisualizer::IAudioViewDataIncrementalLoad const callback)
 	{
-		auto progress { winrt::get_progress_token() };
+		// If reader channel count and output channels are specified
+		if (readerChannels != 0 && !outputChannels.empty() && 
+			std::all_of(outputChannels.cbegin(), outputChannels.cend(),[=](uint32_t value) { return value >= readerChannels;})) {
+			throw hresult_invalid_argument();
+		}
+
+		auto progress_token{ co_await winrt::get_progress_token() };
+		auto cancellation_token{ co_await winrt::get_cancellation_token() };
+
+		co_await winrt::resume_background();
 
 		auto stream = co_await file.OpenAsync(Windows::Storage::FileAccessMode::Read);
-		auto reader = AudioSourceReader(stream);
+		auto reader = AudioVisualizer::AudioSourceReader(stream);
 
 		auto nativeFormat = reader.GetNativeFormat(AudioSourceReader::FirstAudioStreamIndex()).as<Windows::Media::MediaProperties::AudioEncodingProperties>();
-		// Set decoded format to same sample rate as source but mono
-		auto encoding = Windows::Media::MediaProperties::AudioEncodingProperties::CreatePcm(nativeFormat.SampleRate(), 1, 32);
+		
+		uint32_t audioChannels = readerChannels != 0 ? readerChannels : nativeFormat.ChannelCount();
+
+		// Request same sample rate as native and native channel count or channel count specified
+		auto readerFormat = Windows::Media::MediaProperties::AudioEncodingProperties::CreatePcm(nativeFormat.SampleRate(), audioChannels, 32);
+		readerFormat.Subtype(L"Float");
+		reader.Format(readerFormat);
+
 		// Clear the bottom 2 bits to make divisible by 4
 		// aim for approximately 1ms sample rate for most detailed data
-		uint32_t downSampleRate = (encoding.SampleRate() / 1000) & ~3;
+		uint32_t downSampleRate = (readerFormat.SampleRate() / 1000) & ~3;
 		Windows::Foundation::TimeSpan estimatedDuration = reader.Duration();
 		estimatedDuration += Windows::Foundation::TimeSpan(20000000);	// Pad with 2 seconds just to be sure
-		uint32_t reserveCapacity = uint64_t(encoding.SampleRate()) * estimatedDuration.count() / (10000000 * downSampleRate);
+		uint32_t reserveCapacity = uint64_t(readerFormat.SampleRate()) * estimatedDuration.count() / (10000000 * downSampleRate);
 		uint32_t sampleCount = reserveCapacity;
 		uint32_t detailLevels = 1;
 		while (sampleCount > 1024) {
@@ -34,11 +50,56 @@ namespace winrt::AudioVisualizer::implementation
 			detailLevels++;
 		}
 
-		auto data = AudioViewDataBuffer(reserveCapacity, downSampleRate, detailLevels);
+		std::vector<uint32_t> channelList;
+		if (!outputChannels.empty()) {
+			channelList.assign(outputChannels.cbegin(),outputChannels.cend());
+		}
+		else {
+			channelList.resize(readerFormat.ChannelCount());
+			std::generate(channelList.begin(), channelList.end(), [n = 0]() mutable { return n++; });
+		}
+
+		std::vector<AudioVisualizer::AudioViewDataBuffer> buffers(channelList.size(),nullptr);
+
+		for each (uint32_t channelIndex in channelList)
+		{
+			buffers[channelIndex] = AudioVisualizer::AudioViewDataBuffer(reserveCapacity, downSampleRate, detailLevels);
+		}
+		
+		if (callback) {
+			for each (uint32_t channelIndex in channelList)
+			{
+				callback.ViewDataLoading(buffers[channelIndex], channelIndex, Windows::Foundation::TimeSpan(0));
+			}
+		}
+		progress_token(0);
+
+		auto frame = reader.Read();
+		Windows::Foundation::TimeSpan totalRead(0);
+
+		while (frame) {
+
+			uint32_t percentDone = frame.RelativeTime().Value().count() * 100L / reader.Duration().count();
+			//auto progress = make_self<AudioViewDataBufferCreateProgress>(data, frame.RelativeTime().Value(), percentDone);
+			progress_token(percentDone);
+			totalRead = frame.RelativeTime().Value() + frame.Duration().Value();
+
+			for each (uint32_t channelIndex in channelList)
+			{
+				buffers[channelIndex].Append(frame, readerFormat.ChannelCount(), channelIndex);
+				if (callback) {
+					callback.ViewDataLoading(buffers[channelIndex], channelIndex, totalRead);
+				}
+			}
+			frame = reader.Read();
+		}
+		progress_token(100);		
 
 		stream.Close();
-		throw hresult_not_implemented();
+
+		co_return single_threaded_vector(std::move(buffers)).GetView();
 	}
+
 
 	AudioViewDataBuffer::AudioViewDataBuffer(uint32_t reserveCapacity, uint32_t downsampleRate, uint32_t detailLevels)
 	{

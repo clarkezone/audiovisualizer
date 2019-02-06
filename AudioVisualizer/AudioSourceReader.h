@@ -22,6 +22,7 @@ namespace winrt::AudioVisualizer::implementation
 {
     struct AudioSourceReader : AudioSourceReaderT<AudioSourceReader>
     {
+	private:
 		winrt::com_ptr<IMFSourceReader> reader;
 		int32_t streamIndex = 0;
 		AudioSourceReaderFlags flags = (AudioSourceReaderFlags) 0u;
@@ -37,7 +38,7 @@ namespace winrt::AudioVisualizer::implementation
 		int64_t time_to_samples(REFERENCE_TIME time) {
 			return time / samplesPerSecond;
 		}
-
+	public:
 		AudioSourceReader() = delete;
 		AudioSourceReader(Windows::Storage::Streams::IRandomAccessStream const& stream);
 

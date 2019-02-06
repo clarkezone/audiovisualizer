@@ -93,7 +93,6 @@
     <Midl Include="AudioSourceReader.idl" />
     <Midl Include="AudioViewDataBuffer.idl" />
     <Midl Include="AudioViewData.idl" />
-    <Midl Include="AudioViewDataBufferCreateProgress.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

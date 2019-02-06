@@ -25,7 +25,7 @@ namespace winrt::AudioVisualizer::implementation
 
 		Windows::Foundation::Collections::IVectorView<AudioVisualizer::AudioViewData> Data();
 
-		static Windows::Foundation::IAsyncOperationWithProgress<AudioVisualizer::AudioViewDataBuffer, AudioVisualizer::AudioViewDataBufferCreateProgress> CreateFromFileAsync(Windows::Storage::StorageFile const file);
+		static Windows::Foundation::IAsyncOperationWithProgress<Windows::Foundation::Collections::IVectorView<AudioVisualizer::AudioViewDataBuffer>, uint32_t> CreateFromFileAsync(Windows::Storage::StorageFile const file, uint32_t readerChannels, array_view<uint32_t const> outputChannels, AudioVisualizer::IAudioViewDataIncrementalLoad const callback);
     };
 }
 

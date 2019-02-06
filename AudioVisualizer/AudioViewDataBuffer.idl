@@ -1,8 +1,15 @@
 import "AudioViewData.idl";
-import "AudioViewDataBufferCreateProgress.idl";
 
 namespace AudioVisualizer
 {
+	runtimeclass AudioViewDataBuffer;
+
+	interface IAudioViewDataIncrementalLoad
+	{
+		void ViewDataLoading(AudioVisualizer.AudioViewDataBuffer buffer,UInt32 channelIndex,Windows.Foundation.TimeSpan samplesLoaded);
+		void ViewDataLoadComplete(AudioVisualizer.AudioViewDataBuffer buffer, UInt32 channelIndex, Windows.Foundation.TimeSpan samplesLoaded);
+	};
+
 	[default_interface]
 	runtimeclass AudioViewDataBuffer
 	{
@@ -10,6 +17,6 @@ namespace AudioVisualizer
 		void Append(Windows.Media.AudioFrame frame);
 		void Append(Windows.Media.AudioFrame frame, UInt32 stride, UInt32 offset);
 		Windows.Foundation.Collections.IVectorView<AudioVisualizer.AudioViewData> Data{ get; };
-		static Windows.Foundation.IAsyncOperationWithProgress<AudioViewDataBuffer,AudioViewDataBufferCreateProgress> CreateFromFileAsync(Windows.Storage.StorageFile file);
+		static Windows.Foundation.IAsyncOperationWithProgress< Windows.Foundation.Collections.IVectorView<AudioVisualizer.AudioViewDataBuffer>, UInt32> CreateFromFileAsync(Windows.Storage.StorageFile file,UInt32 readerChannels,UInt32 [] outputChannels,IAudioViewDataIncrementalLoad callback);
 	}
 }
