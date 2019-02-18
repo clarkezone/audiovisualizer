@@ -32,12 +32,14 @@
     <ClCompile Include="ring_buffer.cpp" />
     <ClCompile Include="VisualizerEffectDefinition.cpp" />
     <ClCompile Include="VisualizerAudioEffect.cpp" />
-    <ClCompile Include="AnalogVUMeter.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VectorData.cpp" />
     <ClCompile Include="AudioSourceReader.cpp" />
     <ClCompile Include="AudioViewDataBuffer.cpp" />
     <ClCompile Include="AudioViewData.cpp" />
+    <ClCompile Include="TiledViewManager.cpp" />
+    <ClCompile Include="AnalogVUMeter.cpp" />
+    <ClCompile Include="BinaryScaleManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -60,7 +62,6 @@
     <ClInclude Include="ring_buffer.h" />
     <ClInclude Include="VisualizerEffectDefinition.h" />
     <ClInclude Include="VisualizerAudioEffect.h" />
-    <ClInclude Include="AnalogVUMeter.h" />
     <ClInclude Include="BarVisualizerBase.h" />
     <ClInclude Include="VectorData.h" />
     <ClInclude Include="ScalarValuesIterator.h" />
@@ -68,6 +69,9 @@
     <ClInclude Include="SampleBuffer.h" />
     <ClInclude Include="AudioViewDataBuffer.h" />
     <ClInclude Include="AudioViewData.h" />
+    <ClInclude Include="TiledViewManager.h" />
+    <ClInclude Include="AnalogVUMeter.h" />
+    <ClInclude Include="BinaryScaleManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ScalarData.idl" />
@@ -93,6 +97,8 @@
     <Midl Include="AudioSourceReader.idl" />
     <Midl Include="AudioViewDataBuffer.idl" />
     <Midl Include="AudioViewData.idl" />
+    <Midl Include="TiledViewManager.idl" />
+    <Midl Include="ScaleManager.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

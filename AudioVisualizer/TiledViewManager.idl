@@ -1,0 +1,32 @@
+namespace AudioVisualizer
+{
+	struct TileIndex {
+		Int32 X;
+		Int32 Y;
+	};
+
+	struct TileIndexRange {
+		TileIndex From;
+		TileIndex To;
+	};
+
+	struct ContentUnit {
+		Double X;
+		Double Y;
+	};
+
+	[default_interface]
+	runtimeclass TiledViewManager {
+		Windows.Foundation.Numerics.Vector2 ViewportSize;
+		Windows.Foundation.Numerics.Vector2 ViewportOffset;
+		Double Zoom;
+		Double Resolution;
+		ContentUnit ContentOffset;
+		ContentUnit ContentSize;
+
+		TiledViewManager();
+		Windows.Foundation.Numerics.Vector2 ContentToView(ContentUnit value);
+		ContentUnit ViewToContent(Windows.Foundation.Numerics.Vector2 value);
+	}
+
+}

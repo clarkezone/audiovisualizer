@@ -3,8 +3,6 @@ import "VisualizationDataFrame.idl";
 
 namespace AudioVisualizer
 {
-	interface IVisualizationSource;
-
 	interface IVisualizationSource
 	{
 		VisualizationDataFrame GetData();
