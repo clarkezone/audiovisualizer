@@ -24,7 +24,7 @@ namespace winrt::AudioVisualizer::implementation
 		_exponentBias = offset + 1023;
 		_step = step;
 	}
-    AudioVisualizer::ScaleRange BinaryScaleManager::GetRange(double value)
+    AudioVisualizer::ContentScaleRange BinaryScaleManager::GetRange(double value)
     {
 		uint64_t bits = double_as_uint64(value);
 		uint64_t sign = 0x8000000000000000 & bits;
@@ -36,7 +36,7 @@ namespace winrt::AudioVisualizer::implementation
 		}
 		uint64_t from = sign | (exponent << 52);
 		uint64_t to = sign | ((exponent + _step) << 52);
-		return AudioVisualizer::ScaleRange
+		return AudioVisualizer::ContentScaleRange
 		{
 			uint64_as_double(from),
 			uint64_as_double(to),

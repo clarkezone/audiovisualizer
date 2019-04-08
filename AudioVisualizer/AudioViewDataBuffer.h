@@ -1,5 +1,5 @@
 ﻿#pragma once
-
+#include <winrt/Windows.Foundation.h>
 #include "AudioViewDataBuffer.g.h"
 
 namespace winrt::AudioVisualizer::implementation

@@ -12,7 +12,7 @@ namespace winrt::AudioVisualizer::implementation
 	public:
         BinaryScaleManager();
 		BinaryScaleManager(uint32_t offset, uint32_t step);
-		AudioVisualizer::ScaleRange GetRange(double value);
+		AudioVisualizer::ContentScaleRange GetRange(double value);
     };
 }
 

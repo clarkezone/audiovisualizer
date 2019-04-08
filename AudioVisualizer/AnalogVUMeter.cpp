@@ -7,6 +7,7 @@
 #include <winrt/Microsoft.Graphics.Canvas.Geometry.h>
 #include <winrt/Microsoft.Graphics.Canvas.UI.Composition.h>
 #include <winrt/Windows.Foundation.Numerics.h>
+#include <winrt/Windows.Foundation.Collections.h>
 
 namespace winrt::AudioVisualizer::implementation
 {

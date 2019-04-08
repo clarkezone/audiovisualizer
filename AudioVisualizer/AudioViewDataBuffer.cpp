@@ -1,4 +1,7 @@
 ﻿#include "pch.h"
+#include <winrt/coroutine.h>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
 #include "AudioViewDataBuffer.h"
 #include "AudioViewData.h"
 #include "SampleBuffer.h"
@@ -6,6 +9,7 @@
 #include <windows.storage.h>
 #include <windows.storage.Streams.h>
 #include <AudioSourceReader.h>
+
 
 using namespace winrt::Windows::Media;
 

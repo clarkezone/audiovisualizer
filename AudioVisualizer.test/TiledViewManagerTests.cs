@@ -24,13 +24,13 @@ namespace AudioVisualizer.test
         [TestCategory("TiledViewManager")]
         public void TiledViewManager_IsDefault_ContentOffsetZero()
         {
-            Assert.AreEqual(new ContentUnit() { X = 0, Y = 0 } , sut.ContentOffset);
+            Assert.AreEqual(0.0, sut.ContentOffset);
         }
         [TestMethod()]
         [TestCategory("TiledViewManager")]
         public void TiledViewManager_IsDefault_ContentSizeZero()
         {
-            Assert.AreEqual(new ContentUnit() { X = 0, Y = 0 }, sut.ContentSize);
+            Assert.AreEqual(0.0, sut.ContentSize);
         }
         [TestMethod()]
         [TestCategory("TiledViewManager")]
@@ -50,29 +50,29 @@ namespace AudioVisualizer.test
         [TestCategory("TiledViewManager")]
         public void TiledViewManager_IsDefault_ViewportOffsetZero()
         {
-            Assert.AreEqual(new Vector2(0,0), sut.ViewportOffset);
+            Assert.AreEqual(0.0f, sut.ViewportOffset);
         }
 
         [TestMethod()]
         [TestCategory("TiledViewManager")]
         public void TiledViewManager_IsDefault_ViewportSizeZero()
         {
-            Assert.AreEqual(new Vector2(0, 0), sut.ViewportSize);
+            Assert.AreEqual(0.0f, sut.ViewportSize);
         }
 
         [TestMethod()]
         [TestCategory("TiledViewManager")]
         public void TiledViewManager_Set_ContentOffset()
         {
-            sut.ContentOffset = new ContentUnit() { X = 1, Y = 2 };
-            Assert.AreEqual(new ContentUnit() { X = 1, Y = 2 }, sut.ContentOffset);
+            sut.ContentOffset = 1;
+            Assert.AreEqual(1, sut.ContentOffset);
         }
         [TestMethod()]
         [TestCategory("TiledViewManager")]
         public void TiledViewManager_Set_ContentSize()
         {
-            sut.ContentSize = new ContentUnit() { X = 1, Y = 2 };
-            Assert.AreEqual(new ContentUnit() { X = 1, Y = 2 }, sut.ContentSize);
+            sut.ContentSize = 2;
+            Assert.AreEqual(2, sut.ContentSize);
         }
         [TestMethod()]
         [TestCategory("TiledViewManager")]
@@ -94,16 +94,16 @@ namespace AudioVisualizer.test
         [TestCategory("TiledViewManager")]
         public void TiledViewManager_Set_ViewportOffset()
         {
-            sut.ViewportOffset = new Vector2(1, 2);
-            Assert.AreEqual(new Vector2(1, 2), sut.ViewportOffset);
+            sut.ViewportOffset = 2;
+            Assert.AreEqual(2, sut.ViewportOffset);
         }
 
         [TestMethod()]
         [TestCategory("TiledViewManager")]
         public void TiledViewManager_Set_ViewportSizeZero()
         {
-            sut.ViewportSize = new Vector2(1, 2);
-            Assert.AreEqual(new Vector2(1, 2), sut.ViewportSize);
+            sut.ViewportSize = 1;
+            Assert.AreEqual(1, sut.ViewportSize);
         }
         [TestMethod()]
         [TestCategory("TiledViewManager")]
@@ -125,50 +125,33 @@ namespace AudioVisualizer.test
         }
         [TestMethod()]
         [TestCategory("TiledViewManager")]
-        public void TiledViewManager_Set_ContentSizeNegativeX_Throws()
+        public void TiledViewManager_Set_ContentSizeNegativeValue_Throws()
         {
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                sut.ContentSize = new ContentUnit() { X = -1, Y = 0 };
-            });
-        }
-        [TestMethod()]
-        [TestCategory("TiledViewManager")]
-        public void TiledViewManager_Set_ContentSizeNegativeY_Throws()
-        {
-            Assert.ThrowsException<ArgumentException>(() =>
-            {
-                sut.ContentSize = new ContentUnit() { X = 0, Y = -1 };
+                sut.ContentSize = -1;
             });
         }
 
-        [TestMethod()]
-        [TestCategory("TiledViewManager")]
-        public void TiledViewManager_Set_ViewportSizeNegativeX_Throws()
-        {
-            Assert.ThrowsException<ArgumentException>(() =>
-            {
-                sut.ViewportSize = new Vector2(-1, 0);
-            });
-        }
 
         [TestMethod()]
         [TestCategory("TiledViewManager")]
-        public void TiledViewManager_Set_ViewportSizeNegativeY_Throws()
+        public void TiledViewManager_Set_ViewportSizeNegativeValue_Throws()
         {
             Assert.ThrowsException<ArgumentException>(() =>
             {
-                sut.ViewportSize = new Vector2(0, -1);
+                sut.ViewportSize = -1;
             });
         }
+
 
         [TestMethod()]
         [TestCategory("TiledViewManager")]
         public void TiledViewManager_Resolution_ViewToContentUnits()
         {
             sut.Resolution = 2;
-            var converted = sut.ViewToContent(new Vector2(20, -40));
-            Assert.AreEqual(new ContentUnit() { X = 10, Y = -20 },converted);
+            var converted = sut.ViewToContent(-40);
+            Assert.AreEqual(-20,converted);
         }
 
         [TestMethod()]
@@ -176,16 +159,16 @@ namespace AudioVisualizer.test
         public void TiledViewManager_Resolution_ContentToViewUnits()
         {
             sut.Resolution = 2;
-            var converted = sut.ContentToView(new ContentUnit() { X = 10, Y = -20 });
-            Assert.AreEqual(new Vector2(20, -40), converted);
+            var converted = sut.ContentToView(10);
+            Assert.AreEqual(20, converted);
         }
         [TestMethod()]
         [TestCategory("TiledViewManager")]
         public void TiledViewManager_Zoom_ViewToContentUnits()
         {
             sut.Zoom = 2;
-            var converted = sut.ViewToContent(new Vector2(20, -40));
-            Assert.AreEqual(new ContentUnit() { X = 10, Y = -20 }, converted);
+            var converted = sut.ViewToContent(-40);
+            Assert.AreEqual(-20, converted);
         }
 
         [TestMethod()]
@@ -193,8 +176,16 @@ namespace AudioVisualizer.test
         public void TiledViewManager_Zoom_ContentToViewUnits()
         {
             sut.Zoom = 2.0;
-            var converted = sut.ContentToView(new ContentUnit() { X = 10, Y = -20 });
-            Assert.AreEqual(new Vector2(20, -40), converted);
+            var converted = sut.ContentToView(10);
+            Assert.AreEqual(20, converted);
         }
+
+        [TestMethod()]
+        [TestCategory("TiledViewManager")]
+        public void TiledViewManager_Set_ViewportSize()
+        {
+            sut.ViewportSize = 1920;
+        }
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "VisualizationDataFrame.h"
+#include <winrt/Windows.Foundation.Collections.h>
 
 namespace winrt::AudioVisualizer::implementation
 {

@@ -2,6 +2,7 @@
 #include "util.h"
 #include <winrt/Windows.UI.Composition.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
+#include <winrt/Windows.Foundation.Collections.h>
 
 util::performance_frequency util::stopwatch::_frequency;
 

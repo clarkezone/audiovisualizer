@@ -98,7 +98,7 @@
     <Midl Include="AudioViewDataBuffer.idl" />
     <Midl Include="AudioViewData.idl" />
     <Midl Include="TiledViewManager.idl" />
-    <Midl Include="ScaleManager.idl" />
+    <Midl Include="ContentScaleManager.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />

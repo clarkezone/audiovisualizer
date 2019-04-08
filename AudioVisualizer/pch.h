@@ -11,7 +11,8 @@
 #endif
 
 #include <Unknwn.h>
-#include "winrt/Windows.Foundation.h"
+#include <winrt/base.h>
+#include <winrt/Windows.Foundation.h>
 #include <mfapi.h>
 #include <mftransform.h>
 #include <mfidl.h>

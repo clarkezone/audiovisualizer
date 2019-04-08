@@ -88,7 +88,6 @@ namespace AudioVisualizer.test
 
 
         /* Functional test of reader. All of the file is read to the end in different formats and reader and frame states and properties validated */
-        [TestMethod]
         [TestCategory("MediaSourceReader")]
         [DataTestMethod]
         [DataRow(44100u, 2u, 16u)]
@@ -98,8 +97,8 @@ namespace AudioVisualizer.test
         [DataRow(48000u, 2u, 16u)]
         [DataRow(48000u, 1u, 16u)]
         [DataRow(48000u, 2u, 32u)]
-        [DataRow(48000u, 1u, 32u)]
-        public void MediaSourceReader_Read(UInt32 sampleRate, UInt32 channels, UInt32 bitsPerSample)
+        /*[DataRow(48000u, 1u, 32u)]*/
+        public void MediaSourceReader_Read(uint sampleRate, uint channels, uint bitsPerSample)
         {
             var bytesPerSample = bitsPerSample >> 3;
             var format = AudioEncodingProperties.CreatePcm(sampleRate, channels, bitsPerSample);

@@ -99,9 +99,6 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <SDKReference Include="TestPlatform.Universal, Version=15.5" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="AudioAnalyzerTests.cs" />
     <Compile Include="AnalogVUMeterTests.cs" />
     <Compile Include="AudioViewDataTests.cs" />
@@ -159,7 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.1.9</Version>
+      <Version>6.2.8</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
       <Version>1.4.0</Version>
@@ -176,6 +173,11 @@
       <Project>{da1a2266-1149-4a19-8a3a-3f1ca7717a6f}</Project>
       <Name>AudioVisualizer</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="TestPlatform.Universal, Version=16.0">
+      <Name>Microsoft Visual Studio Test Core</Name>
+    </SDKReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

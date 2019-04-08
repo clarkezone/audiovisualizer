@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "PlaybackSource.h"
 #include "Tracing.h"
+#include <winrt/Windows.Foundation.Collections.h>
 
 
 namespace winrt::AudioVisualizer::implementation

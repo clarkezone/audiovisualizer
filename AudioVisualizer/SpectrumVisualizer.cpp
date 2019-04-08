@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "SpectrumVisualizer.h"
 #include <winrt/Microsoft.Graphics.Canvas.Text.h>
+#include <winrt/Windows.Foundation.Collections.h>
 
 using namespace winrt::Windows::UI::Xaml::Controls;
 using namespace winrt::Windows::UI::Xaml;

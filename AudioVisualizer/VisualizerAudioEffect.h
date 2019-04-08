@@ -1,5 +1,7 @@
 ﻿#pragma once
-
+#include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.Media.Effects.h>
+#include <winrt/Windows.Media.MediaProperties.h>
 #include "VisualizerAudioEffect.g.h"
 #include "AudioAnalyzer.h"
 

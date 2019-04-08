@@ -1,39 +1,54 @@
 ﻿#include "pch.h"
 #include "TiledViewManager.h"
+#include "BinaryScaleManager.h"
+#include "BinaryScaleManager.h"
+
+using namespace winrt::Windows::Foundation::Numerics;
 
 namespace winrt::AudioVisualizer::implementation
 {
+
 	TiledViewManager::TiledViewManager() {
-		_viewportSize = { 0,0 };
-		_viewportOffset = { 0,0 };
+		_viewportSize = 0;
+		_viewportOffset = 0;
 		_zoom = 1.0;
 		_resolution = 1.0;
 		_conversionFactor = 1.0;
-		_contentOffset = { 0,0 };
-		_contentSize = { 0,0 };
+		_contentOffset = 0;
+		_contentSize = 0;
+		_tileSizeLimit = 256;
+		_offscreenTiles = 0;
+		_scaleManager = AudioVisualizer::BinaryScaleManager();
+
 	}
 
-    Windows::Foundation::Numerics::float2 TiledViewManager::ViewportSize()
+    float TiledViewManager::ViewportSize()
     {
 		return _viewportSize;
     }
 
-    void TiledViewManager::ViewportSize(Windows::Foundation::Numerics::float2 const& value)
+    void TiledViewManager::ViewportSize(float value)
     {
-		if (value.x < 0 || value.y < 0) {
+		if (value < 0 ) {
 			throw hresult_invalid_argument();
 		}
-		_viewportSize = value;
+		if (_viewportSize != value) {
+			_viewportSize = value;
+			updateTiles();
+		}
     }
 
-    Windows::Foundation::Numerics::float2 TiledViewManager::ViewportOffset()
+    float TiledViewManager::ViewportOffset()
     {
 		return _viewportOffset;
     }
 
-    void TiledViewManager::ViewportOffset(Windows::Foundation::Numerics::float2 const& value)
+    void TiledViewManager::ViewportOffset(float value)
     {
-		_viewportOffset = value;
+		if (_viewportOffset != value) {
+			_viewportOffset = value;
+			updateTiles();
+		}
     }
 
     double TiledViewManager::Zoom()
@@ -46,8 +61,10 @@ namespace winrt::AudioVisualizer::implementation
 		if (value <= 0.0) {
 			throw hresult_invalid_argument();
 		}
-		_zoom = value;
-		_conversionFactor = _zoom * _resolution;
+		if (_zoom != value) {
+			_zoom = value;
+			_conversionFactor = _zoom * _resolution;
+		}
     }
 
     double TiledViewManager::Resolution()
@@ -60,42 +77,117 @@ namespace winrt::AudioVisualizer::implementation
 		if (value <= 0.0) {
 			throw hresult_invalid_argument();
 		}
-		_resolution = value;
-		_conversionFactor = _zoom * _resolution;
+		if (_resolution != value) {
+			_resolution = value;
+			_conversionFactor = _zoom * _resolution;
+		}
     }
 
-    AudioVisualizer::ContentUnit TiledViewManager::ContentOffset()
+    double TiledViewManager::ContentOffset()
     {
 		return _contentOffset;
     }
 
-    void TiledViewManager::ContentOffset(AudioVisualizer::ContentUnit const& value)
+    void TiledViewManager::ContentOffset(double value)
     {
-		_contentOffset = value;
+		if (_contentOffset != value) {
+			_contentOffset = value;
+		}
     }
 
-    AudioVisualizer::ContentUnit TiledViewManager::ContentSize()
+    double TiledViewManager::ContentSize()
     {
 		return _contentSize;
     }
 
-    void TiledViewManager::ContentSize(AudioVisualizer::ContentUnit const& value)
+    void TiledViewManager::ContentSize(double value)
     {
-		if (value.X < 0 || value.Y < 0) {
+		if (value < 0) {
 			throw hresult_invalid_argument();
 		}
 		_contentSize = value;
     }
 
-    Windows::Foundation::Numerics::float2 TiledViewManager::ContentToView(AudioVisualizer::ContentUnit const& value)
+	float TiledViewManager::TileSizeLimit()
+	{
+		return _tileSizeLimit;
+	}
+
+	void TiledViewManager::TileSizeLimit(float value)
+	{
+		_tileSizeLimit = value;
+		updateTiles();
+	}
+
+	AudioVisualizer::TileIndexRange TiledViewManager::TileRange()
+	{
+		return _tileRange;
+	}
+	AudioVisualizer::ContentScaleRange TiledViewManager::ScaleRange()
+	{
+		return AudioVisualizer::ContentScaleRange();
+	}
+	double TiledViewManager::Scale()
+	{
+		return 0.0;
+	}
+	void TiledViewManager::TileRange(AudioVisualizer::TileIndexRange const & tileRange)
+	{
+		if (tileRange != _tileRange) {
+			_tileRange = tileRange;
+			_rangeChanged(*this, *this);
+		}
+	}
+
+	void TiledViewManager::ContentScale(ContentScaleRange const & range)
+	{
+	}
+
+    float TiledViewManager::ContentToView(double value)
     {
-		Windows::Foundation::Numerics::float2 valueInViewUnits = { float(value.X * _conversionFactor), float(value.Y * _conversionFactor) };
-		return valueInViewUnits;
+		return float(value * _conversionFactor);
     }
 
-    AudioVisualizer::ContentUnit TiledViewManager::ViewToContent(Windows::Foundation::Numerics::float2 const& value)
+    double TiledViewManager::ViewToContent(float value)
     {
-		ContentUnit valueInContentUnits = { double(value.x) / _conversionFactor, double(value.y) / _conversionFactor };
-		return valueInContentUnits;
+		return double(value) / _conversionFactor;
     }
+
+	winrt::event_token TiledViewManager::RangeChanged(Windows::Foundation::EventHandler<IInspectable> const & handler)
+	{
+		return _rangeChanged.add(handler);
+	}
+
+	void TiledViewManager::RangeChanged(winrt::event_token const & token) noexcept
+	{
+		_rangeChanged.remove(token);
+	}
+
+	winrt::event_token TiledViewManager::ScaleChanged(Windows::Foundation::EventHandler<IInspectable> const & handler)
+	{
+		return _scaleChanged.add(handler);
+	}
+
+	void TiledViewManager::ScaleChanged(winrt::event_token const & token) noexcept
+	{
+		_scaleChanged.remove(token);
+	}
+
+	void TiledViewManager::updateTiles()
+	{
+		auto maximumTiles = ceil(ContentToView(ContentSize()) / _tileSizeLimit);
+
+		TileIndexRange newRange{
+			(int32_t)std::clamp<float>(floor(ViewportOffset() / _tileSizeLimit) - (float)_offscreenTiles, 0, maximumTiles),
+			(int32_t)std::clamp<float>(ceil((ViewportOffset() + ViewportSize()) / _tileSizeLimit) + (float)_offscreenTiles, 0, maximumTiles)
+		};
+
+		TileRange(newRange);
+	}
+
+	void TiledViewManager::updateScale()
+	{
+
+	}
+
 }

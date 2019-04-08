@@ -1,32 +1,35 @@
+import "contentscalemanager.idl";
+
 namespace AudioVisualizer
 {
-	struct TileIndex {
-		Int32 X;
-		Int32 Y;
-	};
-
 	struct TileIndexRange {
-		TileIndex From;
-		TileIndex To;
+		Int32 From;
+		Int32 To;
 	};
 
-	struct ContentUnit {
-		Double X;
-		Double Y;
+	enum TileSizeLimitType {
+		MinimumSize = 0,
+		MaximumSize = 1
 	};
 
 	[default_interface]
-	runtimeclass TiledViewManager {
-		Windows.Foundation.Numerics.Vector2 ViewportSize;
-		Windows.Foundation.Numerics.Vector2 ViewportOffset;
+	runtimeclass TiledViewManager  {
+		Single ViewportSize;
+		Single ViewportOffset;
 		Double Zoom;
 		Double Resolution;
-		ContentUnit ContentOffset;
-		ContentUnit ContentSize;
-
+		Double ContentOffset;
+		Double ContentSize;
+		Single TileSizeLimit;
+		TileIndexRange TileRange{ get; };
+		ContentScaleRange ScaleRange{ get; };
+		Double Scale{ get; };
 		TiledViewManager();
-		Windows.Foundation.Numerics.Vector2 ContentToView(ContentUnit value);
-		ContentUnit ViewToContent(Windows.Foundation.Numerics.Vector2 value);
+		Single ContentToView(Double value);
+		Double ViewToContent(Single value);
+
+		event Windows.Foundation.EventHandler<IInspectable> RangeChanged;
+		event Windows.Foundation.EventHandler<IInspectable> ScaleChanged;
 	}
 
 }
