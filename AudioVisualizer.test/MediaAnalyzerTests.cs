@@ -100,11 +100,7 @@ namespace AudioVisualizer.test
         [TestCategory("MediaAnalyzer")]
         public void MediaAnalyzer_Mft_GetOutputStreamInfo_Stream_1_Throws()
         {
-#if DEBUG
             Assert.ThrowsException<COMException>(() =>
-#else
-            Assert.ThrowsException<Exception>(() =>
-#endif
             {
                 _mft.GetOutputStreamInfo(1);
             });
