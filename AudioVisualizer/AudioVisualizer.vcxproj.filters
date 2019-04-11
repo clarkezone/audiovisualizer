@@ -35,7 +35,6 @@
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VectorData.cpp" />
     <ClCompile Include="AudioSourceReader.cpp" />
-    <ClCompile Include="AudioViewDataBuffer.cpp" />
     <ClCompile Include="AudioViewData.cpp" />
     <ClCompile Include="TiledViewManager.cpp" />
     <ClCompile Include="AnalogVUMeter.cpp" />
@@ -67,7 +66,6 @@
     <ClInclude Include="ScalarValuesIterator.h" />
     <ClInclude Include="AudioSourceReader.h" />
     <ClInclude Include="SampleBuffer.h" />
-    <ClInclude Include="AudioViewDataBuffer.h" />
     <ClInclude Include="AudioViewData.h" />
     <ClInclude Include="TiledViewManager.h" />
     <ClInclude Include="AnalogVUMeter.h" />
@@ -95,7 +93,6 @@
     <Midl Include="BarVisualizer.idl" />
     <Midl Include="VectorData.idl" />
     <Midl Include="AudioSourceReader.idl" />
-    <Midl Include="AudioViewDataBuffer.idl" />
     <Midl Include="AudioViewData.idl" />
     <Midl Include="TiledViewManager.idl" />
     <Midl Include="ContentScaleManager.idl" />

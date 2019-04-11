@@ -1,21 +1,34 @@
 ﻿#pragma once
 
 #include "AudioViewData.g.h"
+#include <vector>
+#include <winrt/Windows.Foundation.Collections.h>
 
 namespace winrt::AudioVisualizer::implementation
 {
-    struct AudioViewData : AudioViewDataT<AudioViewData>, winrt::vector_view_base<AudioViewData,float>
+    struct AudioViewData : AudioViewDataT<AudioViewData>
     {
-		uint32_t _scale;
-		std::vector<float> _data;
+		DirectX::XMVECTOR downsampleInput;
+		DirectX::XMVECTOR downsampleSumOfSquares;
+		uint32_t downsampleInputCounter;
+		uint32_t downsampleCounter;
+		uint32_t downsampleVectorCount;
+		uint32_t downsampleFactor;
 
-        AudioViewData(uint32_t scale,uint32_t reserveCapacity);
+		std::vector<std::vector<float>> data;
+		std::vector<float> levelSumsOfSquares;
+		std::vector<uint32_t> levelSumCounters;
 
-		auto& get_container() const noexcept
-		{
-			return _data;
-		}
+		void AddSquare(float value, uint32_t level);
 
-        uint32_t Scale();
+		AudioViewData(uint32_t reserveCapacity, uint32_t detailLevels, uint32_t downsample);
+		void Add(Windows::Foundation::Collections::IIterable<float> const& data);
     };
+}
+
+namespace winrt::AudioVisualizer::factory_implementation
+{
+	struct AudioViewData : AudioViewDataT<AudioViewData, implementation::AudioViewData>
+	{
+	};
 }

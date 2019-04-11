@@ -9,6 +9,7 @@
 #include "VisualizationDataFrame.h"
 #include "util.h"
 #include "tracing.h"
+#include <winrt/Windows.Media.h>
 
 using namespace DirectX;
 using namespace XDSP;

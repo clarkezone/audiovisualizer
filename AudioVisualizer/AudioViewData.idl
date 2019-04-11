@@ -1,9 +1,10 @@
 
 namespace AudioVisualizer
 {
-	runtimeclass AudioViewData : Windows.Foundation.Collections.IVectorView<Single>,Windows.Foundation.Collections.IIterable<Single>
+	[default_interface]
+	runtimeclass AudioViewData
 	{
-		UInt32 Scale { get; };
-
+		AudioViewData(UInt32 reserveCapacity,UInt32 detailLevels,UInt32 downsample);
+		void Add(Windows.Foundation.Collections.IIterable<Single> data);
 	};
 }
