@@ -69,4 +69,57 @@ namespace winrt::AudioVisualizer::implementation
 			iterator.MoveNext();
 		}
 	}
+
+	Windows::Foundation::Collections::IIterator<Windows::Foundation::Collections::IVectorView<float>> AudioViewData::First()
+	{
+		return winrt::make<AudioViewDataEnumerator>(this);
+	}
+
+	Windows::Foundation::Collections::IVectorView<float> AudioViewData::GetAt(uint32_t index)
+	{
+		if (index >= data.size())
+			throw hresult_invalid_argument();
+
+		return AudioViewDataLevel(this, index);
+	}
+
+	uint32_t AudioViewData::Size()
+	{
+		return data.size();
+	}
+
+	bool AudioViewData::IndexOf(Windows::Foundation::Collections::IVectorView<float> const& value, uint32_t& index)
+	{
+		throw hresult_not_implemented();
+	}
+	uint32_t AudioViewData::GetMany(uint32_t startIndex, array_view<Windows::Foundation::Collections::IVectorView<float>> items)
+	{
+		throw hresult_not_implemented();
+	}
+
+	Windows::Foundation::Collections::IIterator<float> AudioViewDataLevel::First()
+	{
+		return Windows::Foundation::Collections::IIterator<float>();
+	}
+
+	float AudioViewDataLevel::GetAt(uint32_t index)
+	{
+		return 0.0f;
+	}
+
+	uint32_t AudioViewDataLevel::Size()
+	{
+		return uint32_t();
+	}
+
+	bool AudioViewDataLevel::IndexOf(float const& value, uint32_t& index)
+	{
+		return false;
+	}
+
+	uint32_t AudioViewDataLevel::GetMany(uint32_t startIndex, array_view<float> items)
+	{
+		return uint32_t();
+	}
+
 }

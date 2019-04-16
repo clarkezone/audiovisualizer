@@ -2,7 +2,8 @@
 namespace AudioVisualizer
 {
 	[default_interface]
-	runtimeclass AudioViewData
+	/* Next line needs a space between double template argument closure (> >) as otherwise it is treated as swift operator*/
+	runtimeclass AudioViewData : Windows.Foundation.Collections.IVectorView<Windows.Foundation.Collections.IVectorView<Single> >, Windows.Foundation.Collections.IIterable<Windows.Foundation.Collections.IVectorView<Single> >
 	{
 		AudioViewData(UInt32 reserveCapacity,UInt32 detailLevels,UInt32 downsample);
 		void Add(Windows.Foundation.Collections.IIterable<Single> data);

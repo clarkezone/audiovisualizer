@@ -65,10 +65,38 @@ namespace AudioVisualizer.test
     {
         AudioViewData sut;
 
+        readonly uint expectedLevels = 3;
+
         [TestInitialize]
         public void Init()
         {
-            sut = new AudioViewData(4096, 3, 4);
+            sut = new AudioViewData(4096, expectedLevels, 4);
+        }
+        [TestMethod]
+        [TestCategory("AudioViewData")]
+        public void AudioViewData_IsIVectorView()
+        {
+            Assert.IsInstanceOfType(sut, typeof(IReadOnlyList<IReadOnlyList<float>>));
+        }
+
+        [TestMethod]
+        [TestCategory("AudioViewData")]
+        public void AudioViewData_IsIIterable()
+        {
+            Assert.IsInstanceOfType(sut, typeof(IEnumerable<IReadOnlyList<float>>));
+        }
+
+        [TestMethod]
+        [TestCategory("AudioViewData")]
+        public void AudioViewData_LevelCountMethod()
+        {
+            Assert.AreEqual(expectedLevels, (uint)sut.Count());
+        }
+        [TestMethod]
+        [TestCategory("AudioViewData")]
+        public void AudioViewData_LevelCountProperty()
+        {
+            Assert.AreEqual(expectedLevels, (uint)sut.Count);
         }
 
         [TestMethod]
