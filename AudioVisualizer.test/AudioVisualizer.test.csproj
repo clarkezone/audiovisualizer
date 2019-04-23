@@ -101,6 +101,7 @@
   <ItemGroup>
     <Compile Include="AudioAnalyzerTests.cs" />
     <Compile Include="AnalogVUMeterTests.cs" />
+    <Compile Include="AudioFrameReaderTests.cs" />
     <Compile Include="AudioViewDataTests.cs" />
     <Compile Include="BinaryScaleManagerTests.cs" />
     <Compile Include="FakeAudioNode.cs" />

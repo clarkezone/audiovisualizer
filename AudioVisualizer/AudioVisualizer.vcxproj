@@ -119,6 +119,7 @@
   <ItemGroup>
     <ClInclude Include="AnalogVUMeter.h" />
     <ClInclude Include="AudioAnalyzer.h" />
+    <ClInclude Include="AudioFrameReader.h" />
     <ClInclude Include="AudioViewData.h" />
     <ClInclude Include="BinaryScaleManager.h" />
     <ClInclude Include="SampleBuffer.h" />
@@ -153,6 +154,7 @@
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotSet</EnableEnhancedInstructionSet>
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
     </ClCompile>
+    <ClCompile Include="AudioFrameReader.cpp" />
     <ClCompile Include="AudioMath.cpp" />
     <ClCompile Include="AudioViewData.cpp" />
     <ClCompile Include="BinaryScaleManager.cpp" />
@@ -184,6 +186,7 @@
   <ItemGroup>
     <Midl Include="AnalogVUMeter.idl" />
     <Midl Include="AudioAnalyzer.idl" />
+    <Midl Include="AudioFrameReader.idl" />
     <Midl Include="AudioViewData.idl" />
     <Midl Include="BarVisualizer.idl" />
     <Midl Include="CreateResourcesEventArgs.idl" />

@@ -1,16 +1,45 @@
 ﻿#include "pch.h"
 #include "AudioViewData.h"
+#include "AudioSourceReader.h"
 #include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/coroutine.h>
+#include <robuffer.h>
 
 namespace winrt::AudioVisualizer::implementation
 {
+	AudioViewData::AudioViewData(uint32_t reserveCapacity, uint32_t detailLevels, uint32_t downsample) {
+		if (downsample < 1) {
+			throw winrt::hresult_invalid_argument();
+		}
+		if (detailLevels < 1 || detailLevels >= 16 || (reserveCapacity != 0 && reserveCapacity >> (detailLevels * 2) == 0))
+		{
+			throw winrt::hresult_invalid_argument();
+		}
+		downsampleInput = DirectX::g_XMZero;
+		downsampleSumOfSquares = DirectX::g_XMZero;
+		downsampleCounter = 0;
+		downsampleFactor = downsample;
+
+		uint32_t levelRequiredCapacity = reserveCapacity / downsample;
+
+		levelSumsOfSquares.resize(detailLevels);
+		levelSumCounters.resize(detailLevels);
+
+		for (size_t levelIndex = 0; levelIndex < detailLevels; levelIndex++,levelRequiredCapacity << 2)
+		{
+			levels.push_back(make<LevelData>(levelRequiredCapacity));
+		}
+
+	}
+
 	void AudioViewData::AddSquare(float value, uint32_t level)
 	{
-		data[level].push_back(sqrtf(value) );
+		auto levelData = winrt::get_self<LevelData>(levels[level]);
+		levelData->values.push_back(sqrtf(value));
 
 		auto nextLevel = level + 1;
-		if (nextLevel + 1 < data.size()) {
-			
+		if (nextLevel + 1 < levels.size()) {
+
 			levelSumsOfSquares[nextLevel] += value;
 			levelSumCounters[nextLevel]++;
 			if (levelSumCounters[nextLevel] >= 4) {
@@ -20,106 +49,76 @@ namespace winrt::AudioVisualizer::implementation
 			}
 		}
 	}
-
-	AudioViewData::AudioViewData(uint32_t reserveCapacity, uint32_t detailLevels, uint32_t downsample) {
-		if ((downsample & 3) != 0 || downsample < 4) {
-			throw winrt::hresult_invalid_argument();
-		}
-		if (detailLevels < 1 || detailLevels >= 16 || reserveCapacity >> (detailLevels * 2) == 0)
-		{
-			throw winrt::hresult_invalid_argument();
-		}
-		downsampleInput = DirectX::g_XMZero;
-		downsampleSumOfSquares = DirectX::g_XMZero;
-		downsampleInputCounter = 0;
-		downsampleCounter = 0;
-		downsampleFactor = downsample;
-		downsampleVectorCount = downsample >> 2;
-
-		uint32_t levelRequiredCapacity = reserveCapacity / downsample;
-
-		data.resize(detailLevels);
-		levelSumsOfSquares.resize(detailLevels);
-		levelSumCounters.resize(detailLevels);
-
-		for (size_t levelIndex = 0; levelIndex < detailLevels; levelIndex++,levelRequiredCapacity << 2)
-		{
-			data[levelIndex].reserve(levelRequiredCapacity);
-		}
-
-	}
 	void AudioViewData::Add(Windows::Foundation::Collections::IIterable<float> const& samples)
 	{
-		using namespace DirectX;
-
 		auto iterator = samples.First();
 		while (iterator.HasCurrent()) {
-			downsampleInput = DirectX::XMVectorSetByIndex(downsampleInput, iterator.Current(), downsampleInputCounter++);
-			if (downsampleInputCounter >= 4) {
-				downsampleSumOfSquares += downsampleInput * downsampleInput;
-				downsampleInput = DirectX::g_XMZero;
-				downsampleInputCounter = 0;
-				downsampleCounter++;
-				if (downsampleCounter >= downsampleVectorCount) {
-					AddSquare(XMVectorGetX(XMVectorSum(downsampleSumOfSquares)) / float(downsampleFactor)  ,0);
-					downsampleCounter = 0;
-				}
-			}
-
+			Add(iterator.Current());
 			iterator.MoveNext();
 		}
 	}
-
-	Windows::Foundation::Collections::IIterator<Windows::Foundation::Collections::IVectorView<float>> AudioViewData::First()
+	void AudioViewData::Add(float value)
 	{
-		return winrt::make<AudioViewDataEnumerator>(this);
+		using namespace DirectX;
+		uint32_t vectorIndex = downsampleCounter & 3;
+		downsampleInput = DirectX::XMVectorSetByIndex(downsampleInput, value, vectorIndex);
+
+		// Calculate sum of squares every 4th element or in case this is the last element in the batch
+		if (vectorIndex == 3 || downsampleCounter + 1 == downsampleFactor) {
+			downsampleSumOfSquares += downsampleInput * downsampleInput;
+			downsampleInput = DirectX::g_XMZero;
+		}
+		downsampleCounter++;
+
+		if (downsampleCounter == downsampleFactor) {
+			AddSquare(XMVectorGetX(XMVectorSum(downsampleSumOfSquares)) / float(downsampleFactor), 0);
+			downsampleCounter = 0;
+			downsampleSumOfSquares = DirectX::g_XMZero;
+		}
 	}
-
-	Windows::Foundation::Collections::IVectorView<float> AudioViewData::GetAt(uint32_t index)
+	void AudioViewData::Add(Windows::Media::AudioFrame const& frame, array_view<const float> map)
 	{
-		if (index >= data.size())
+		using namespace DirectX;
+		if (map.size() < 1 || map.size() > 8)
 			throw hresult_invalid_argument();
 
-		return AudioViewDataLevel(this, index);
+		auto buffer = frame.LockBuffer(Windows::Media::AudioBufferAccessMode::Read);
+		auto bufferReference = buffer.CreateReference();
+		auto byteAccess = bufferReference.as<::Windows::Storage::Streams::IBufferByteAccess>();
+		float* pData = nullptr;
+		byteAccess->Buffer((byte **) &pData);
+
+		bufferReference.Close();
+		buffer.Close();
 	}
 
-	uint32_t AudioViewData::Size()
+	winrt::Windows::Foundation::IAsyncActionWithProgress<Windows::Foundation::TimeSpan> AudioViewData::LoadFromStreamAsync(winrt::Windows::Storage::Streams::IRandomAccessStream stream)
 	{
-		return data.size();
+
+		auto progress{ co_await winrt::get_progress_token() };
+
+		co_await winrt::resume_background();
+
+		auto reader = make<AudioSourceReader>(stream);
+
+		Windows::Media::AudioFrame frame{ nullptr };
+
+		uint32_t channelCount = reader.Format().as<Windows::Media::MediaProperties::AudioEncodingProperties>().ChannelCount();
+
+		do {
+			frame = reader.Read();
+			if (!frame)
+				break;
+
+			auto samples = AudioFrameReader::EnumerateAsMono(frame, channelCount);
+			Add(samples);
+
+			progress(frame.RelativeTime().Value() + frame.Duration().Value());
+
+		} while (frame != nullptr);
+		
+		co_return;
 	}
 
-	bool AudioViewData::IndexOf(Windows::Foundation::Collections::IVectorView<float> const& value, uint32_t& index)
-	{
-		throw hresult_not_implemented();
-	}
-	uint32_t AudioViewData::GetMany(uint32_t startIndex, array_view<Windows::Foundation::Collections::IVectorView<float>> items)
-	{
-		throw hresult_not_implemented();
-	}
-
-	Windows::Foundation::Collections::IIterator<float> AudioViewDataLevel::First()
-	{
-		return Windows::Foundation::Collections::IIterator<float>();
-	}
-
-	float AudioViewDataLevel::GetAt(uint32_t index)
-	{
-		return 0.0f;
-	}
-
-	uint32_t AudioViewDataLevel::Size()
-	{
-		return uint32_t();
-	}
-
-	bool AudioViewDataLevel::IndexOf(float const& value, uint32_t& index)
-	{
-		return false;
-	}
-
-	uint32_t AudioViewDataLevel::GetMany(uint32_t startIndex, array_view<float> items)
-	{
-		return uint32_t();
-	}
 
 }

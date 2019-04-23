@@ -1,0 +1,12 @@
+
+namespace AudioVisualizer
+{
+	[default_interface]
+	runtimeclass AudioFrameReader : Windows.Foundation.Collections.IIterable<Single>
+	{
+		UInt32 SampleCount { get; };
+		static AudioFrameReader EnumerateAllSamples(Windows.Media.AudioFrame frame);
+		static AudioFrameReader EnumerateSingleChannel(Windows.Media.AudioFrame frame, UInt32 inputChannelCount, UInt32 selectedChannel);
+		static AudioFrameReader EnumerateAsMono(Windows.Media.AudioFrame frame, UInt32 inputChannelCount);
+	}
+}

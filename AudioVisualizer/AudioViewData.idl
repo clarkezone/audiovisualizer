@@ -7,5 +7,8 @@ namespace AudioVisualizer
 	{
 		AudioViewData(UInt32 reserveCapacity,UInt32 detailLevels,UInt32 downsample);
 		void Add(Windows.Foundation.Collections.IIterable<Single> data);
+		void Add(Windows.Media.AudioFrame frame,Single [] map);
+		UInt32 Downsample{ get; };
+		Windows.Foundation.IAsyncActionWithProgress<Windows.Foundation.TimeSpan> LoadFromStreamAsync(Windows.Storage.Streams.IRandomAccessStream stream);
 	};
 }
