@@ -1,8 +1,9 @@
 ﻿#pragma once
 
 #include "AudioAnalyzer.g.h"
-#include <DirectXMath.h>
 #include "ring_buffer.h"
+#include "ScalarData.h"
+#include "SpectrumData.h"
 
 
 namespace winrt::AudioVisualizer::implementation

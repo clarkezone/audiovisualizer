@@ -21,6 +21,7 @@ namespace winrt::AudioVisualizer::implementation
 
         static AudioVisualizer::PlaybackSource CreateFromMediaPlayer(Windows::Media::Playback::MediaPlayer const& mediaPlayer);
 		static AudioVisualizer::PlaybackSource CreateFromAudioNode(Windows::Media::Audio::IAudioNode const&audioNode);
+		static winrt::Windows::Foundation::IAsyncOperation<AudioVisualizer::PlaybackSource> CreateForLoopback(Windows::Devices::Enumeration::DeviceInformation renderDevice);
     };
 }
 

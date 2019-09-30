@@ -1,12 +1,6 @@
 ﻿#include "pch.h"
 #include "AnalogVUMeter.h"
-#include <winrt/Windows.UI.Xaml.Hosting.h>
-#include <winrt/Windows.UI.Composition.h>
-#include <winrt/Microsoft.Graphics.Canvas.h>
-#include <winrt/Microsoft.Graphics.Canvas.Text.h>
-#include <winrt/Microsoft.Graphics.Canvas.Geometry.h>
-#include <winrt/Microsoft.Graphics.Canvas.UI.Composition.h>
-#include <winrt/Windows.Foundation.Numerics.h>
+
 
 namespace winrt::AudioVisualizer::implementation
 {

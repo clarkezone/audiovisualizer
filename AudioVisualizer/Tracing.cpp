@@ -8,6 +8,8 @@
 #ifdef _TRACE_
 
 using namespace winrt::Windows::Foundation::Diagnostics;
+using namespace winrt::Windows::Foundation;
+using namespace winrt::Windows::Media::MediaProperties;
 using namespace winrt;
 
 static LoggingChannel g_LogChannel{ nullptr };
@@ -410,10 +412,10 @@ void Trace::AddSampleFields(IMFSample * pSample, winrt::Windows::Foundation::Dia
 {
 	LONGLONG sampleTime = 0;
 	pSample->GetSampleTime(&sampleTime);
-	fields.AddTimeSpan(L"Time", Windows::Foundation::TimeSpan(sampleTime));
+	fields.AddTimeSpan(L"Time", TimeSpan(sampleTime));
 	LONGLONG sampleDuration = 0;
 	pSample->GetSampleDuration(&sampleDuration);
-	fields.AddTimeSpan(L"Duration", Windows::Foundation::TimeSpan(sampleDuration));
+	fields.AddTimeSpan(L"Duration", TimeSpan(sampleDuration));
 	DWORD totalLength = 0;
 	pSample->GetTotalLength(&totalLength);
 	fields.AddUInt32(L"ByteLength", totalLength);
@@ -423,7 +425,7 @@ void Trace::AddMediaTypeFields(IMFMediaType * pType, winrt::Windows::Foundation:
 {
 	com_ptr<ABI::Windows::Media::MediaProperties::IAudioEncodingProperties> abi_encoding;
 	check_hresult(MFCreatePropertiesFromMediaType(pType, __uuidof(ABI::Windows::Media::MediaProperties::IAudioEncodingProperties), abi_encoding.put_void()));
-	auto encoding = abi_encoding.as <Windows::Media::MediaProperties::AudioEncodingProperties>();
+	auto encoding = abi_encoding.as<AudioEncodingProperties>();
 	fields.AddString(L"Type", encoding.Subtype());
 	fields.AddUInt32(L"SampleRate", encoding.SampleRate());
 	fields.AddUInt32(L"ChannelCount", encoding.ChannelCount());
