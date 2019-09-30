@@ -10,6 +10,6 @@ namespace AudioVisualizer
 
 		static PlaybackSource CreateFromMediaPlayer(Windows.Media.Playback.MediaPlayer mediaPlayer);
 		static PlaybackSource CreateFromAudioNode(Windows.Media.Audio.IAudioNode node);
-		/*static Windows.Foundation.IAsyncOperation<PlaybackSource> CreateForLoopbackAsync(Windows.Devices.Enumeration.DeviceInformation renderDevice);*/
+		static Windows.Foundation.IAsyncOperation<PlaybackSource> CreateForLoopbackAsync(Windows.Devices.Enumeration.DeviceInformation renderDevice);
 	}
 }

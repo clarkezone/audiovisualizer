@@ -2,6 +2,7 @@
 
 #include "PlaybackSource.g.h"
 #include "VisualizerEffectDefinition.h"
+#include <Audioclient.h>
 
 namespace winrt::AudioVisualizer::implementation
 {
@@ -14,6 +15,7 @@ namespace winrt::AudioVisualizer::implementation
         PlaybackSource();
 		PlaybackSource(Windows::Media::Playback::MediaPlayer const& mediaPlayer);
 		PlaybackSource(Windows::Media::Audio::IAudioNode const&node);
+		PlaybackSource(winrt::com_ptr<::IAudioClient3>const & audioClient);
 
         AudioVisualizer::IVisualizationSource Source();
 		event_token SourceChanged(Windows::Foundation::TypedEventHandler<Windows::Foundation::IInspectable, AudioVisualizer::IVisualizationSource> const& handler);
@@ -21,7 +23,7 @@ namespace winrt::AudioVisualizer::implementation
 
         static AudioVisualizer::PlaybackSource CreateFromMediaPlayer(Windows::Media::Playback::MediaPlayer const& mediaPlayer);
 		static AudioVisualizer::PlaybackSource CreateFromAudioNode(Windows::Media::Audio::IAudioNode const&audioNode);
-		static winrt::Windows::Foundation::IAsyncOperation<AudioVisualizer::PlaybackSource> CreateForLoopback(Windows::Devices::Enumeration::DeviceInformation renderDevice);
+		static winrt::Windows::Foundation::IAsyncOperation<AudioVisualizer::PlaybackSource> CreateForLoopbackAsync(Windows::Devices::Enumeration::DeviceInformation renderDevice);
     };
 }
 

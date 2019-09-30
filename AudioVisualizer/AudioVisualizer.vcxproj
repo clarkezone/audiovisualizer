@@ -119,12 +119,15 @@
   <ItemGroup>
     <ClInclude Include="AnalogVUMeter.h" />
     <ClInclude Include="AudioAnalyzer.h" />
+    <ClInclude Include="AudioInterfaceActivator.h" />
     <ClInclude Include="AudioMath.h" />
     <ClInclude Include="BarVisualizerBase.h" />
     <ClInclude Include="CreateResourcesEventArgs.h" />
     <ClInclude Include="CustomVisualizer.h" />
     <ClInclude Include="DiscreteVUBar.h" />
     <ClInclude Include="AudioSourceReader.h" />
+    <ClInclude Include="LoopbackVisualizationSource.h" />
+    <ClInclude Include="mfengine.h" />
     <ClInclude Include="ring_buffer.h" />
     <ClInclude Include="ScalarValuesIterator.h" />
     <ClInclude Include="SpectrumVisualizer.h" />
@@ -149,12 +152,15 @@
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotSet</EnableEnhancedInstructionSet>
       <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
     </ClCompile>
+    <ClCompile Include="AudioInterfaceActivator.cpp" />
     <ClCompile Include="AudioMath.cpp" />
     <ClCompile Include="CreateResourcesEventArgs.cpp" />
     <ClCompile Include="CustomVisualizer.cpp" />
     <ClCompile Include="DiscreteVUBar.cpp" />
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="AudioSourceReader.cpp" />
+    <ClCompile Include="LoopbackVisualizationSource.cpp" />
+    <ClCompile Include="MFEngine.cpp" />
     <ClCompile Include="ring_buffer.cpp" />
     <ClCompile Include="SpectrumVisualizer.cpp" />
     <ClCompile Include="Tracing.cpp" />
@@ -181,6 +187,7 @@
     <Midl Include="CreateResourcesEventArgs.idl" />
     <Midl Include="CustomVisualizer.idl" />
     <Midl Include="DiscreteVUBar.idl" />
+    <Midl Include="LoopbackVisualizationSource.idl" />
     <Midl Include="MediaAnalyzer.idl" />
     <Midl Include="AudioSourceReader.idl" />
     <Midl Include="PlaybackSource.idl" />
