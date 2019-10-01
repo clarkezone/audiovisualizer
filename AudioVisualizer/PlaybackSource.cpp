@@ -62,9 +62,6 @@ namespace winrt::AudioVisualizer::implementation
 		node.EffectDefinitions().Append(effect);
 	}
 
-	PlaybackSource::PlaybackSource(winrt::com_ptr<::IAudioClient3> const& audioClient)
-	{
-	}
 
 	AudioVisualizer::PlaybackSource PlaybackSource::CreateFromMediaPlayer(Windows::Media::Playback::MediaPlayer const& mediaPlayer)
 	{
@@ -73,16 +70,5 @@ namespace winrt::AudioVisualizer::implementation
 	AudioVisualizer::PlaybackSource PlaybackSource::CreateFromAudioNode(Windows::Media::Audio::IAudioNode const & audioNode)
 	{
 		return make<PlaybackSource>(audioNode);
-	}
-	winrt::Windows::Foundation::IAsyncOperation<AudioVisualizer::PlaybackSource> PlaybackSource::CreateForLoopbackAsync(Windows::Devices::Enumeration::DeviceInformation renderDevice)
-	{
-		using namespace winrt::Windows::Media::Devices;
-		auto loopbackDeviceId = renderDevice ? 
-			renderDevice.Id() : 
-			MediaDevice::GetDefaultAudioRenderId(AudioDeviceRole::Default);
-		
-		auto audioClient = co_await AudioInterfaceActivator::ActivateAudioInterfaceAsync(loopbackDeviceId.c_str());
-
-		return make<PlaybackSource>(audioClient);
 	}
 }

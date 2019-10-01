@@ -6,8 +6,6 @@ namespace AudioVisualizer
 	[default_interface]
 	runtimeclass LoopbackVisualizationSource : IVisualizationSource, ISpectralAnalyzer
 	{
-		void Start();
-		void Stop();
 		static Windows.Foundation.IAsyncOperation<LoopbackVisualizationSource> CreateAsync();
 		static Windows.Foundation.IAsyncOperation<LoopbackVisualizationSource> CreateAsync(Windows.Devices.Enumeration.DeviceInformation renderDevice);
 	}

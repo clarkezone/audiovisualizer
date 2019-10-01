@@ -2,12 +2,11 @@
 #include "LoopbackVisualizationSource.g.h"
 #include <AudioClient.h>
 #include "mfengine.h"
+#include "AudioAnalyzer.h"
 
 namespace winrt::AudioVisualizer::implementation
 {
-
-
-    struct LoopbackVisualizationSource : LoopbackVisualizationSourceT<LoopbackVisualizationSource,IMFAsyncCallback>
+    struct LoopbackVisualizationSource : LoopbackVisualizationSourceT<LoopbackVisualizationSource,::IMFAsyncCallback>
     {
 		MFEngine __engine;	// Automatic MF engine init and shutdown
 		winrt::com_ptr<::IAudioClient3> _audioClient;
@@ -15,8 +14,19 @@ namespace winrt::AudioVisualizer::implementation
 		winrt::handle _callbackEvent;
 		DWORD _workQueueId{ 0 };
 		DWORD _workQueueTaskId{ 0 };
-		
-		LoopbackVisualizationSource(winrt::com_ptr<IAudioClient3> const& audioClient);
+		uint32_t _inputSampleRate{ 0 };
+		uint32_t _inputChannels{ 0 };
+		AudioVisualizer::AudioAnalyzer _analyzer{ nullptr };
+		bool _suspended { true };
+		MFWORKITEM_KEY _workItemKey{ 0 };
+		std::chrono::time_point<std::chrono::high_resolution_clock> _streamStartTime;
+
+		void InitWorkQueue();
+		void InitAnalyzer(uint32_t fftLength = 1024u, float overlap = 0.25f);
+		void ScheduleWorkItem();
+		void CancelWorkItem();
+
+		LoopbackVisualizationSource(winrt::com_ptr<::IAudioClient3> const& audioClient);
 
         static Windows::Foundation::IAsyncOperation<AudioVisualizer::LoopbackVisualizationSource> CreateAsync();
         static Windows::Foundation::IAsyncOperation<AudioVisualizer::LoopbackVisualizationSource> CreateAsync(Windows::Devices::Enumeration::DeviceInformation renderDevice);
