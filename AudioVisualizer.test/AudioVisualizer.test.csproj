@@ -109,6 +109,7 @@
     <Compile Include="FakeAudioNode.cs" />
     <Compile Include="CreateResourcesArgsTests.cs" />
     <Compile Include="CustomVisualizerTests.cs" />
+    <Compile Include="LoopbackVisualizationSourceTests.cs" />
     <Compile Include="MediaSourceReaderTests.cs" />
     <Compile Include="SpectrumVisualizerTests.cs" />
     <Compile Include="FakeVisualizationSource.cs" />

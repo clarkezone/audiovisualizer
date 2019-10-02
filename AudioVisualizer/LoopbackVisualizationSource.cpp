@@ -10,7 +10,8 @@ namespace winrt::AudioVisualizer::implementation
 	void LoopbackVisualizationSource::InitWorkQueue()
 	{
 		// Prepare work queue 
-		check_hresult(MFLockSharedWorkQueue(L"", 0, &_workQueueTaskId, &_workQueueId));
+		// Use regular priority queue
+		check_hresult(MFLockSharedWorkQueue(L"", 0, nullptr, &_workQueueId));
 		// Create async result that can be shared across wait operations as there is only one active at a time
 		check_hresult(MFCreateAsyncResult(nullptr, (IMFAsyncCallback*)(this), nullptr, _asyncResult.put()));
 		
