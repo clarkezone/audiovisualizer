@@ -1,0 +1,15 @@
+﻿<Page
+    x:Class="VisualizationPlayer.CustomDrawPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:VisualizationPlayer"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:a="using:AudioVisualizer"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <a:CustomVisualizer x:Name="spectrum" Source="{x:Bind SpectrumSource, Mode=OneWay}" CreateResources="spectrum_CreateResources" Draw="spectrum_Draw"></a:CustomVisualizer>
+    </Grid>
+</Page>

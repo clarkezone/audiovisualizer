@@ -43,6 +43,11 @@ namespace AudioVisualizer.test
             Assert.IsNotNull(sut.ActualFrequencyCount);
         }
         [TestMethod]
+        public void ActualFrequencyStepIsNotNull()
+        {
+            Assert.IsNotNull(sut.ActualFrequencyStep);
+        }
+        [TestMethod]
         public void ActualFrquencyScaleIsLinear()
         {
             Assert.AreEqual(ScaleType.Linear,sut.ActualFrequencyScale);
@@ -77,12 +82,42 @@ namespace AudioVisualizer.test
         }
 
         [TestMethod]
+        public void CanAddConfiguationChangedHandler()
+        {
+            sut.ConfigurationChanged += Source_ConfiguationChanged;
+        }
+
+        private void Source_ConfiguationChanged(IVisualizationSource sender, string args)
+        {
+
+        }
+
+        [TestMethod]
+        public void CanRemoveConfiguationChangedHandler()
+        {
+            sut.ConfigurationChanged += Source_ConfiguationChanged;
+            sut.ConfigurationChanged -= Source_ConfiguationChanged;
+        }
+
+
+        [TestMethod]
         public void DefaultPresentationTimeIsZero()
         {
             Assert.AreEqual(TimeSpan.Zero, sut.PresentationTime);
         }
+        [TestMethod]
+        public void SuspendedIsFalseAfterSet()
+        {
+            sut.IsSuspended = false;
+            Assert.IsFalse(sut.IsSuspended);
+        }
 
-
+        [TestMethod]
+        public void PlaybackStateIsPlayingAfterSettingSuspendedToFalse()
+        {
+            sut.IsSuspended = false;
+            Assert.AreEqual(SourcePlaybackState.Playing, sut.PlaybackState);
+        }
 
 
     }

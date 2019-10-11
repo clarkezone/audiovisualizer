@@ -71,19 +71,7 @@
                         Margin="40,5"
                         Orientation="Horizontal"
                         ValueChanged="seekSlider_ValueChanged" />
-            <StackPanel
-                        Grid.Row="1"
-                        HorizontalAlignment="Center"
-                        Orientation="Horizontal">
-                <a:CustomVisualizer
-                            Source="{StaticResource source}"
-                            Width="75"
-                            Height="40"
-                            Draw="PositionDisplay_Draw" />
-                <AppBarButton Click="PlayButton_Click" Icon="Play"/>
-                <AppBarButton Click="StopButton_Click" Icon="Pause" />
-                <AppBarButton Click="OpenFile_Click" Icon="OpenFile" />
-            </StackPanel>
+
         </Grid>
     </Grid>
 </Page>

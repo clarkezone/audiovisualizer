@@ -56,6 +56,7 @@ namespace winrt::AudioVisualizer::implementation
 		void AnalyzeData();
 		void Calculate(DirectX::XMVECTOR *pRms, DirectX::XMVECTOR *pPeak, DirectX::XMVECTOR *pSpectrum);
 	public:
+
 		AudioAnalyzer() = delete;
 		AudioAnalyzer(std::nullptr_t = nullptr) noexcept {}
 		~AudioAnalyzer() {
@@ -64,6 +65,7 @@ namespace winrt::AudioVisualizer::implementation
 		AudioAnalyzer(uint32_t bufferSize, uint32_t inputChannels, uint32_t sampleRate, uint32_t inputStep, uint32_t inputOverlap, uint32_t fftLength,bool asyncProcessing);
 
 		void ProcessInput(Windows::Media::AudioFrame const& frame);
+		void ProcessInputRaw(float* pData, size_t sampleCount,int64_t position);
 
 		AudioVisualizer::AnalyzerType AnalyzerTypes();
 		void AnalyzerTypes(AudioVisualizer::AnalyzerType const& value);

@@ -191,6 +191,33 @@ namespace winrt::AudioVisualizer::implementation
 		buffer.Close();
 	}
 
+	void AudioAnalyzer::ProcessInputRaw(float* pData, size_t sampleCount,int64_t position)
+	{
+		if (_inputChannels == 0) {
+			throw hresult_error(E_NOT_VALID_STATE);	// Not initalized
+		}
+		if (!pData) {
+			throw hresult_error(E_POINTER);
+		}
+
+		if (_bIsFlushPending) {
+			_inputBuffer.readPositionFrameIndex = position;
+			_bIsFlushPending = false;
+		}
+
+		_inputBuffer.add_samples(pData, sampleCount);
+
+		if (_bIsSuspended)
+			return;
+
+		if (_asyncProcessing) {
+			SetEvent(_evtProcessingThreadWait);
+		}
+		else {
+			AnalyzeData();
+		}
+	}
+
 	void AudioAnalyzer::ProcessingProc(Windows::Foundation::IAsyncAction const & /*action*/)
 	{
 		while (!_bIsClosed) {

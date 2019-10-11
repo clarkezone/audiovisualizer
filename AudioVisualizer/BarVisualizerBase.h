@@ -173,10 +173,10 @@ namespace winrt::AudioVisualizer::implementation
 				frame = _source.GetData();
 			}
 			std::lock_guard<std::mutex> lock(_lock);
-			OnUpdateMeter(frame);
+			derived_this()->OnUpdateMeter(frame);
 		}
 
-		virtual void OnUpdateMeter(VisualizationDataFrame const &) {};
+		// virtual void OnUpdateMeter(VisualizationDataFrame const&) {};
 
 		int GetBarElementIndex(float value) {
 			if (value > _levels.front().Level) {

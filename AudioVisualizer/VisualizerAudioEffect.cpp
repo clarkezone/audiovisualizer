@@ -127,7 +127,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	AudioVisualizer::SourcePlaybackState VisualizerAudioEffect::PlaybackState()
 	{
-		throw hresult_not_implemented();
+		return _analyzer.IsSuspended() ? SourcePlaybackState::Paused : SourcePlaybackState::Playing;
 	}
 
 	Windows::Foundation::IReference<uint32_t> VisualizerAudioEffect::ActualFrequencyCount()
@@ -157,6 +157,13 @@ namespace winrt::AudioVisualizer::implementation
 			return _analyzer.SpectrumStep() * _analyzer.SpectrumElementCount();
 		}
 		return nullptr;
+	}
+
+	Windows::Foundation::IReference<float> VisualizerAudioEffect::ActualFrequencyStep()
+	{
+		if (_analyzer && ((unsigned)_analyzerTypes & (unsigned)AnalyzerType::Spectrum) != 0) {
+			return _analyzer.SpectrumStep();
+		}
 	}
 
 	Windows::Foundation::IReference<AudioVisualizer::ScaleType> VisualizerAudioEffect::ActualFrequencyScale()

@@ -574,6 +574,26 @@ namespace winrt::AudioVisualizer::implementation
 		return ActualMaxFrequencyImpl();
 	}
 
+	Windows::Foundation::IReference<float> SourceConverter::ActualFrequencyStep()
+	{
+		std::shared_lock lock(_lock);
+
+		auto minFrequency = ActualMinFrequencyImpl();
+		auto maxFrequency = ActualMaxFrequencyImpl();
+		auto frequencyCount = ActualFrequencyCountImpl();
+		auto frequencyScale = ActualFrequencyScaleImpl();
+		if (minFrequency && maxFrequency && frequencyCount && frequencyScale)
+		{
+			if (frequencyScale.Value() == ScaleType::Linear) {
+				return (maxFrequency.Value() - minFrequency.Value()) / frequencyCount.Value();
+			}
+			else {
+				return  powf((maxFrequency.Value() / minFrequency.Value()), 1.0f / frequencyCount.Value());
+			}
+		}
+		return nullptr;
+	}
+
 	Windows::Foundation::IReference<AudioVisualizer::ScaleType> SourceConverter::ActualFrequencyScale()
 	{
 		std::shared_lock lock(_lock);

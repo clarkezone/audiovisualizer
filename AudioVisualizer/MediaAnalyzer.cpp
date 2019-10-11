@@ -250,6 +250,13 @@ namespace winrt::AudioVisualizer::implementation
 		return nullptr;
 	}
 
+	Windows::Foundation::IReference<float> MediaAnalyzer::ActualFrequencyStep()
+	{
+		if (_analyzer && ((unsigned)_analyzerTypes & (unsigned) AnalyzerType::Spectrum)!=0 ) {
+			return _analyzer.SpectrumStep();
+		}
+	}
+
 	Windows::Foundation::IReference<AudioVisualizer::ScaleType> MediaAnalyzer::ActualFrequencyScale()
 	{
 		return ScaleType::Linear;

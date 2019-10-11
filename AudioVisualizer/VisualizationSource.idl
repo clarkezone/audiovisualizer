@@ -17,6 +17,7 @@ namespace AudioVisualizer
 		Windows.Foundation.IReference<UInt32> ActualChannelCount{ get; };
 		Windows.Foundation.IReference<Single> ActualMinFrequency{ get; };
 		Windows.Foundation.IReference<Single> ActualMaxFrequency{ get; };
+		Windows.Foundation.IReference<Single> ActualFrequencyStep{ get; };
 		Windows.Foundation.IReference<ScaleType> ActualFrequencyScale{ get; };
 
 		event Windows.Foundation.TypedEventHandler<IVisualizationSource,String> ConfigurationChanged;

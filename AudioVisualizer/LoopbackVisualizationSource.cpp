@@ -20,11 +20,16 @@ namespace winrt::AudioVisualizer::implementation
 	}
 	void LoopbackVisualizationSource::InitAnalyzer(uint32_t fftLength,float overlap)
 	{
+		// Remove existing event handler
+		if (_analyzer) {
+			_analyzer.Output(_analyzerOutputEvent);
+		}
 		// Initialize the analyzer
 		uint32_t inputStep = (uint32_t)((float)_inputSampleRate / Fps());
 		uint32_t inputOverlap = (uint32_t)(overlap * inputStep);
 		uint32_t bufferSize = 2 * (inputStep + inputOverlap);
 		_analyzer = make<AudioAnalyzer>(bufferSize,_inputChannels,_inputSampleRate,inputStep,inputOverlap,fftLength,true);
+		_analyzerOutputEvent = _analyzer.Output({ this,&LoopbackVisualizationSource::OnAnalyzerOutput });
 	}
 	void LoopbackVisualizationSource::ScheduleWorkItem()
 	{
@@ -34,6 +39,12 @@ namespace winrt::AudioVisualizer::implementation
 	{
 		check_hresult(MFCancelWorkItem(_workItemKey));
 	}
+	void LoopbackVisualizationSource::OnAnalyzerOutput(AudioVisualizer::AudioAnalyzer const&, AudioVisualizer::VisualizationDataFrame const& frame)
+	{
+		std::lock_guard<std::mutex> lock(_outputFrameLock);
+		_outputFrame = frame;
+	}
+
 	LoopbackVisualizationSource::LoopbackVisualizationSource(winrt::com_ptr<::IAudioClient3> const& audioClient)
 	{
 		_audioClient = audioClient;
@@ -54,9 +65,11 @@ namespace winrt::AudioVisualizer::implementation
 		_inputChannels = pFormat->nChannels;
 
 		CoTaskMemFree(pFormat);
+
+		check_hresult(_audioClient->GetService(__uuidof(::IAudioCaptureClient), _captureClient.put_void()));
+
 		InitWorkQueue();
 		InitAnalyzer();
-	
 	}
 
 
@@ -77,7 +90,8 @@ namespace winrt::AudioVisualizer::implementation
 
     AudioVisualizer::VisualizationDataFrame LoopbackVisualizationSource::GetData()
     {
-        throw hresult_not_implemented();
+		std::lock_guard<std::mutex> lock(_outputFrameLock);
+		return _outputFrame;
     }
     bool LoopbackVisualizationSource::IsSuspended()
     {
@@ -111,12 +125,7 @@ namespace winrt::AudioVisualizer::implementation
     }
 	Windows::Foundation::IReference<Windows::Foundation::TimeSpan> LoopbackVisualizationSource::PresentationTime()
 	{
-
-		using namespace std::chrono;
-		using namespace std::chrono_literals;
-		duration time = high_resolution_clock::now() - _streamStartTime;
-		Windows::Foundation::TimeSpan ts;//  = duration_cast<int64_t, 100 * nanoseconds>(time);
-		return ts;
+		return _streamPosition;
 	};
 
     
@@ -140,17 +149,23 @@ namespace winrt::AudioVisualizer::implementation
     {
 		return (float)_analyzer.SpectrumElementCount() * _analyzer.SpectrumStep();
     }
+	Windows::Foundation::IReference<float> LoopbackVisualizationSource::ActualFrequencyStep()
+	{
+		if (_analyzer && ((unsigned)_analyzer.AnalyzerTypes() & (unsigned)AnalyzerType::Spectrum) != 0) {
+			return _analyzer.SpectrumStep();
+		}
+	}
     Windows::Foundation::IReference<AudioVisualizer::ScaleType> LoopbackVisualizationSource::ActualFrequencyScale()
     {
 		return ScaleType::Linear;
     }
     winrt::event_token LoopbackVisualizationSource::ConfigurationChanged(Windows::Foundation::TypedEventHandler<AudioVisualizer::IVisualizationSource, hstring> const& handler)
     {
-        throw hresult_not_implemented();
+		return _configurationChangedEvent.add(handler);
     }
     void LoopbackVisualizationSource::ConfigurationChanged(winrt::event_token const& token) noexcept
     {
-        throw hresult_not_implemented();
+		_configurationChangedEvent.remove(token);
     }
 	void LoopbackVisualizationSource::ConfigureSpectrum(uint32_t fftLength, float overlap)
 	{
@@ -160,7 +175,6 @@ namespace winrt::AudioVisualizer::implementation
 	void LoopbackVisualizationSource::Start()
 	{
 		_suspended = false;
-		_streamStartTime = std::chrono::high_resolution_clock::now();
 		check_hresult(_audioClient->Start());
 		ScheduleWorkItem();
 	}
@@ -171,6 +185,7 @@ namespace winrt::AudioVisualizer::implementation
 		check_hresult(_audioClient->Stop());
 		CancelWorkItem();
 	}
+
 	HRESULT __stdcall LoopbackVisualizationSource::GetParameters(DWORD* pdwFlags, DWORD* pdwQueue)
 	{
 		if (pdwFlags == nullptr || pdwQueue == nullptr) {
@@ -181,8 +196,14 @@ namespace winrt::AudioVisualizer::implementation
 	}
 	HRESULT __stdcall LoopbackVisualizationSource::Invoke(IMFAsyncResult* pAsyncResult)
 	{
-
-
+		float* pSamples = nullptr;
+		UINT32 numFramesToRead = 0;
+		DWORD dwFlags = 0;
+		UINT64 devicePosition = 0;
+		HRESULT hr = _captureClient->GetBuffer((BYTE**)&pSamples, &numFramesToRead, &dwFlags, &devicePosition, nullptr);
+		winrt::get_self<AudioAnalyzer>(_analyzer)->ProcessInputRaw(pSamples, numFramesToRead,devicePosition);
+		hr = _captureClient->ReleaseBuffer(numFramesToRead);
+		_streamPosition = Windows::Foundation::TimeSpan() = { 10000000L * devicePosition / _inputSampleRate };
 		ScheduleWorkItem();
 		return S_OK;
 	}

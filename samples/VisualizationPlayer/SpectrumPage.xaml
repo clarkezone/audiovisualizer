@@ -1,0 +1,34 @@
+﻿<Page
+    x:Class="VisualizationPlayer.SpectrumPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:VisualizationPlayer"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:a="using:AudioVisualizer"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <a:SpectrumVisualizer Grid.Row="0" Padding="20" x:Name="barSpectrum" Source="{x:Bind SpectrumSource,Mode=OneWay}" RelativeElementMargin="0.1,0.2,0.1,0.2"></a:SpectrumVisualizer>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <StackPanel Padding="40" Grid.Column="0">
+                <ComboBox Header="Configuration" ItemsSource="{x:Bind SpectrumConfigurations}" SelectedItem="{x:Bind CurrentConfiguration, Mode=TwoWay}">
+                </ComboBox>
+            </StackPanel>
+            <StackPanel Padding="40" Grid.Column="1">
+                <TextBlock x:Name="lowFrequency"></TextBlock>
+                <TextBlock x:Name="highFrequency"></TextBlock>
+                <TextBlock x:Name="frequencyStep"></TextBlock>
+                <TextBlock x:Name="frequencyCount"></TextBlock>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>
