@@ -11,6 +11,7 @@ using Windows.Foundation.Collections;
 using Windows.Graphics.DirectX;
 using Windows.UI;
 using Windows.UI.Composition;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -119,12 +120,15 @@ namespace VisualizationPlayer
 
         }
 
-        private void SpectrumSource_ConfigurationChanged(IVisualizationSource sender, string args)
+        private async void SpectrumSource_ConfigurationChanged(IVisualizationSource sender, string args)
         {
-            lowFrequency.Text = $"Minimum frequency: {sender.ActualMinFrequency}Hz";
-            highFrequency.Text = $"Maximum frequency: { sender.ActualMaxFrequency}Hz";
-            frequencyStep.Text = $"Frequency step: {sender.ActualFrequencyStep}";
-            frequencyCount.Text= $"Frequency count: {sender.ActualFrequencyCount}";
+            System.Diagnostics.Debug.WriteLine($"Configuration changed, {DateTime.Now} \"{args}\"");
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Low, ()=> {
+                lowFrequency.Text = $"Minimum frequency: {sender.ActualMinFrequency}Hz";
+                highFrequency.Text = $"Maximum frequency: { sender.ActualMaxFrequency}Hz";
+                frequencyStep.Text = $"Frequency step: {sender.ActualFrequencyStep}";
+                frequencyCount.Text = $"Frequency count: {sender.ActualFrequencyCount}";
+            });
         }
 
         public CompositionBrush CreateElementBrush(object sender, Color elementColor, Size size, Compositor compositor, CompositionGraphicsDevice device)

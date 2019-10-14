@@ -93,8 +93,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	void VisualizerAudioEffect::IsSuspended(bool value)
 	{
-		if (_analyzer) 
-			_analyzer.IsSuspended(value);
+		throw winrt::hresult_not_implemented();
 	}
 
 	float VisualizerAudioEffect::Fps()
