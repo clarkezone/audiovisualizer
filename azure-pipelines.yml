@@ -9,7 +9,7 @@ variables:
 
 queue:
 
-  name: Cloud VM
+  name: Azure Pipelines
 
   demands: 
 
