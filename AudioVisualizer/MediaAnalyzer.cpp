@@ -255,6 +255,7 @@ namespace winrt::AudioVisualizer::implementation
 		if (_analyzer && ((unsigned)_analyzerTypes & (unsigned) AnalyzerType::Spectrum)!=0 ) {
 			return _analyzer.SpectrumStep();
 		}
+		return nullptr;
 	}
 
 	Windows::Foundation::IReference<AudioVisualizer::ScaleType> MediaAnalyzer::ActualFrequencyScale()

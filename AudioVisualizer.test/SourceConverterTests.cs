@@ -497,23 +497,6 @@ namespace AudioVisualizer.test
 
         [TestCategory("SourceConverter")]
         [TestMethod]
-        public void SourceConverter_GetData_SpectrumCountChange()
-        {
-            sut.SpectrumRiseTime = TimeSpan.FromMilliseconds(50);
-            sut.SpectrumFallTime = TimeSpan.FromMilliseconds(50);
-            var frame1 = sut.GetData();
-            sut.FrequencyCount = expectedFrequencyCount + 1;
-
-            testSource.Frame = otherFrame;
-            Task.Delay(50);
-
-            var frame2 = sut.GetData();
-            Assert.AreEqual(frame2.Spectrum.FrequencyCount, expectedFrequencyCount + 1);
-
-        }
-
-        [TestCategory("SourceConverter")]
-        [TestMethod]
         public void SourceConverter_GetData_Passthrough()
         {
             var frame = sut.GetData();

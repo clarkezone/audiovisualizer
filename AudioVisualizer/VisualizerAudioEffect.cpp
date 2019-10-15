@@ -91,7 +91,7 @@ namespace winrt::AudioVisualizer::implementation
 		return _analyzer ? _analyzer.IsSuspended() : true;
 	}
 
-	void VisualizerAudioEffect::IsSuspended(bool value)
+	void VisualizerAudioEffect::IsSuspended(bool /*value*/)
 	{
 		throw winrt::hresult_not_implemented();
 	}
@@ -163,6 +163,7 @@ namespace winrt::AudioVisualizer::implementation
 		if (_analyzer && ((unsigned)_analyzerTypes & (unsigned)AnalyzerType::Spectrum) != 0) {
 			return _analyzer.SpectrumStep();
 		}
+		return nullptr;
 	}
 
 	Windows::Foundation::IReference<AudioVisualizer::ScaleType> VisualizerAudioEffect::ActualFrequencyScale()

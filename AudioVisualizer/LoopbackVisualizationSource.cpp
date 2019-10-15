@@ -111,7 +111,7 @@ namespace winrt::AudioVisualizer::implementation
     {
 		return 60.0f;
     }
-    void LoopbackVisualizationSource::Fps(float value)
+    void LoopbackVisualizationSource::Fps(float /* value */)
     {
         throw hresult_not_implemented();
     }
@@ -154,6 +154,7 @@ namespace winrt::AudioVisualizer::implementation
 		if (_analyzer && ((unsigned)_analyzer.AnalyzerTypes() & (unsigned)AnalyzerType::Spectrum) != 0) {
 			return _analyzer.SpectrumStep();
 		}
+		return nullptr;
 	}
     Windows::Foundation::IReference<AudioVisualizer::ScaleType> LoopbackVisualizationSource::ActualFrequencyScale()
     {
@@ -194,7 +195,7 @@ namespace winrt::AudioVisualizer::implementation
 		*pdwQueue = _workQueueId;
 		return S_OK;
 	}
-	HRESULT __stdcall LoopbackVisualizationSource::Invoke(IMFAsyncResult* pAsyncResult)
+	HRESULT __stdcall LoopbackVisualizationSource::Invoke(IMFAsyncResult* /*pAsyncResult*/)
 	{
 		float* pSamples = nullptr;
 		UINT32 numFramesToRead = 0;

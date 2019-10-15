@@ -112,6 +112,7 @@ namespace AudioVisualizer.test
             Assert.IsTrue(avg < 5);
 
         }
+
         [TestMethod]
         [TestCategory("AudioAnalyzer")]
         public void AudioAnalyzer_IsCloseable()
