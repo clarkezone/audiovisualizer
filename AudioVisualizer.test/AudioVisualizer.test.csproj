@@ -106,9 +106,12 @@
   <ItemGroup>
     <Compile Include="AudioAnalyzerTests.cs" />
     <Compile Include="AnalogVUMeterTests.cs" />
+    <Compile Include="AudioBufferExtension.cs" />
     <Compile Include="FakeAudioNode.cs" />
     <Compile Include="CreateResourcesArgsTests.cs" />
     <Compile Include="CustomVisualizerTests.cs" />
+    <Compile Include="HResult.cs" />
+    <Compile Include="IMemoryBufferByteAccess.cs" />
     <Compile Include="LoopbackVisualizationSourceTests.cs" />
     <Compile Include="MediaSourceReaderTests.cs" />
     <Compile Include="SpectrumVisualizerTests.cs" />

@@ -8,11 +8,21 @@
 #include <winrt/Windows.System.Threading.h>
 #include <winrt/Windows.UI.Core.h>
 #include <set>
+#include <type_traits>
+#include <pplawait.h>
 #include "util.h"
 
 namespace winrt::AudioVisualizer::implementation
 {
-	template<typename ControlType>
+	struct spectrum_bar_visualizer {
+		static constexpr bool is_layout_dependent_on_fcount{ true };
+	};
+
+	struct vu_bar_visualizer {
+		static constexpr bool is_layout_dependent_on_fcount{ false };
+	};
+
+	template<typename ControlType,typename VisualizerTraits>
 	struct BarVisualizerBase
 	{
 	private:
@@ -31,7 +41,6 @@ namespace winrt::AudioVisualizer::implementation
 		float _elementShadowOpacity;
 		Windows::UI::Color _elementShadowColor;
 		float _elementShadowBlurRadius;
-
 		AudioVisualizer::IVisualizationSource _source{ nullptr };
 		Windows::UI::Composition::Compositor _compositor{ nullptr };
 		Windows::UI::Composition::CompositionGraphicsDevice _compositionDevice{ nullptr };
@@ -49,8 +58,8 @@ namespace winrt::AudioVisualizer::implementation
 		std::vector<Windows::UI::Composition::SpriteVisual> _elementVisuals;
 		std::vector<int> _barStates;	// Keeps state of the bar elements lit
 		std::vector<int> _barAuxStates;	// Keeps state of the auxiliary bar elements lit
+		bool _unloaded{ false };
 
-		virtual void OnSourceChanged(hstring const &) {};
 		winrt::event_token _sourceChangedEvent;
 
 	public:
@@ -161,6 +170,11 @@ namespace winrt::AudioVisualizer::implementation
 
 		void OnUnloaded(Windows::Foundation::IInspectable const &, Windows::UI::Xaml::RoutedEventArgs const &)
 		{
+			
+			Source(nullptr);	// When unloaded remove source to avoid configuration change events firing on unloaded control
+			
+			_unloaded = true;
+
 			if (_updateTimer) {
 				_updateTimer.Cancel();
 			}
@@ -175,8 +189,6 @@ namespace winrt::AudioVisualizer::implementation
 			std::lock_guard<std::mutex> lock(_lock);
 			derived_this()->OnUpdateMeter(frame);
 		}
-
-		// virtual void OnUpdateMeter(VisualizationDataFrame const&) {};
 
 		int GetBarElementIndex(float value) {
 			if (value > _levels.front().Level) {
@@ -305,21 +317,58 @@ namespace winrt::AudioVisualizer::implementation
 		
 		void Source(AudioVisualizer::IVisualizationSource const& value)
 		{
-			if (_source) {
-				_source.ConfigurationChanged(_sourceChangedEvent);
-			}
-			_source = value;
-			OnSourceChanged(L"");
-			if (_source) {
-				_sourceChangedEvent = _source.ConfigurationChanged(
-					Windows::Foundation::TypedEventHandler<AudioVisualizer::IVisualizationSource, hstring>(
-						[=] (const AudioVisualizer::IVisualizationSource &, const hstring &propertyName) {
-							OnSourceChanged(propertyName);
-						}
+			std::lock_guard<std::mutex> lock(_lock);
+
+			if (_source != value) {
+				if (VisualizerTraits::is_layout_dependent_on_fcount) {
+					if (_source) {
+						_source.ConfigurationChanged(_sourceChangedEvent);
+					}
+				}
+
+				_source = value;
+
+				if (VisualizerTraits::is_layout_dependent_on_fcount) {
+					UpdateBarCount();
+				
+
+					if (_source) {
+						_sourceChangedEvent = _source.ConfigurationChanged(
+							Windows::Foundation::TypedEventHandler<AudioVisualizer::IVisualizationSource, hstring>(
+								[=](const AudioVisualizer::IVisualizationSource&, const hstring& propertyName) {
+									if (propertyName == L"Source" || propertyName == L"FrequencyCount")
+									{
+										UpdateBarCount();
+									}
+								}
 						));
+					}
+				}
+			
 			}
 		}
 
+		void UpdateBarCount() {
+			uint32_t barCountRequired = 0;
+			if (_source && _source.ActualFrequencyCount()) {
+				barCountRequired = _source.ActualFrequencyCount().Value();
+			}
+			
+			if (barCountRequired != _barCount) {
+				_barCount = barCountRequired;
+
+				// Create new layout on ui thread
+				auto updateUIOp = derived_this()->Dispatcher().RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, Windows::UI::Core::DispatchedHandler(
+					[=] {
+						std::lock_guard<std::mutex> lock(_lock);
+
+						CreateElementVisuals();
+						LayoutVisuals();
+					}
+				));
+				
+			}
+		}
 		com_array<AudioVisualizer::MeterBarLevel> Levels()
 		{
 			return com_array<MeterBarLevel>(_levels);

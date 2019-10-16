@@ -296,10 +296,12 @@ namespace AudioVisualizer.test
         }
         [TestMethod]
         [TestCategory("VisualizerAudioEffect")]
-        public void VisualizerAudioEffect_SettingSuspended()
+        public void VisualizerAudioEffect_SettingSuspendedThrows()
         {
             IVisualizationSource source = (IVisualizationSource)sut;
-            source.IsSuspended = true;
+            Assert.ThrowsException<NotImplementedException>(() => {
+                source.IsSuspended = true;
+            });
         }
         [TestMethod]
         [TestCategory("VisualizerAudioEffect")]
@@ -324,7 +326,9 @@ namespace AudioVisualizer.test
         public void VisualizerAudioEffect_GettingPlaybackStates()
         {
             IVisualizationSource source = (IVisualizationSource)sut;
-               var state = source.PlaybackState;
+            Assert.ThrowsException<NotImplementedException>(() => {
+                var state = source.PlaybackState;
+            });
         }
 
         [TestMethod]

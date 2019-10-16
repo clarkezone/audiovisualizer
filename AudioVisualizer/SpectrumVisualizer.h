@@ -7,12 +7,11 @@
 
 namespace winrt::AudioVisualizer::implementation
 {
-    struct SpectrumVisualizer : SpectrumVisualizerT<SpectrumVisualizer>,BarVisualizerBase<SpectrumVisualizer>
-    {
+	struct SpectrumVisualizer : SpectrumVisualizerT<SpectrumVisualizer>, BarVisualizerBase<SpectrumVisualizer,spectrum_bar_visualizer>
+	{
 	public:
-        SpectrumVisualizer();
-		virtual void OnSourceChanged(hstring const &propertyName);
-		virtual void OnUpdateMeter(AudioVisualizer::VisualizationDataFrame const &frame);
+		SpectrumVisualizer();
+		void OnUpdateMeter(AudioVisualizer::VisualizationDataFrame const& frame);
     };
 }
 

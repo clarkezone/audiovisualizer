@@ -126,7 +126,7 @@ namespace winrt::AudioVisualizer::implementation
 
 	AudioVisualizer::SourcePlaybackState VisualizerAudioEffect::PlaybackState()
 	{
-		return _analyzer.IsSuspended() ? SourcePlaybackState::Paused : SourcePlaybackState::Playing;
+		throw hresult_not_implemented();
 	}
 
 	Windows::Foundation::IReference<uint32_t> VisualizerAudioEffect::ActualFrequencyCount()

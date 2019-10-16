@@ -9,7 +9,7 @@ variables:
 
 queue:
 
-  name: Azure Pipelines
+  name: 'windows-latest'
 
   demands: 
 
