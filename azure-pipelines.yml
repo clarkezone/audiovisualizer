@@ -26,14 +26,31 @@ steps:
     restoreSolution: '$(solution)'
 
 - task: VSBuild@1
+  displayName: 'Build AudioAnalyzer'
   inputs:
     platform: 'x86'
     solution: '$(solution)'
     configuration: '$(buildConfiguration)'
     msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" /p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload'
 - task: VSTest@2
+  displayName: 'Running unit tests'
   inputs:
     testSelector: 'testAssemblies'
-    testAssemblyVer2: '$(Build.SourcesDirectory)\AudioVisualizer.test\bin\x86\Release\AudioVisualizer.Test.build.appxrecipe    $(Build.SourcesDirectory)\AudioVisualizer.test\bin\x64\Release\AudioVisualizer.Test.build.appxrecipe'
+    testAssemblyVer2: |
+      '$(Build.SourcesDirectory)\AudioVisualizer.test\bin\x86\Release\AudioVisualizer.Test.build.appxrecipe'
+      '$(Build.SourcesDirectory)\AudioVisualizer.test\bin\x64\Release\AudioVisualizer.Test.build.appxrecipe'
     searchFolder: '$(System.DefaultWorkingDirectory)'
 
+- task: NuGetCommand@2
+  displayName: 'Creating nuget package'
+  inputs:
+    command: 'pack'
+    packagesToPack: 'AudioAnalyzer.nuspec'
+    versioningScheme: 'byBuildNumber'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publishing output'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'nuget'
+    publishLocation: 'Container'
