@@ -46,7 +46,10 @@ steps:
   inputs:
     command: 'pack'
     packagesToPack: 'AudioAnalyzer.nuspec'
-    versioningScheme: 'byBuildNumber'
+    versioningScheme: 'byPrereleaseNumber'
+    majorVersion: '$(Major)'
+    minorVersion: '$(Minor)'
+    patchVersion: '$(Patch)'
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publishing output'
