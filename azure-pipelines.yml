@@ -25,6 +25,7 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
+
 - task: VSBuild@1
   displayName: 'Build AudioAnalyzer'
   inputs:
@@ -32,6 +33,11 @@ steps:
     solution: '$(solution)'
     configuration: '$(buildConfiguration)'
     msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" /p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload'
+
+- script: dir /s
+  workingDirectory: '$(Build.SourcesDirectory)'
+
+
 - task: VSTest@2
   displayName: 'Running unit tests'
   inputs:
@@ -45,7 +51,7 @@ steps:
   displayName: 'Creating nuget package'
   inputs:
     command: 'pack'
-    packagesToPack: 'AudioAnalyzer.nuspec'
+    packagesToPack: 'AudioVisualizer.nuspec'
     versioningScheme: 'byPrereleaseNumber'
     majorVersion: '$(Major)'
     minorVersion: '$(Minor)'
