@@ -45,7 +45,7 @@ namespace AudioVisualizer.test
             player.Source = MediaSource.CreateFromStorageFile(testFile);
             player.Play();
 
-            if (Task.Run(() => { ev.Wait(); }).Wait(1000))
+            if (Task.Run(() => { ev.Wait(); }).Wait(10000))
 
             {
                 Assert.IsTrue(sources.Count == 1);
