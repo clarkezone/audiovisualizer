@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AudioVisualizer.test
 {
-    [TestClass]
+    /*[TestClass]*/
     public class LoopbackVisualizationSourceTests
     {
         private LoopbackVisualizationSource sut;
