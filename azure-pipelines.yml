@@ -52,6 +52,7 @@ steps:
       $(Build.SourcesDirectory)\AudioVisualizer.test\bin\x64\Release\AudioVisualizer.Test.build.appxrecipe
     searchFolder: '$(System.DefaultWorkingDirectory)'
     runTestsInIsolation: true
+    uiTests: true
 
 - task: NuGetCommand@2
   displayName: 'Creating nuget package'
