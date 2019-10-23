@@ -24,9 +24,9 @@ namespace AudioVisualizer.test
     [TestClass]
     public class PlayerSourceTests
     {
-        [TestMethod]
-        [TestCategory("PlaybackSource")]
-        public async Task PlaybackSource_MediaPlayer()
+        /*[TestMethod]
+        [TestCategory("PlaybackSource")]*/
+        private async Task PlaybackSource_MediaPlayer()
         {
             var testFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///TestContent/test_signal.mp3"));
             var player = new MediaPlayer();
