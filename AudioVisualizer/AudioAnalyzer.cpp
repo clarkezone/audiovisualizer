@@ -1,9 +1,6 @@
 ﻿#include "pch.h"
 #include "AudioAnalyzer.h"
-#include <DirectXMath.h>
-#include "XDSP.h"
-#include <memorybuffer.h>
-#include <winrt/windows.system.threading.h>
+
 #include "ScalarData.h"
 #include "SpectrumData.h"
 #include "VisualizationDataFrame.h"
@@ -194,6 +191,33 @@ namespace winrt::AudioVisualizer::implementation
 		buffer.Close();
 	}
 
+	void AudioAnalyzer::ProcessInputRaw(float* pData, size_t sampleCount,int64_t position)
+	{
+		if (_inputChannels == 0) {
+			throw hresult_error(E_NOT_VALID_STATE);	// Not initalized
+		}
+		if (!pData) {
+			throw hresult_error(E_POINTER);
+		}
+
+		if (_bIsFlushPending) {
+			_inputBuffer.readPositionFrameIndex = position;
+			_bIsFlushPending = false;
+		}
+
+		_inputBuffer.add_samples(pData, sampleCount);
+
+		if (_bIsSuspended)
+			return;
+
+		if (_asyncProcessing) {
+			SetEvent(_evtProcessingThreadWait);
+		}
+		else {
+			AnalyzeData();
+		}
+	}
+
 	void AudioAnalyzer::ProcessingProc(Windows::Foundation::IAsyncAction const & /*action*/)
 	{
 		while (!_bIsClosed) {
@@ -207,11 +231,12 @@ namespace winrt::AudioVisualizer::implementation
 	void AudioAnalyzer::AnalyzeData()
 	{
 		// Process data until not suspended, not in a reset and output is available
+		
 		while (!_bIsSuspended && !_bIsFlushPending && !_bIsClosed)
 		{
-			com_ptr<implementation::ScalarData> rms = nullptr;
-			com_ptr<implementation::ScalarData> peak = nullptr;
-			com_ptr<implementation::SpectrumData> spectrum = nullptr;
+			AudioVisualizer::ScalarData rms{ nullptr };
+			AudioVisualizer::ScalarData peak{ nullptr };
+			AudioVisualizer::SpectrumData spectrum{ nullptr };
 			Windows::Foundation::IReference<int64_t> dataFrameIndex;
 
 			if (_asyncProcessing) {
@@ -231,11 +256,11 @@ namespace winrt::AudioVisualizer::implementation
 			}
 
 			if (util::enum_has_flag(_analyzerTypes, AnalyzerType::RMS)) {
-				rms = make_self<ScalarData>(_inputChannels);
+				rms = make_self<ScalarData>(_inputChannels).as<AudioVisualizer::ScalarData>();
 			}
 
 			if (util::enum_has_flag(_analyzerTypes, AnalyzerType::Peak)) {
-				peak = make_self<ScalarData>(_inputChannels);
+				peak = make_self<ScalarData>(_inputChannels).as<AudioVisualizer::ScalarData>();
 			}
 
 			if (util::enum_has_flag(_analyzerTypes, AnalyzerType::Spectrum))
@@ -249,12 +274,16 @@ namespace winrt::AudioVisualizer::implementation
 						ScaleType::Linear,
 						0.0f,
 						maxFreq,
-						false);
+						false).as<AudioVisualizer::SpectrumData>();
 			}	
 #ifdef _TRACE_
 			auto activity = Trace::AudioAnalyzer_Calculate();
 #endif
-			Calculate(rms ? rms->_pData : nullptr, peak ? peak->_pData : nullptr, spectrum ? spectrum->_pData : nullptr);
+			
+			Calculate(
+				rms ? winrt::get_self<ScalarData>(rms)->_pData : nullptr, 
+				peak ? winrt::get_self<ScalarData>(peak)->_pData : nullptr, 
+				spectrum ? winrt::get_self<SpectrumData>(spectrum)->_pData : nullptr);
 #ifdef _TRACE_
 			activity.StopActivity(activity.Name());
 #endif
@@ -266,9 +295,9 @@ namespace winrt::AudioVisualizer::implementation
 			auto dataFrame = make<VisualizationDataFrame>(
 				time,
 				Windows::Foundation::TimeSpan((REFERENCE_TIME)(1e7 / _fOutSampleRate)),
-				rms ? rms.as<AudioVisualizer::ScalarData>() : nullptr,
-				peak ? peak.as<AudioVisualizer::ScalarData>() : nullptr,
-				spectrum ? spectrum.as<AudioVisualizer::SpectrumData>() : nullptr
+				rms,
+				peak,
+				spectrum
 				);
 
 			// Only push the result if reset is not pending
@@ -276,6 +305,7 @@ namespace winrt::AudioVisualizer::implementation
 			{
 				_output(*this, dataFrame);
 			}
+			
 		}
 	}
 

@@ -127,7 +127,9 @@ namespace winrt::AudioVisualizer::implementation
 				{
 					try {
 						auto drawingSession = _swapChain.CreateDrawingSession(Windows::UI::Colors::Transparent());
-						AudioVisualizer::VisualizationDataFrame dataFrame{ nullptr };
+						
+						AudioVisualizer::VisualizationDataFrame dataFrame { nullptr };
+
 						Windows::Foundation::IReference<Windows::Foundation::TimeSpan> presentationTime;
 						if (_visualizationSource) {
 							dataFrame = _visualizationSource.GetData();

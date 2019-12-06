@@ -9,9 +9,9 @@ namespace winrt::AudioVisualizer::implementation
 		Windows::Foundation::IReference<Windows::Foundation::TimeSpan> _time;
 		Windows::Foundation::Collections::PropertySet _properties;
 		Windows::Foundation::TimeSpan _duration;
-		ScalarData _rms{ nullptr };
-		ScalarData _peak{ nullptr };
-		SpectrumData _spectrum{ nullptr };
+		AudioVisualizer::ScalarData _rms{ nullptr };
+		AudioVisualizer::ScalarData _peak{ nullptr };
+		AudioVisualizer::SpectrumData _spectrum{ nullptr };
 
         VisualizationDataFrame() = delete;
 		VisualizationDataFrame(nullptr_t = nullptr) noexcept {};

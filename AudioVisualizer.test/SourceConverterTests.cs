@@ -827,4 +827,76 @@ namespace AudioVisualizer.test
             CollectionAssert.AreEqual(expectedRms, outFrame.RMS.ToArray());
         }
     }
+
+    // Test spectrum rise and fall operation
+    [TestClass]
+    public class SourceConverterSpectrumRiseAndFallTests
+    {
+        SourceConverter sut;
+        FakeVisualizationSource fakeSource;
+        VisualizationDataFrame firstFrame;
+        VisualizationDataFrame nextFrame;
+
+        [TestInitialize]
+        public void SetupTests()
+        {
+            sut = new SourceConverter();
+            sut.CacheData = false;
+            sut.SpectrumRiseTime = TimeSpan.FromMilliseconds(50);
+            sut.SpectrumFallTime = TimeSpan.FromMilliseconds(100);
+            fakeSource = new FakeVisualizationSource();
+            sut.Source = fakeSource;
+            firstFrame = new VisualizationDataFrame(
+                TimeSpan.Zero,
+                TimeSpan.FromMilliseconds(16.7),
+                null,
+                null,
+                SpectrumData.Create(new float[] { 0f,1f,0.5f,0.5f,0f,1f },2,ScaleType.Linear, ScaleType.Linear, 0, 24000));
+            nextFrame = new VisualizationDataFrame(
+                TimeSpan.FromMilliseconds(16.7),
+                TimeSpan.FromMilliseconds(16.7),
+                null,
+                null,
+                SpectrumData.Create(new float[] { 1f, 0f, 0.5f, 0.5f, 1f, 0f }, 2, ScaleType.Linear, ScaleType.Linear, 0, 24000));
+
+            fakeSource.Frame = firstFrame;
+        }
+        [TestCategory("SourceConverter_RiseAndFall")]
+        [TestMethod]
+        public void SourceConverter_RiseAndFall()
+        {
+            var frame = sut.GetData();
+            CollectionAssert.AreEqual(new float[] { 0,0.283468962f,0.141734481f}, frame.Spectrum[0].ToArray());
+            CollectionAssert.AreEqual(new float[] { 0.141734481f, 0f, 0.283468962f,  }, frame.Spectrum[1].ToArray());
+        }
+
+        [TestCategory("SourceConverter_RiseAndFall")]
+        [TestMethod]
+        public void SourceConverter_RiseAndFall_NextFrame()
+        {
+            sut.GetData();
+            fakeSource.Frame = nextFrame;
+            var frame = sut.GetData();
+            CollectionAssert.AreEqual(new float[] { 0.283468962f, 0.239951238f, 0.243291646f }, frame.Spectrum[0].ToArray());
+            CollectionAssert.AreEqual(new float[] { 0.243291646f, 0.283468962f, 0.239951238f, }, frame.Spectrum[1].ToArray());
+        }
+        [TestMethod]
+        public void SourceConverter_RiseAndFall_FrequencyCountChange()
+        {
+            sut.GetData();
+            sut.FrequencyCount = 2;
+            fakeSource.Frame = nextFrame;
+            var frame = sut.GetData();
+            Assert.AreEqual(frame.Spectrum.FrequencyCount, 2u);
+        }
+        [TestMethod]
+        public void SourceConverter_RiseAndFall_ChannelCountChange()
+        {
+            sut.GetData();
+            sut.ChannelCount = 1;
+            fakeSource.Frame = nextFrame;
+            var frame = sut.GetData();
+            Assert.AreEqual(1, frame.Spectrum.Count);
+        }
+    }
 }

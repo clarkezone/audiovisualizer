@@ -303,6 +303,17 @@ namespace AudioVisualizer.test
 
         [TestCategory("MediaAnalyzer")]
         [TestMethod]
+        public void MediaAnalyzer_VisualizationSource_ActualFrequencyStept()
+        {
+            var encoding = CreateFloatEncodingProperty((uint)48000, (uint)2);
+            _mft.SetInputMediaType(0, encoding, false);
+            _mft.SetOutputMediaType(0, encoding, false);
+            _analyzer.ConfigureSpectrum(2048, 0.5f);
+            Assert.AreEqual(24000.0f/1024f, _analyzer.ActualFrequencyStep);
+        }
+
+        [TestCategory("MediaAnalyzer")]
+        [TestMethod]
         public void MediaAnalyzer_VisualizationSource_ActualFrequencyScale()
         {
             var encoding = CreateFloatEncodingProperty((uint)48000, (uint)2);

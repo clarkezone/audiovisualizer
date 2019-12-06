@@ -1,6 +1,9 @@
 ﻿#include "pch.h"
 #include "PlaybackSource.h"
+#include "AudioInterfaceActivator.h"
 #include "Tracing.h"
+#include <winrt/Windows.Media.Devices.h>
+#include <pplawait.h>
 
 
 namespace winrt::AudioVisualizer::implementation
@@ -58,6 +61,7 @@ namespace winrt::AudioVisualizer::implementation
 
 		node.EffectDefinitions().Append(effect);
 	}
+
 
 	AudioVisualizer::PlaybackSource PlaybackSource::CreateFromMediaPlayer(Windows::Media::Playback::MediaPlayer const& mediaPlayer)
 	{

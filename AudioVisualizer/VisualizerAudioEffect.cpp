@@ -91,10 +91,9 @@ namespace winrt::AudioVisualizer::implementation
 		return _analyzer ? _analyzer.IsSuspended() : true;
 	}
 
-	void VisualizerAudioEffect::IsSuspended(bool value)
+	void VisualizerAudioEffect::IsSuspended(bool /*value*/)
 	{
-		if (_analyzer) 
-			_analyzer.IsSuspended(value);
+		throw winrt::hresult_not_implemented();
 	}
 
 	float VisualizerAudioEffect::Fps()
@@ -155,6 +154,14 @@ namespace winrt::AudioVisualizer::implementation
 	{
 		if (_analyzer) {
 			return _analyzer.SpectrumStep() * _analyzer.SpectrumElementCount();
+		}
+		return nullptr;
+	}
+
+	Windows::Foundation::IReference<float> VisualizerAudioEffect::ActualFrequencyStep()
+	{
+		if (_analyzer && ((unsigned)_analyzerTypes & (unsigned)AnalyzerType::Spectrum) != 0) {
+			return _analyzer.SpectrumStep();
 		}
 		return nullptr;
 	}

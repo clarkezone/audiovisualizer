@@ -1,168 +1,72 @@
-resources:
+# Universal Windows Platform
+# Build a Universal Windows Platform project using Visual Studio.
+# Add steps that test and distribute an app, save build artifacts, and more:
+# https://aka.ms/yaml
 
-- repo: self
+trigger:
+- self
+
+pool:
+  vmImage: 'windows-latest'
 
 variables:
- major: 1
- minor: 0
- patch: $[counter('versioncounter', 0)]
-
-queue:
-
-  name: Cloud VM
-
-  demands: 
-
-  - msbuild
-
-  - visualstudio
-
-  - vstest
-
-name: $(TeamProject)_$(SourceBranchName)_$(major).$(minor).$(patch)
+  solution: 'AudioVisualizer.sln'
+  buildPlatform: 'x86|x64|ARM'
+  buildConfiguration: 'Release'
+  appxPackageDir: '$(build.artifactStagingDirectory)\AppxPackages\\'
+  major: 1
+  minor: 0
+  patch: $[counter('versioncounter', 0)]
 
 steps:
-
-- task: NuGetToolInstaller@0
-
-  displayName: 'Use NuGet 4.4.1'
-
-  inputs:
-
-    versionSpec: 4.4.1
-
-
-
-
+- task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
-
-  displayName: 'NuGet restore **\*.sln'
-
   inputs:
-
-    restoreSolution: AudioVisualizer.sln
-
-
-
+    restoreSolution: '$(solution)'
 
 
 - task: VSBuild@1
-
-  displayName: 'Build AudioVisualizer x86'
-
+  displayName: 'Build AudioAnalyzer x86'
   inputs:
-
-    solution: AudioVisualizer.sln
-
-
-
-    platform: x86
-
-
-
-    configuration: Release
-
-
-
-    clean: true
-
-
-
-
+    platform: 'x86'
+    solution: '$(solution)'
+    configuration: '$(buildConfiguration)'
+    msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" /p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload'
 
 - task: VSBuild@1
-
-  displayName: 'Build AudioVisualizer x64'
-
+  displayName: 'Build AudioAnalyzer x64'
   inputs:
-
-    solution: AudioVisualizer.sln
-
-
-
-    platform: x64
-
-
-
-    configuration: Release
-
-
-
-    clean: true
-
-
-
-
-
-- task: VSBuild@1
-
-  displayName: 'Build AudioVisualizer ARM'
-
-  inputs:
-
-    solution: AudioVisualizer.sln
-
-
-
-    platform: arm
-
-
-
-    configuration: Release
-
-
-
-    clean: true
-
-
-
+    platform: 'x64'
+    solution: '$(solution)'
+    configuration: '$(buildConfiguration)'
+    msbuildArgs: '/p:AppxBundlePlatforms="$(buildPlatform)" /p:AppxPackageDir="$(appxPackageDir)" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload'
 
 
 - task: VSTest@2
-
-  displayName: 'Unit tests'
-
+  displayName: 'Running unit tests'
   inputs:
-
+    testSelector: 'testAssemblies'
     testAssemblyVer2: |
-     $(Build.SourcesDirectory)\AudioVisualizer.test\bin\x86\Release\AudioVisualizer.Test.build.appxrecipe
-     $(Build.SourcesDirectory)\AudioVisualizer.test\bin\x64\Release\AudioVisualizer.Test.build.appxrecipe
-     
-
-
-
-
-
-- task: richardfennellBM.BM-VSTS-Versioning-Task.Version-Nuspec-Task.VersionNuspec@2
-
-  displayName: 'Version Nuspec'
-
-
-
-  enabled: false
-
-
+      $(Build.SourcesDirectory)\AudioVisualizer.test\bin\x86\Release\AudioVisualizer.Test.build.appxrecipe
+      $(Build.SourcesDirectory)\AudioVisualizer.test\bin\x64\Release\AudioVisualizer.Test.build.appxrecipe
+    searchFolder: '$(System.DefaultWorkingDirectory)'
+    runTestsInIsolation: true
+    uiTests: true
 
 - task: NuGetCommand@2
-
-  displayName: 'NuGet pack'
-
+  displayName: 'Creating nuget package'
   inputs:
-
-    command: pack
-
-    versioningScheme: byBuildNumber
-
-    packagesToPack: AudioAnalyzer.nuspec
-
-
-
+    command: 'pack'
+    packagesToPack: 'AudioVisualizer.nuspec'
+    versioningScheme: 'byPrereleaseNumber'
+    majorVersion: '$(Major)'
+    minorVersion: '$(Minor)'
+    patchVersion: '$(Patch)'
 
 - task: PublishBuildArtifacts@1
-
-  displayName: 'Publish Artifact: nuget'
-
+  displayName: 'Publishing output'
   inputs:
-
-    ArtifactName: nuget
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'nuget'
+    publishLocation: 'Container'

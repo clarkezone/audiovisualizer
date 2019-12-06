@@ -24,9 +24,9 @@ namespace AudioVisualizer.test
     [TestClass]
     public class PlayerSourceTests
     {
-        [TestMethod]
-        [TestCategory("PlaybackSource")]
-        public async Task PlaybackSource_MediaPlayer()
+        /*[TestMethod]
+        [TestCategory("PlaybackSource")]*/
+        private async Task PlaybackSource_MediaPlayer()
         {
             var testFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///TestContent/test_signal.mp3"));
             var player = new MediaPlayer();
@@ -45,7 +45,7 @@ namespace AudioVisualizer.test
             player.Source = MediaSource.CreateFromStorageFile(testFile);
             player.Play();
 
-            if (Task.Run(() => { ev.Wait(); }).Wait(1000))
+            if (Task.Run(() => { ev.Wait(); }).Wait(10000))
 
             {
                 Assert.IsTrue(sources.Count == 1);

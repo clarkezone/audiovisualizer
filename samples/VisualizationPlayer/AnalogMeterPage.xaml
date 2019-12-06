@@ -1,0 +1,41 @@
+﻿<Page
+    x:Class="VisualizationPlayer.AnalogMeterPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:VisualizationPlayer"
+    xmlns:a="using:AudioVisualizer"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Resources>
+        <local:DoubleToTimeSpanConverter x:Key="dblToTimeConverter"></local:DoubleToTimeSpanConverter>
+    </Page.Resources>
+    <Grid>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"></RowDefinition>
+                <RowDefinition MinHeight="250" Height="4*"></RowDefinition>
+                <RowDefinition Height="3*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">Left</TextBlock>
+          
+            <Border Grid.Row="1" Grid.Column="0" BorderBrush="DarkGray" CornerRadius="4" BorderThickness="4" Margin="40" MinWidth="200" MinHeight="100" MaxWidth="800" MaxHeight="400">
+                    <a:AnalogVUMeter Background="LightYellow" Source="{x:Bind MeterSource}"  ChannelIndex="0"></a:AnalogVUMeter>
+                </Border>
+            <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">Right</TextBlock> 
+            <Border Grid.Row="1" Grid.Column="1" BorderBrush="DarkGray" CornerRadius="4" BorderThickness="4" Margin="40" MinWidth="200" MinHeight="100" MaxWidth="800" MaxHeight="400">
+                <a:AnalogVUMeter Grid.Row="0" Grid.Column="1" Background="LightYellow" Source="{x:Bind MeterSource}" ChannelIndex="1"/>
+            </Border>
+            <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Padding="40">
+                <Slider Header="Rise time (ms)" Minimum="0" Maximum="1000" Width="400" HorizontalAlignment="Left" Value="{x:Bind MeterSource.RmsRiseTime, Mode=OneWay,Converter={StaticResource dblToTimeConverter}}"></Slider>
+                <Slider Header="Fall time (ms)" Minimum="0" Maximum="1000" Width="400" HorizontalAlignment="Left" Value="{x:Bind MeterSource.RmsFallTime, Mode=OneWay,Converter={StaticResource dblToTimeConverter}}"></Slider>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

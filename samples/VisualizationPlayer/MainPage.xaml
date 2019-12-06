@@ -6,38 +6,56 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:VisualizationPlayer"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
-    <NavigationView
-        x:Name="navView"
-        IsPaneOpen="True"
-        SelectionChanged="navView_SelectionChanged">
-        <NavigationView.MenuItems>
-            <NavigationViewItem Content="MediaPlayer" Tag="VisualizationPlayer.MediaPlayerPage">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Play" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-            <NavigationViewItem Content="AudioNode" Tag="VisualizationPlayer.AudioNodePage">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Microphone" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-            <NavigationViewItem Content="Experiment" Tag="VisualizationPlayer.ExperimentWithControlsPage">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="PreviewLink" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-            
-
-        </NavigationView.MenuItems>
-        <NavigationView.Content>
+    
+    <winui:NavigationView SelectionChanged="NavigationView_SelectionChanged">
+        <winui:NavigationView.MenuItems>
+            <winui:NavigationViewItemHeader Content="Visualizations"></winui:NavigationViewItemHeader>
+            <winui:NavigationViewItem Content="Analog" Tag="VisualizationPlayer.AnalogMeterPage"></winui:NavigationViewItem>
+            <winui:NavigationViewItem Content="Bar" Tag="VisualizationPlayer.BarMeterPage"></winui:NavigationViewItem>
+            <winui:NavigationViewItem Content="Spectrum" Tag="VisualizationPlayer.SpectrumPage"></winui:NavigationViewItem>
+            <winui:NavigationViewItem Content="Custom" Tag="VisualizationPlayer.CustomDrawPage"></winui:NavigationViewItem>
+        </winui:NavigationView.MenuItems>
+        <winui:NavigationView.PaneCustomContent>
+            <winui:DropDownButton ToolTipService.ToolTip="Select source for visualizations">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock>Source</TextBlock>
+                    <SymbolIcon Margin="20,0,0,0" Symbol="{x:Bind Data.SourceTypeSymbol,Mode=OneWay}"></SymbolIcon>
+                </StackPanel>
+                <winui:DropDownButton.Flyout>
+                    <winui:MenuBarItemFlyout >
+                        <winui:RadioMenuFlyoutItem Text="File" x:Name="SourceFromFile" Click="SourceFromFile_Click">
+                            <winui:RadioMenuFlyoutItem.Icon>
+                                <SymbolIcon Symbol="OpenFile"/>
+                            </winui:RadioMenuFlyoutItem.Icon>
+                        </winui:RadioMenuFlyoutItem>
+                        <winui:RadioMenuFlyoutItem Text="Microphone" x:Name="SourceFromMic" Click="SourceFromMic_Click">
+                            <winui:RadioMenuFlyoutItem.Icon>
+                                <SymbolIcon Symbol="Microphone"/>
+                            </winui:RadioMenuFlyoutItem.Icon>
+                        </winui:RadioMenuFlyoutItem>
+                        <winui:RadioMenuFlyoutItem Text="Audio output" x:Name="SourceFromLoopback" Click="SourceFromLoopback_Click">
+                            <winui:RadioMenuFlyoutItem.Icon>
+                                <SymbolIcon Symbol="Volume"/>
+                            </winui:RadioMenuFlyoutItem.Icon>
+                        </winui:RadioMenuFlyoutItem>
+                    </winui:MenuBarItemFlyout>
+                </winui:DropDownButton.Flyout>
+            </winui:DropDownButton>
+        </winui:NavigationView.PaneCustomContent>
+        <winui:NavigationView.Header>
+            <TextBlock Text="{x:Bind Data.Title, Mode=OneWay}"></TextBlock>
+        </winui:NavigationView.Header>
+        <winui:NavigationView.Content>
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition Height="80"></RowDefinition>
                 </Grid.RowDefinitions>
-                <Frame x:Name="ContentFrame" Grid.Row="0" />
+            <Frame Grid.Row="0" x:Name="contentFrame"></Frame>
+            <local:PlayerControlBar Grid.Row="1" Data="{x:Bind Data}"></local:PlayerControlBar>
             </Grid>
-        </NavigationView.Content>
-    </NavigationView>
+        </winui:NavigationView.Content>
+    </winui:NavigationView>
 </Page>

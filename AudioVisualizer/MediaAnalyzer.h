@@ -163,6 +163,7 @@ namespace winrt::AudioVisualizer::implementation
         Windows::Foundation::IReference<uint32_t> ActualChannelCount();
         Windows::Foundation::IReference<float> ActualMinFrequency();
         Windows::Foundation::IReference<float> ActualMaxFrequency();
+		Windows::Foundation::IReference<float> ActualFrequencyStep();
         Windows::Foundation::IReference<AudioVisualizer::ScaleType> ActualFrequencyScale();
         event_token ConfigurationChanged(winrt::Windows::Foundation::TypedEventHandler<IVisualizationSource,hstring> const& handler);
         void ConfigurationChanged(event_token const& token);

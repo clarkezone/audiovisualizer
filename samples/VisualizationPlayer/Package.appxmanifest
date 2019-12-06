@@ -32,5 +32,6 @@
   </Extensions>
   <Capabilities>
     <Capability Name="internetClient" />
+    <DeviceCapability Name="microphone"/>
   </Capabilities>
 </Package>

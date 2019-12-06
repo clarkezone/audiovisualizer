@@ -36,6 +36,9 @@
     <ClCompile Include="util.cpp" />
     <ClCompile Include="VectorData.cpp" />
     <ClCompile Include="AudioSourceReader.cpp" />
+    <ClCompile Include="AudioInterfaceActivator.cpp" />
+    <ClCompile Include="LoopbackVisualizationSource.cpp" />
+    <ClCompile Include="MFEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -63,6 +66,9 @@
     <ClInclude Include="VectorData.h" />
     <ClInclude Include="ScalarValuesIterator.h" />
     <ClInclude Include="AudioSourceReader.h" />
+    <ClInclude Include="AudioInterfaceActivator.h" />
+    <ClInclude Include="LoopbackVisualizationSource.h" />
+    <ClInclude Include="mfengine.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ScalarData.idl" />
@@ -86,6 +92,7 @@
     <Midl Include="BarVisualizer.idl" />
     <Midl Include="VectorData.idl" />
     <Midl Include="AudioSourceReader.idl" />
+    <Midl Include="LoopbackVisualizationSource.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AudioVisualizer.def" />
