@@ -40,7 +40,7 @@ namespace winrt::AudioVisualizer::implementation
 			if (_currentIndex >= _data.Size()) {
 				throw hresult_out_of_bounds();
 			}
-			auto impl_data = winrt::from_abi<SpectrumData>(_data);
+			auto impl_data = winrt::get_self<SpectrumData>(_data);
 			return make<VectorData>((float *)(impl_data->_pData + _currentIndex * impl_data->_vElementsCount), impl_data->_size, _data);
 		}
 	};
@@ -154,7 +154,7 @@ namespace winrt::AudioVisualizer::implementation
 			throw hresult_invalid_argument(L"Previous data not the same size");
 		}
 		auto result = make_self<SpectrumData>(Size(), FrequencyCount(), AmplitudeScale(), FrequencyScale(), MinFrequency(), MaxFrequency(), false);
-		DirectX::XMVECTOR *pLastData = (previous) ? winrt::from_abi<SpectrumData>(previous)->_pData : nullptr;
+		DirectX::XMVECTOR *pLastData = (previous) ? winrt::get_self<SpectrumData>(previous)->_pData : nullptr;
 
 		float normalizedRiseTime = (float)timeFromPrevious.count() / (float)riseTime.count();
 		float normalizedFallTime = (float)timeFromPrevious.count() / (float)fallTime.count();
@@ -178,7 +178,7 @@ namespace winrt::AudioVisualizer::implementation
 		float normalizedRiseTime = (float)timeFromPrevious.count() / (float)riseTime.count();
 		float normalizedFallTime = (float)timeFromPrevious.count() / (float)fallTime.count();
 
-		AudioMath::ApplyRiseAndFall(winrt::from_abi<SpectrumData>(previous)->_pData, nullptr, result->_pData, vSize * previous.Size(), normalizedRiseTime, normalizedFallTime);
+		AudioMath::ApplyRiseAndFall(winrt::get_self<SpectrumData>(previous)->_pData, nullptr, result->_pData, vSize * previous.Size(), normalizedRiseTime, normalizedFallTime);
 		
 		return result.as<AudioVisualizer::SpectrumData>();
 	}
