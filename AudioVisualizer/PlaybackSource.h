@@ -2,6 +2,7 @@
 
 #include "PlaybackSource.g.h"
 #include "VisualizerEffectDefinition.h"
+#include <Audioclient.h>
 
 namespace winrt::AudioVisualizer::implementation
 {

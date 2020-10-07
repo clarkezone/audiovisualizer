@@ -85,7 +85,7 @@ namespace winrt::AudioVisualizer::implementation
 
 		if (previous) {
 			// Get the raw buffer
-			pLastData = winrt::from_abi<ScalarData>(previous)->_pData;
+			pLastData = winrt::get_self<ScalarData>(previous)->_pData;
 		}
 		float normalizedRiseTime = (float)timeFromPrevious.count() / (float)riseTime.count();
 		float normalizedFallTime = (float)timeFromPrevious.count() / (float)fallTime.count();
@@ -141,7 +141,7 @@ namespace winrt::AudioVisualizer::implementation
 		float normalizedRiseTime = (float)timeFromPrevious.count() / (float)riseTime.count();
 		float normalizedFallTime = (float)timeFromPrevious.count() / (float)fallTime.count();
 
-		AudioMath::ApplyRiseAndFall(winrt::from_abi<ScalarData>(previous)->_pData, nullptr, result->_pData, vectorSize, normalizedRiseTime, normalizedFallTime);
+		AudioMath::ApplyRiseAndFall(winrt::get_self<ScalarData>(previous)->_pData, nullptr, result->_pData, vectorSize, normalizedRiseTime, normalizedFallTime);
 
 		return result.as<AudioVisualizer::ScalarData>();
     }

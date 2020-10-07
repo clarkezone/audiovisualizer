@@ -11,7 +11,7 @@
     <AssemblyName>VisualizationPlayer</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.17763.0</TargetPlatformVersion>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18362.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
@@ -92,25 +92,46 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AnalogMeterPage.xaml.cs">
+      <DependentUpon>AnalogMeterPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="AudioNodePage.xaml.cs">
       <DependentUpon>AudioNodePage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="BarMeterPage.xaml.cs">
+      <DependentUpon>BarMeterPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="BooleanToVisibilityConverter.cs" />
+    <Compile Include="CustomDrawPage.xaml.cs">
+      <DependentUpon>CustomDrawPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DoubleToTimeSpanConverter.cs" />
+    <Compile Include="FileSource.cs" />
+    <Compile Include="IAudioSource.cs" />
     <Compile Include="InformationPage.xaml.cs">
       <DependentUpon>InformationPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="LoopbackSource.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="MediaPlayerPage.xaml.cs">
       <DependentUpon>MediaPlayerPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MicrophoneSource.cs" />
+    <Compile Include="PlayerControlBar.xaml.cs">
+      <DependentUpon>PlayerControlBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PlayerData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ExperimentWithControlsPage.xaml.cs">
       <DependentUpon>ExperimentWithControlsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SpectrumPage.xaml.cs">
+      <DependentUpon>SpectrumPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -172,7 +193,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="AnalogMeterPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="AudioNodePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="BarMeterPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CustomDrawPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -192,13 +225,21 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="PlayerControlBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SpectrumPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.1.7</Version>
+      <Version>6.2.9</Version>
     </PackageReference>
-    <PackageReference Include="UWPAudioVisualizer">
-      <Version>1.0.7</Version>
+    <PackageReference Include="Microsoft.UI.Xaml">
+      <Version>2.2.190917002</Version>
     </PackageReference>
     <PackageReference Include="Win2D.uwp">
       <Version>1.23.0</Version>

@@ -110,7 +110,7 @@ namespace winrt::AudioVisualizer::implementation
 		std::unique_lock lock(_lock);
 	
 		if (value && value.GetUInt32() == 0) {
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Invalid frequency count");
 		}
 
 		if (value == _frequencyCount)
@@ -118,6 +118,7 @@ namespace winrt::AudioVisualizer::implementation
 
 		_frequencyCount = value;
 		_cachedOutputFrame = nullptr;
+		_previousSpectrum = nullptr;
 		
 		lock.unlock();	// Unlock before calling changed event
 		_configurationChangedEvent(*this, hstring(L"FrequencyCount"));
@@ -147,13 +148,18 @@ namespace winrt::AudioVisualizer::implementation
 		std::unique_lock lock(_lock);
 
 		if (value && value.GetUInt32() == 0) {
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Invalid channel count");
 		}
 		if (value == _channelCount)
 			return;
 
 		_channelCount = value;
 		_cachedOutputFrame = nullptr;
+		
+		_previousPeak = nullptr;
+		_previousRMS = nullptr;
+		_previousSpectrum = nullptr;
+
 		ConfigureChannelMap();
 		lock.unlock();
 
@@ -191,7 +197,12 @@ namespace winrt::AudioVisualizer::implementation
 			_channelMap.clear();
 		}
 
+
 		ConfigureChannelMap();
+
+		_previousPeak = nullptr;
+		_previousRMS = nullptr;
+		_previousSpectrum = nullptr;
 
 		_cachedOutputFrame = nullptr;
 		lock.unlock();
@@ -293,7 +304,7 @@ namespace winrt::AudioVisualizer::implementation
 
 			if ((fScale == ScaleType::Logarithmic && newValue == 0) || newValue < 0 || newValue >= maxFrequency)
 			{
-				throw hresult_invalid_argument();
+				throw hresult_invalid_argument(L"Invalid minimum frequency");
 			}
 		}
 		if (value == _minFrequency)
@@ -321,7 +332,7 @@ namespace winrt::AudioVisualizer::implementation
 			float minFrequency = _minFrequency ? _minFrequency.GetSingle() : 0.0f;
 			if (newValue <= minFrequency)
 			{
-				throw hresult_invalid_argument();
+				throw hresult_invalid_argument(L"Invalid maximum frequency");
 			}
 		}
 		if (value == _maxFrequency)
@@ -572,6 +583,26 @@ namespace winrt::AudioVisualizer::implementation
 	{
 		std::shared_lock lock(_lock);
 		return ActualMaxFrequencyImpl();
+	}
+
+	Windows::Foundation::IReference<float> SourceConverter::ActualFrequencyStep()
+	{
+		std::shared_lock lock(_lock);
+
+		auto minFrequency = ActualMinFrequencyImpl();
+		auto maxFrequency = ActualMaxFrequencyImpl();
+		auto frequencyCount = ActualFrequencyCountImpl();
+		auto frequencyScale = ActualFrequencyScaleImpl();
+		if (minFrequency && maxFrequency && frequencyCount && frequencyScale)
+		{
+			if (frequencyScale.Value() == ScaleType::Linear) {
+				return (maxFrequency.Value() - minFrequency.Value()) / frequencyCount.Value();
+			}
+			else {
+				return  powf((maxFrequency.Value() / minFrequency.Value()), 1.0f / frequencyCount.Value());
+			}
+		}
+		return nullptr;
 	}
 
 	Windows::Foundation::IReference<AudioVisualizer::ScaleType> SourceConverter::ActualFrequencyScale()

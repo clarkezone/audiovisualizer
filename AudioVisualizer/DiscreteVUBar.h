@@ -5,14 +5,14 @@
 
 namespace winrt::AudioVisualizer::implementation
 {
-    struct DiscreteVUBar : DiscreteVUBarT<DiscreteVUBar>,BarVisualizerBase<DiscreteVUBar>
+    struct DiscreteVUBar : DiscreteVUBarT<DiscreteVUBar>,BarVisualizerBase<DiscreteVUBar,vu_bar_visualizer>
     {
 		bool _displayPeak = true;
 	public:
 		DiscreteVUBar();
 		bool DisplayPeak() { return _displayPeak; }
 		void DisplayPeak(const bool value) { _displayPeak = value; }
-		virtual void OnUpdateMeter(VisualizationDataFrame const &frame);
+		void OnUpdateMeter(VisualizationDataFrame const &frame);
     };
 }
 

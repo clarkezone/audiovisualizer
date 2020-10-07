@@ -27,6 +27,7 @@ namespace VisualizationPlayer
             return Frame;
         }
 
+        public float? ActualFrequencyStep => 24000.0f / 1024f;
         public uint? ActualChannelCount => 1;
 
         public uint? ActualFrequencyCount => 1024;

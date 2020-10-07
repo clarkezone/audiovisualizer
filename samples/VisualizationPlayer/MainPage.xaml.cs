@@ -30,28 +30,39 @@ namespace VisualizationPlayer
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        public PlayerData Data
+        {
+            get => App.Data;
+        }
+
         public MainPage()
         {
             this.InitializeComponent();
-            Loaded += MainPage_Loaded;
         }
 
-        private void MainPage_Loaded(object sender, RoutedEventArgs e)
+
+        private async void SourceFromMic_Click(object sender, RoutedEventArgs e)
         {
-            navView.SelectedItem = navView.MenuItems[0];
+            await Data.CreateSourceFromMicrophoneAsync();
         }
 
-        private void navView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        private async void SourceFromLoopback_Click(object sender, RoutedEventArgs e)
         {
-            if (args.IsSettingsSelected)
+            await Data.CreateSourceFromLoopbackAsync();
+        }
+
+        private async void SourceFromFile_Click(object sender, RoutedEventArgs e)
+        {
+            await Data.CreateSourceFromFileAsync();
+        }
+
+        private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        {
+            if (!args.IsSettingsSelected)
             {
-                // not implemented
-            }
-            else
-            {
-                string typeName = (string)((NavigationViewItem)args.SelectedItem).Tag;
-                Type pageType = Type.GetType(typeName);
-                ContentFrame.Navigate(pageType);
+                var item = args.SelectedItem as FrameworkElement;
+                var pageType = Type.GetType((string) item.Tag);
+                contentFrame.Navigate(pageType);
             }
         }
     }

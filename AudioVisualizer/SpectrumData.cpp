@@ -40,7 +40,7 @@ namespace winrt::AudioVisualizer::implementation
 			if (_currentIndex >= _data.Size()) {
 				throw hresult_out_of_bounds();
 			}
-			auto impl_data = winrt::from_abi<SpectrumData>(_data);
+			auto impl_data = winrt::get_self<SpectrumData>(_data);
 			return make<VectorData>((float *)(impl_data->_pData + _currentIndex * impl_data->_vElementsCount), impl_data->_size, _data);
 		}
 	};
@@ -81,7 +81,7 @@ namespace winrt::AudioVisualizer::implementation
 			throw hresult_error(E_NOT_VALID_STATE);
 
 		if (fromFrequency >= toFrequency || elementCount < 1)
-				throw hresult_invalid_argument();
+				throw hresult_invalid_argument(L"Invalid transfrom arguments");
 
 		auto result = make_self<SpectrumData>(
 			_channels,
@@ -111,10 +111,10 @@ namespace winrt::AudioVisualizer::implementation
 			_frequencyScale != ScaleType::Linear)
 			throw hresult_error(E_NOT_VALID_STATE);
 		if (fromFrequency <= 0 || toFrequency < fromFrequency)
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Invalid transform arguments");
 
 		if (fromFrequency >= toFrequency || elementCount < 1)
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Invalid transform arguments");
 
 		auto result = make_self<SpectrumData>(
 			_channels,
@@ -146,7 +146,7 @@ namespace winrt::AudioVisualizer::implementation
 
 		if (previous && previous.AmplitudeScale() != ScaleType::Linear)
 		{
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Invalid amplitude scale");
 		}
 
 		if (previous && (previous.Size() != Size() || previous.FrequencyCount() != FrequencyCount()))
@@ -154,7 +154,7 @@ namespace winrt::AudioVisualizer::implementation
 			throw hresult_invalid_argument(L"Previous data not the same size");
 		}
 		auto result = make_self<SpectrumData>(Size(), FrequencyCount(), AmplitudeScale(), FrequencyScale(), MinFrequency(), MaxFrequency(), false);
-		DirectX::XMVECTOR *pLastData = (previous) ? winrt::from_abi<SpectrumData>(previous)->_pData : nullptr;
+		DirectX::XMVECTOR *pLastData = (previous) ? winrt::get_self<SpectrumData>(previous)->_pData : nullptr;
 
 		float normalizedRiseTime = (float)timeFromPrevious.count() / (float)riseTime.count();
 		float normalizedFallTime = (float)timeFromPrevious.count() / (float)fallTime.count();
@@ -167,9 +167,9 @@ namespace winrt::AudioVisualizer::implementation
 	AudioVisualizer::SpectrumData SpectrumData::ApplyRiseAndFallToEmpty(AudioVisualizer::SpectrumData const& previous, Windows::Foundation::TimeSpan const& riseTime, Windows::Foundation::TimeSpan const& fallTime, Windows::Foundation::TimeSpan const& timeFromPrevious)
 	{
 		if (!previous)
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"No previous data");
 		if (previous.AmplitudeScale() != ScaleType::Linear)
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Invalid amplitude scale");
 
 		auto result = make_self<SpectrumData>(previous.Size(), previous.FrequencyCount(), previous.AmplitudeScale(), previous.FrequencyScale(), previous.MinFrequency(), previous.MaxFrequency(), false);
 
@@ -178,7 +178,7 @@ namespace winrt::AudioVisualizer::implementation
 		float normalizedRiseTime = (float)timeFromPrevious.count() / (float)riseTime.count();
 		float normalizedFallTime = (float)timeFromPrevious.count() / (float)fallTime.count();
 
-		AudioMath::ApplyRiseAndFall(winrt::from_abi<SpectrumData>(previous)->_pData, nullptr, result->_pData, vSize * previous.Size(), normalizedRiseTime, normalizedFallTime);
+		AudioMath::ApplyRiseAndFall(winrt::get_self<SpectrumData>(previous)->_pData, nullptr, result->_pData, vSize * previous.Size(), normalizedRiseTime, normalizedFallTime);
 		
 		return result.as<AudioVisualizer::SpectrumData>();
 	}
@@ -188,7 +188,7 @@ namespace winrt::AudioVisualizer::implementation
 			throw hresult_error(E_NOT_VALID_STATE);
 
 		if (minValue >= maxValue)
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Maximum value has to be larger than minimum");
 
 		auto result = make_self<SpectrumData>(_channels, _size, ScaleType::Logarithmic, _frequencyScale, _minimumFrequency, _maximumFrequency, false);
 		AudioMath::ConvertToLogarithmic(_pData, result->_pData, _vElementsCount * _channels, minValue, maxValue);
@@ -201,7 +201,7 @@ namespace winrt::AudioVisualizer::implementation
 			throw hresult_error(E_POINTER);
 
 		if (map.size() < _channels)
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Invalid size of map");
 
 		if (_amplitudeScale != ScaleType::Linear)
 			throw hresult_error(E_NOT_VALID_STATE);
@@ -255,7 +255,7 @@ namespace winrt::AudioVisualizer::implementation
 	AudioVisualizer::VectorData SpectrumData::GetAt(uint32_t index)
     {
 		if (index >= _channels)
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Invalid element index");
 		return make<VectorData>((float *)(_pData + index *_vElementsCount), _size, *this);
     }
 
@@ -277,11 +277,11 @@ namespace winrt::AudioVisualizer::implementation
     AudioVisualizer::SpectrumData SpectrumData::CreateEmpty(uint32_t cChannels, uint32_t cElements, AudioVisualizer::ScaleType const& amplitudeScale, AudioVisualizer::ScaleType const& frequencyScale, float minFrequency, float maxFrequency)
     {
 		if (cChannels == 0 || cElements == 0)
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Element count cannot be zero");
 		if (maxFrequency <= minFrequency || maxFrequency <= 0 || minFrequency < 0)
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Invalid frequency values");
 		if (frequencyScale == ScaleType::Logarithmic && minFrequency <= 0)
-				throw hresult_invalid_argument();
+				throw hresult_invalid_argument(L"Minimum frequency cannot be zero with logarithmic scale");
 
 		return make<SpectrumData>(cChannels, cElements, amplitudeScale, frequencyScale, minFrequency, maxFrequency, true);
     }
@@ -291,16 +291,16 @@ namespace winrt::AudioVisualizer::implementation
 		if (values.data() == nullptr)
 			throw hresult_error(E_POINTER);
 		if (values.size() / cChannels == 0)
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Invalid data size");
 
 		if (maxFrequency <= minFrequency || maxFrequency <= 0 || minFrequency < 0)
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Invalid frequency values");
 
 		if (frequencyScale == ScaleType::Logarithmic && minFrequency <= 0)
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Minimum frequency cannot be zero with logarithmic scale");
 
 		if (cChannels == 0)
-			throw hresult_invalid_argument();
+			throw hresult_invalid_argument(L"Channels cannot be zero");
 
 		uint32_t cElements = values.size() / cChannels;
 

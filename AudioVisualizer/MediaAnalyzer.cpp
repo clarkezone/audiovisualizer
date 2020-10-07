@@ -64,7 +64,7 @@ namespace winrt::AudioVisualizer::implementation
 		while (!_data.empty())
 		{
 #ifdef _TRACE_
-			auto frontItem = winrt::from_abi<VisualizationDataFrame>(_data.front());
+			auto frontItem = winrt::get_self<VisualizationDataFrame>(_data.front());
 			Trace::MediaAnalyzer_OutputQueueTest(frontItem->Time().Value(), time, time < frontItem->Time().Value(), time >= frontItem->Time().Value() + frontItem->Duration());
 #endif
 			if (time < _data.front().Time().Value()) // Current position is before the visualization queue head - wait until we catch up
@@ -246,6 +246,14 @@ namespace winrt::AudioVisualizer::implementation
 	{
 		if (_analyzer) {
 			return _analyzer.SpectrumStep() * _analyzer.SpectrumElementCount();
+		}
+		return nullptr;
+	}
+
+	Windows::Foundation::IReference<float> MediaAnalyzer::ActualFrequencyStep()
+	{
+		if (_analyzer && ((unsigned)_analyzerTypes & (unsigned) AnalyzerType::Spectrum)!=0 ) {
+			return _analyzer.SpectrumStep();
 		}
 		return nullptr;
 	}

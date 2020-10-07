@@ -68,6 +68,8 @@ namespace AudioVisualizer.test
 
         public float? ActualMinFrequency => 0.0f;
 
+        public float? ActualFrequencyStep => 20000.0f / ExpectedFrequencies;
+
         public ScaleType? ActualFrequencyScale => ScaleType.Linear;
 
 

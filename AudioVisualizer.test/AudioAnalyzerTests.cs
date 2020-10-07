@@ -10,46 +10,173 @@ using Windows.Media;
 
 namespace AudioVisualizer.test
 {
-    internal class HResult
-    {
-        public static Int32 NotValidState = -2147019873;
-    }
 
-    [ComImport]
-    [Guid("5B0D3235-4DBA-4D44-865E-8F1D0E4FD04D")]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal unsafe interface IMemoryBufferByteAccess
+    [TestClass]
+    public class AudioAnalyzerCtorTests
     {
-        void GetBuffer(out byte* buffer, out uint capacity);
-    }
-
-    public static class AudioBufferExtension
-    {
-        public delegate float GeneratorFunction(Int64 frameOffset, uint channelIndex);
-        public static unsafe void Generate(this AudioFrame frame,uint channels,Int64 frameOffset,GeneratorFunction generator)
+        
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_IsCloseable()
         {
-            using (var buffer = frame.LockBuffer(AudioBufferAccessMode.ReadWrite))
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
+            using (sut)
             {
-                using (var bufferReference = buffer.CreateReference())
-                {
-                    byte* pByteData;
-                    uint capacity;
-                    ((IMemoryBufferByteAccess)bufferReference).GetBuffer(out pByteData, out capacity);
-                    uint bufferLength = capacity / sizeof(float) / channels;
-                    float* pSamples = (float*)pByteData;
-                    int sampleIndex = 0;
-                    for (Int64 frameIndex = frameOffset; frameIndex < frameOffset + bufferLength; frameIndex++)
-                    {
-                        for (uint channelIndex = 0; channelIndex < channels; channelIndex++,sampleIndex++)
-                        {
-                            pSamples[sampleIndex] = generator(frameIndex, channelIndex);
-                        }
+            }
+            sut.Dispose();  // Second close should also succeed
+        }
 
-                    }
+        // Using async processing will spin up a thread, make sure Dispose succeeds in this scenario
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_IsCloseableAsync()
+        {
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, true);
+            using (sut)
+            {
+                Task.Delay(100).Wait();
+            }
+            sut.Dispose();  // Second close should also succeed
+        }
+
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_Ctor_With_BufferSizeLTOL_plus_StepThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var sut = new AudioAnalyzer(1200, 2, 48000, 800, 401, 2048, false);
+            });
+        }
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_Ctor_With_BufferSizeEQOL_plus_StepOk()
+        {
+            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
+        }
+
+
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_Ctor_With_ZeroChannelsThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var sut = new AudioAnalyzer(1200, 0, 48000, 800, 400, 2048, false);
+            });
+        }
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_Ctor_With_ZeroSampleRateThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var sut = new AudioAnalyzer(1200, 2, 0, 800, 0, 2048, false);
+            });
+        }
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_Ctor_With_ZeroStepThrows()
+        {
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var sut = new AudioAnalyzer(1200, 2, 48000, 0, 0, 2048, false);
+            });
+        }
+
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_Ctor_With_NotPo2FFT_Throws()
+        {
+            Assert.ThrowsException<ArgumentException>(() =>
+            {
+                var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2047, false);
+            });
+        }
+
+    }
+
+
+
+    [TestClass]
+    public class AudioAnalyzerSyncTests
+    {
+        static AudioFrame inputFrame;
+        static uint inputFrameSize = 800;
+
+        AudioAnalyzer _sut;
+        [AssemblyInitialize]
+        static public void SetupClass(TestContext context)
+        {
+            inputFrame = new AudioFrame(4 * inputFrameSize * 2); // 800 floats, 2 channels
+            // Generate sine wave of amp 1 and period of 200 (f=0.25) samples into channel 0 and triangle with period 800 and amp 0.1 inopt channel 1
+            inputFrame.Generate(2, 0,
+                (Int64 frameIndex, uint channelIndex) =>
+                {
+                    return channelIndex == 0 ? (float)Math.Sin(2.0 * Math.PI * frameIndex / 200.0) : (float)(frameIndex % inputFrameSize) / 7990.0f;
                 }
+                );
+            inputFrame.RelativeTime = TimeSpan.FromSeconds(1);
+
+        }
+        [TestInitialize]
+        public void SetupTests()
+        {
+            _sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
+        }
+        [TestCleanup]
+        public void CloseTests()
+        {
+            _sut?.Dispose();
+        }
+
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_AllAnalyzerTypesByDefault()
+        {
+            Assert.AreEqual(AnalyzerType.All, _sut.AnalyzerTypes);
+        }
+
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_SetOutput()
+        {
+            _sut.Output += new Windows.Foundation.TypedEventHandler<AudioAnalyzer, VisualizationDataFrame>(
+                (analyzer, frame) => { }
+                );
+        }
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_Ctor_SpectrumStepSet()
+        {
+            Assert.AreEqual(48000.0f / 2048.0f, _sut.SpectrumStep);
+        }
+
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_Ctor_SpectrumElementCountSet()
+        {
+            Assert.AreEqual(1024u, _sut.SpectrumElementCount);
+        }
+    }
+
+    [TestClass]
+    public class AudioAnalyzerDownsampleTest
+    {
+        [TestMethod]
+        [TestCategory("AudioAnalyzer")]
+        public void AudioAnalyzer_Ctor_SpectrumStepSetWithDownsample()
+        {
+            // As 2*(1600+800) > 3200 input will be downsampled by 2
+            using (var sut = new AudioAnalyzer(2400, 2, 96000, 1600, 800, 2048, false))
+            {
+                Assert.AreEqual(96000.0f / 2048.0f / 2.0f, sut.SpectrumStep);
             }
         }
     }
+
+
+
 
     [TestClass]
     public class AudioAnalyzerTests
@@ -71,6 +198,8 @@ namespace AudioVisualizer.test
                 );
             inputFrame.RelativeTime = TimeSpan.FromSeconds(1);
         }
+
+
         void RegisterOutputHandler(AudioAnalyzer analyzer)
         {
             analyzer.Output += new Windows.Foundation.TypedEventHandler<AudioAnalyzer, VisualizationDataFrame>(
@@ -112,124 +241,13 @@ namespace AudioVisualizer.test
             Assert.IsTrue(avg < 5);
 
         }
-        [TestMethod]
-        [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_IsCloseable()
-        {
-            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
-            using (sut)
-            {
-            }
-            sut.Dispose();  // Second close should also succeed
-        }
-        [TestMethod]
-        [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_IsCloseableAsync()
-        {
-            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, true);
-            using (sut)
-            {
-                Task.Delay(50).Wait();
-            }
-            sut.Dispose();  // Second close should also succeed
-        }
-
-        [TestMethod]
-        [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_AllAnalyzerTypesByDefault()
-        {
-            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
-            Assert.AreEqual(AnalyzerType.All, sut.AnalyzerTypes);
-        }
-
-        [TestMethod]
-        [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_SetOutput()
-        {
-            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
-            sut.Output += new Windows.Foundation.TypedEventHandler<AudioAnalyzer, VisualizationDataFrame>(
-                (analyzer,frame)=> { }
-                );
-        }
-        [TestMethod]
-        [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_Configure_With_BufferSizeLTOL_plus_StepThrows()
-        {
-            Assert.ThrowsException<ArgumentException>(() =>
-            {
-                var sut = new AudioAnalyzer(1200, 2, 48000, 800, 401, 2048, false);
-            });
-        }
-        [TestMethod]
-        [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_Configure_With_BufferSizeEQOL_plus_StepOk()
-        {
-            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
-        }
 
 
-        [TestMethod]
-        [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_Configure_With_ZeroChannelsThrows()
-        {
-            Assert.ThrowsException<ArgumentException>(() => 
-            {
-                var sut = new AudioAnalyzer(1200, 0, 48000, 800, 400, 2048, false);
-            });
-        }
-        [TestMethod]
-        [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_Configure_With_ZeroSampleRateThrows()
-        {
-            Assert.ThrowsException<ArgumentException>(() =>
-            {
-                var sut = new AudioAnalyzer(1200, 2, 0, 800, 0, 2048, false);
-            });
-        }
-        [TestMethod]
-        [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_Configure_With_ZeroStepThrows()
-        {
-            Assert.ThrowsException<ArgumentException>(() =>
-            {
-                var sut = new AudioAnalyzer(1200, 2, 48000, 0, 0, 2048, false);
-            });
-        }
 
-        [TestMethod]
-        [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_Configure_With_NotPo2FFT_Throws()
-        {
-            Assert.ThrowsException<ArgumentException>(() =>
-            {
-                var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2047, false);
-            });
-        }
 
-        [TestMethod]
-        [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_Configure_SpectrumStepSet()
-        {
-            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
-            Assert.AreEqual(48000.0f / 2048.0f, sut.SpectrumStep);
-        }
 
-        [TestMethod]
-        [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_Configure_SpectrumElementCountSet()
-        {
-            var sut = new AudioAnalyzer(1200, 2, 48000, 800, 400, 2048, false);
-            Assert.AreEqual(1024u, sut.SpectrumElementCount);
-        }
 
-        [TestMethod]
-        [TestCategory("AudioAnalyzer")]
-        public void AudioAnalyzer_Configure_SpectrumStepSetWithDownsample()
-        {
-            // As 2*(1600+800) > 3200 input will be downsampled by 2
-            var sut = new AudioAnalyzer(2400, 2, 96000, 1600, 800, 2048, false);
-            Assert.AreEqual(96000.0f / 2048.0f / 2.0f, sut.SpectrumStep);
-        }
+
 
 
         [TestMethod]
