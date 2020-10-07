@@ -3,7 +3,6 @@
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <CppWinRTEnabled>true</CppWinRTEnabled>
-    <RequiredBundles>$(RequiredBundles);Microsoft.Windows.CppWinRT</RequiredBundles>
     <MinimalCoreWin>true</MinimalCoreWin>
     <ProjectGuid>{da1a2266-1149-4a19-8a3a-3f1ca7717a6f}</ProjectGuid>
     <ProjectName>AudioVisualizer</ProjectName>
